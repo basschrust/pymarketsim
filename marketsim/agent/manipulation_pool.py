@@ -95,3 +95,20 @@ class ManipulationAgent(Agent):
         self.cash = 0
         self._order_counter = 0
 
+class ManipulationPool:
+    def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):
+        self.market = market
+        self.id = pool_id
+        self.type = manipulation_type # 'pull_up' or 'push_down'
+        self.manipulation_start = manipulation_start # tau_1, manipulation starts here
+        self.manipulation_end = manipulation_end # tau_2, manipulation ends here
+
+    def get_id(self) -> int:
+        return self.id
+
+    def manipulation_start(self):
+        # send signal to all agents in the pool
+        pass
+
+
+
