@@ -2,7 +2,8 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-from simulator.sampled_arrival_simulator import SimulatorSampledArrival
+#from marketsim.simulator.simulator import Simulator
+from marketsim.simulator.sampled_arrival_simulator import SimulatorSampledArrival
 
 surpluses = []
 valueAgents = []
@@ -19,8 +20,10 @@ for i in tqdm(range(10000)):
                                   shade=[250,500],
                                   hbl_agent=True)
     sim.run()
+    #print(sim)
     fundamental_val = sim.markets[0].get_final_fundamental()
     values = []
+    #print(f"there were {sim.agents} agents.")
     for agent_id in sim.agents:
         agent = sim.agents[agent_id]
         value = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
@@ -29,7 +32,7 @@ for i in tqdm(range(10000)):
     valueAgents.append(values)
     if i % 500 == 0:
         print(np.mean(valueAgents, axis = 0))
-    surpluses.append(sum(values)/len(values))
+    #surpluses.append(sum(values)/len(values))
 
 valueAgents = np.mean(valueAgents, axis = 0)
 num_agents = 26

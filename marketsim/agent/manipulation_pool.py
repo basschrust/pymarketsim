@@ -6,11 +6,11 @@ from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 import numpy as np
-from marketsim.utils.id_generator import id_generator
+#from utils.id_generator import id_generator
 
 
-class ZIAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0):
+class ManipulationAgent(Agent):
+    def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, pool_id: int = 0):
         self.agent_id = agent_id
         self.market = market
         self.q_max = q_max
@@ -21,6 +21,7 @@ class ZIAgent(Agent):
         self.cash = 0
         self.eta = eta
         self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+        self.pool_id = pool_id
 
     def get_id(self) -> int:
         return self.agent_id
@@ -66,7 +67,7 @@ class ZIAgent(Agent):
 
         # Use counter for order ID (faster than random.randint)
         self._order_counter += 1
-        order_id = id_generator.next()
+        order_id = self.agent_id * 1000000 + self._order_counter
 
         order = Order(
             price=price,
@@ -84,7 +85,7 @@ class ZIAgent(Agent):
         self.cash += p
 
     def __str__(self):
-        return f'ZI{self.agent_id}'
+        return f'Pool{self.pool_id}_{self.agent_id}'
 
     def get_pos_value(self) -> float:
         return self.pv.value_at_position(self.position)
@@ -92,6 +93,5 @@ class ZIAgent(Agent):
     def reset(self):
         self.position = 0
         self.cash = 0
-        self.pv = PrivateValues(self.q_max, self.pv_var)
         self._order_counter = 0
 
