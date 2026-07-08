@@ -4,7 +4,7 @@ class IdGenerator:
     def __init__(self):
         self._counter = count(1)
 
-    def __next__(self) -> int:
+    def next(self) -> int:
         return next(self._counter)
 
 id_generator = IdGenerator()

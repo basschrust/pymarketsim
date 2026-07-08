@@ -35,40 +35,43 @@ class MMAgent(Agent):
         return estimate
 
     def take_action(self):
-        t = self.market.get_time()
         orders = []
-        # Get the best bid and best ask
-        best_ask = self.market.order_book.get_best_ask()
-        best_bid = self.market.order_book.get_best_bid()
+        t = self.market.get_time()
+        # add orders only in rebalance periods:
+        if t % self.rebalance_period == 0:
 
-        estimate = self.estimate_fundamental()
-        st = max(estimate + 1 / 2 * self.omega, best_bid)
-        bt = min(estimate - 1 / 2 * self.omega, best_ask)
+            # Get the best bid and best ask
+            best_ask = self.market.order_book.get_best_ask()
+            best_bid = self.market.order_book.get_best_bid()
+
+            estimate = self.estimate_fundamental()
+            st = max(estimate + 1 / 2 * self.omega, best_bid)
+            bt = min(estimate - 1 / 2 * self.omega, best_ask)
 
 
-        for k in range(self.K):
-            orders.append(
-                Order(
-                    price= bt - (k + 1) * self.xi,
-                    quantity=1,
-                    agent_id=self.get_id(),
-                    time=t,
-                    order_type=BUY,
-                    order_id=id_generator.next()
-                    #random.randint(1, 10000000)
+            for k in range(self.K):
+                orders.append(
+                    Order(
+                        price= bt - (k + 1) * self.xi,
+                        quantity=1,
+                        agent_id=self.get_id(),
+                        time=t,
+                        order_type=BUY,
+                        order_id=id_generator.next()
+                        #random.randint(1, 10000000)
+                    )
                 )
-            )
-            orders.append(
-                Order(
-                    price= st + (k + 1)*self.xi,
-                    quantity=1,
-                    agent_id=self.get_id(),
-                    time=t,
-                    order_type=SELL,
-                    order_id=id_generator.next()
-                    #random.randint(1, 10000000)
+                orders.append(
+                    Order(
+                        price= st + (k + 1)*self.xi,
+                        quantity=1,
+                        agent_id=self.get_id(),
+                        time=t,
+                        order_type=SELL,
+                        order_id=id_generator.next()
+                        #random.randint(1, 10000000)
+                    )
                 )
-            )
 
         return orders
 
