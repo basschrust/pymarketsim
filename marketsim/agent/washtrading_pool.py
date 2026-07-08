@@ -6,10 +6,10 @@ from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 import numpy as np
-#from utils.id_generator import id_generator
+from marketsim.utils.id_generator import id_generator
 
 
-class ManipulationAgent(Agent):
+class WashTradingAgent(Agent):
     def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, pool_id: int = 0):
         self.agent_id = agent_id
         self.market = market
@@ -26,16 +26,6 @@ class ManipulationAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self):
-        mean, r, T = self.market.get_info()
-        t = self.market.get_time()
-        val = self.market.get_fundamental_value()
-
-        rho = (1-r)**(T-t)  # TODO: AK - should be taken randomly in each step (?)
-
-        estimate = (1-rho)*mean + rho*val
-        # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
-        return estimate
 
     def take_action(self, estimate=None):
         side = random.choice([BUY, SELL])
@@ -67,7 +57,7 @@ class ManipulationAgent(Agent):
 
         # Use counter for order ID (faster than random.randint)
         self._order_counter += 1
-        order_id = self.agent_id * 1000000 + self._order_counter
+        order_id = id_generator.next()
 
         order = Order(
             price=price,
@@ -95,7 +85,7 @@ class ManipulationAgent(Agent):
         self.cash = 0
         self._order_counter = 0
 
-class ManipulationPool:
+class WashTradingPool:
     def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):
         self.market = market
         self.id = pool_id

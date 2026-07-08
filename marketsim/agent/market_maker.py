@@ -5,10 +5,11 @@ from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
+from marketsim.utils.id_generator import id_generator
 
 
 class MMAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float):
+    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float, rebalance_period: int=5):
         self.agent_id = agent_id
         self.market = market
 
@@ -18,6 +19,7 @@ class MMAgent(Agent):
         self.xi = xi
         self.K = K
         self.omega = omega
+        self.rebalance_period = rebalance_period
 
     def get_id(self) -> int:
         return self.agent_id
@@ -52,7 +54,8 @@ class MMAgent(Agent):
                     agent_id=self.get_id(),
                     time=t,
                     order_type=BUY,
-                    order_id=random.randint(1, 10000000)
+                    order_id=id_generator.next()
+                    #random.randint(1, 10000000)
                 )
             )
             orders.append(
@@ -62,7 +65,8 @@ class MMAgent(Agent):
                     agent_id=self.get_id(),
                     time=t,
                     order_type=SELL,
-                    order_id=random.randint(1, 10000000)
+                    order_id=id_generator.next()
+                    #random.randint(1, 10000000)
                 )
             )
 
