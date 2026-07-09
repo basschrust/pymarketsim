@@ -1,8 +1,8 @@
-from agent.washtrading_pool import WashTradingAgent
+from marketsim.agent.washtrading_pool import WashTradingAgent
 from marketsim.simulator.simulator import Simulator
 
 sim = Simulator(
-    num_background_zi_agents=50,
+    num_background_zi_agents=5,
     sim_time=100,#1_000,
     num_assets=1,
     lam=0.5,           # arrival intensity for background agents
@@ -15,8 +15,9 @@ sim = Simulator(
 
 # add the WashTradingAgents here:
 market = sim.markets[0]
-buying_agent = WashTradingAgent(market=market, )
-#sim.add_agents()
+buying_agent = WashTradingAgent(market=market, q_max=10, pool_id=0, manipulation_side='BUY', manipulation_type='PULL_UP')
+selling_agent = WashTradingAgent(market=market, q_max=10, pool_id=0, manipulation_side='SELL', manipulation_type='PULL_UP')
+#sim.extend_agents([buying_agent, selling_agent])
 
 sim.run()
 

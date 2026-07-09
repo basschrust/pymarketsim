@@ -10,10 +10,10 @@ from marketsim.utils.id_generator import id_generator
 
 
 class WashTradingAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, pool_id: int = 0,
-                    manipulation_type: str = 'pull_up', # or 'push_down'
+    def __init__(self, market: Market, q_max: int, pool_id: int = 0,
+                    manipulation_type: str = 'PULL_UP', # or 'PUSH_DOWN'
                  manipulation_side: str = 'BUY'):
-        self.agent_id = agent_id
+        self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
         self.position = 0
@@ -29,9 +29,7 @@ class WashTradingAgent(Agent):
     def take_action(self, estimate=None):
         side = random.choice([BUY, SELL])
         t = self.market.get_time()
-        if estimate is None:
-            estimate = self.estimate_fundamental()
-
+        estimate = 100
 
         if side == BUY:
             price = estimate
@@ -39,16 +37,12 @@ class WashTradingAgent(Agent):
         else:
             price = estimate
 
-        # Use counter for order ID (faster than random.randint)
-        order_id = id_generator.next()
-
         order = Order(
             price=price,
             quantity=1,
             agent_id=self.agent_id,
             time=t,
             order_type=side,
-            order_id=order_id
         )
 
         return [order]
@@ -69,7 +63,7 @@ class WashTradingPool:
     def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):
         self.market = market
         self.id = pool_id
-        self.type = manipulation_type # 'pull_up' or 'push_down'
+        self.type = manipulation_type # 'PULL_UP' or 'PUSH_DOWN'
         self.manipulation_start = manipulation_start # tau_1, manipulation starts here
         self.manipulation_end = manipulation_end # tau_2, manipulation ends here
 

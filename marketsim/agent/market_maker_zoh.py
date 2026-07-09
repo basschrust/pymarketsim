@@ -15,7 +15,8 @@ class MMZOHAgent(Agent):
     ###
     def __init__(self, agent_id: int, market: Market, xi: float,
                  K: int, omega: float, rebalance_period: int=2):
-        self.agent_id = agent_id
+        #self.agent_id = agent_id
+        self.agent_id = id_generator.next()
         self.market = market
 
         self.position = 0

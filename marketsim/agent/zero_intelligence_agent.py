@@ -11,7 +11,8 @@ from marketsim.utils.id_generator import id_generator
 
 class ZIAgent(Agent):
     def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0):
-        self.agent_id = agent_id
+        #self.agent_id = agent_id
+        self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
         self.pv_var = pv_var
