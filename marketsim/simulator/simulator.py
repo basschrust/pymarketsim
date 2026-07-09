@@ -1,6 +1,7 @@
 import random
 from typing import List
 
+from marketsim.agent.market_maker_zoh import MMZOHAgent
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
@@ -51,7 +52,7 @@ class Simulator:
                 ))
 
         for agent_id in range(num_background_zi_agents, num_background_zi_agents+num_mm_agents):
-            self.agents[agent_id] = MMAgent(agent_id=agent_id,
+            self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
                                             xi=0.1,
                                             K=3,

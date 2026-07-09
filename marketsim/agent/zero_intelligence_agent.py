@@ -74,7 +74,6 @@ class ZIAgent(Agent):
             agent_id=self.agent_id,
             time=t,
             order_type=side,
-            order_id=order_id
         )
 
         return [order]

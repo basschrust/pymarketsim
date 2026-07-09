@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from marketsim.utils.id_generator import id_generator
+
 
 @dataclass
 class Order:
@@ -10,6 +12,14 @@ class Order:
     time: int
     order_id: int
     asset_id: int = 1
+
+    def __init__(self, price: float, order_type: int, quantity: float, agent_id: int, time:int):
+        self.price = price
+        self.order_type = order_type
+        self.quantity = quantity
+        self.agent_id = agent_id
+        self.time = time
+        self.order_id = id_generator.next()
 
     def update_quantity_filled(self, transact_quantity: float) -> None:
         self.quantity -= transact_quantity
