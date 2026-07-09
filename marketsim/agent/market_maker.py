@@ -9,7 +9,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class MMAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float, rebalance_period: int=5):
+    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float, rebalance_period: int=2):
         self.agent_id = agent_id
         self.market = market
 

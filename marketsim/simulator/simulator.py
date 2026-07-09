@@ -23,7 +23,7 @@ class Simulator:
                  q_max: int = 10,
                  pv_var: float = 5e6,
                  zi_shade: List = [0.1,0.3], #AK [10, 30],
-                 num_mm_agents: int = 16,
+                 num_mm_agents: int = 1,
                  ):
         print("Initializing simulation...")
         self.num_zi_agents = num_background_zi_agents
@@ -80,6 +80,7 @@ class Simulator:
     def end_sim(self):
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
+        print(f"Orders matched: {len(self.markets[0].matched_orders)}")
         values = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
