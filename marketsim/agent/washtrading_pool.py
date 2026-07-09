@@ -11,8 +11,8 @@ from marketsim.utils.id_generator import id_generator
 
 class WashTradingAgent(Agent):
     def __init__(self, agent_id: int, market: Market, q_max: int, pool_id: int = 0,
-                    manipulation_type: str = 'manipulation'
-                 , manipulation_side: str = 'BUY'):
+                    manipulation_type: str = 'pull_up', # or 'push_down'
+                 manipulation_side: str = 'BUY'):
         self.agent_id = agent_id
         self.market = market
         self.q_max = q_max
@@ -38,7 +38,6 @@ class WashTradingAgent(Agent):
             #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
         else:
             price = estimate
-
 
         # Use counter for order ID (faster than random.randint)
         order_id = id_generator.next()

@@ -1,12 +1,14 @@
 import random
 from typing import List
 
-from marketsim.agent.market_maker_zoh import MMZOHAgent
+
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.agent.zero_intelligence_agent import ZIAgent
+from marketsim.agent.market_maker_zoh import MMZOHAgent
+from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 
@@ -31,7 +33,7 @@ class Simulator:
         self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
         self.sim_time = sim_time
-        self.lam = lam
+        self.lam = lam # activity factor
         self.time = 0
 
         self.markets = []
@@ -59,6 +61,10 @@ class Simulator:
                                             omega=0.01,
                                             )
 
+    def extend_agents(self, agents: list[Agent] | None):
+        for agent in agents:
+            self.agents[agent.get_id()] = agent
+
     def step(self):
         # print(f'It is time step {self.time}')
         for market in self.markets:
@@ -79,6 +85,7 @@ class Simulator:
 
 
     def end_sim(self):
+        print(f"\n\nSimulation ended. time: {self.time}")
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
@@ -89,7 +96,7 @@ class Simulator:
         print(f'At the end of the simulation we get {values}')
 
     def run(self):
-        print("go!")
         for t in range(self.sim_time):
+            print(f"Step: {t}.", end='')
             self.step()
         self.end_sim()

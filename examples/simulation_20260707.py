@@ -1,3 +1,4 @@
+from agent.washtrading_pool import WashTradingAgent
 from marketsim.simulator.simulator import Simulator
 
 sim = Simulator(
@@ -11,6 +12,11 @@ sim = Simulator(
     q_max=10,          # max order size for background agents (AK: max position)
     pv_var=10,         # variance of private values
 )
+
+# add the WashTradingAgents here:
+market = sim.markets[0]
+buying_agent = WashTradingAgent(market=market, )
+#sim.add_agents()
 
 sim.run()
 

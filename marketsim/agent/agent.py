@@ -4,6 +4,10 @@ from typing import List
 
 
 class Agent(ABC):
+    position = 0
+    cash = 0
+
+
     @abstractmethod
     def get_id(self) -> int:
         pass
