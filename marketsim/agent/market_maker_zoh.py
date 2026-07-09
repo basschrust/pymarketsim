@@ -66,9 +66,6 @@ class MMZOHAgent(Agent):
 
         return orders
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
 
     def get_pos_value(self) -> float:
         return 0
@@ -76,6 +73,3 @@ class MMZOHAgent(Agent):
     def __str__(self):
         return f'MM{self.agent_id}'
 
-    def reset(self):
-        self.position = 0
-        self.cash = 0

@@ -26,7 +26,7 @@ class Simulator:
                  zi_shade: List = [0.1,0.3], #AK [10, 30],
                  num_mm_agents: int = 1,
                  ):
-        print("Initializing simulation...")
+        print("Initializing simulation with following parameters...")
         self.num_zi_agents = num_background_zi_agents
         self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
