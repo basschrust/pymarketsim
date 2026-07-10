@@ -17,7 +17,7 @@ sim = Simulator(
 market = sim.markets[0]
 buying_agent = WashTradingAgent(market=market, q_max=10, pool_id=0, manipulation_side='BUY', manipulation_type='PULL_UP')
 selling_agent = WashTradingAgent(market=market, q_max=10, pool_id=0, manipulation_side='SELL', manipulation_type='PULL_UP')
-#sim.extend_agents([buying_agent, selling_agent])
+sim.add_agents([buying_agent, selling_agent])
 
 sim.run()
 

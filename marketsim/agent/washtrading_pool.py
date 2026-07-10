@@ -58,6 +58,9 @@ class WashTradingAgent(Agent):
         self.position = 0
         self.cash = 0
 
+    def get_pos_value(self) -> float:
+        return 0
+
 
 class WashTradingPool:
     def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):

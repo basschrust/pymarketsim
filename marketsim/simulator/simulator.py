@@ -61,8 +61,9 @@ class Simulator:
                                             omega=0.01,
                                             )
 
-    def extend_agents(self, agents: list[Agent] | None):
+    def add_agents(self, agents: list[Agent] | None):
         for agent in agents:
+            print(f"Adding agent {str(agent)}")
             self.agents[agent.get_id()] = agent
 
     def step(self):
@@ -96,6 +97,9 @@ class Simulator:
         print(f'At the end of the simulation we get {values}')
 
     def run(self):
+        print(f"Agents ({len(self.agents)}):")
+        for agent_id in range(len(self.agents)):
+            print(f"{agent_id}: {str(self.agents[agent_id])}")
         for t in range(self.sim_time):
             print(f"Step: {t}.", end='')
             self.step()
