@@ -94,7 +94,9 @@ class Simulator:
         for agent_id in self.agents:
             agent = self.agents[agent_id]
             values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
-        print(f'At the end of the simulation we get {values}')
+        print(f'At the end of the simulation we get valuations: {values}')
+        for i, agent in self.agents.items():
+            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
 
     def run(self):
         print(f"Agents ({len(self.agents)}):")

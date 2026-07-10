@@ -27,22 +27,17 @@ class WashTradingAgent(Agent):
 
 
     def take_action(self, estimate=None):
-        side = random.choice([BUY, SELL])
         t = self.market.get_time()
         estimate = 100
 
-        if side == BUY:
-            price = estimate
-            #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
-        else:
-            price = estimate
+        price = estimate
 
         order = Order(
             price=price,
             quantity=1,
             agent_id=self.agent_id,
             time=t,
-            order_type=side,
+            order_type=1 if self.manipulation_side=='BUY' else -1,
         )
 
         return [order]
@@ -52,7 +47,7 @@ class WashTradingAgent(Agent):
         self.cash += p
 
     def __str__(self):
-        return f'WT{self.manipulation_type}_{self.pool_id}_{self.agent_id}'
+        return f'WT_{self.manipulation_type}_{self.manipulation_side}_{self.pool_id}_{self.agent_id}'
 
     def reset(self):
         self.position = 0
