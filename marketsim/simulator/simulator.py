@@ -46,7 +46,6 @@ class Simulator:
         for agent_id in range(num_background_zi_agents):
             self.agents[agent_id] = (
                 ZIAgent(
-                    agent_id=agent_id,
                     market=self.markets[0],
                     q_max=q_max,
                     shade=zi_shade,
@@ -70,12 +69,12 @@ class Simulator:
         # print(f'It is time step {self.time}')
         for market in self.markets:
             for agent_id in self.agents:
-                if random.random() <= self.lam:
-                    agent = self.agents[agent_id]
-                    market.withdraw_all(agent_id)
-                    orders = agent.take_action()
-                    # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
-                    market.add_orders(orders)
+                #if random.random() <= self.lam:
+                agent = self.agents[agent_id]
+                market.withdraw_all(agent_id)
+                orders = agent.take_action()
+                # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
+                market.add_orders(orders)
             new_orders = market.step()
             for matched_order in new_orders:
                 agent_id = matched_order.order.agent_id
@@ -102,6 +101,7 @@ class Simulator:
         print(f"Agents ({len(self.agents)}):")
         for agent_id in range(len(self.agents)):
             print(f"{agent_id}: {str(self.agents[agent_id])}")
+        # the core - running simulation steps:
         for t in range(self.sim_time):
             print(f"Step: {t}.", end='')
             self.step()

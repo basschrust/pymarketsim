@@ -60,4 +60,6 @@ class Market:
         self.order_book = FourHeap()
         self.matched_orders = []
         self.event_queue = EventQueue()
-        self.fundamental = fundamental
+        self.fundamental = fundamental  # AK: this implies some market concensus on the fundamental value
+                            # it may make sense for the ZI agents group, but probably should be kept out of here
+                            # and belong to the groups

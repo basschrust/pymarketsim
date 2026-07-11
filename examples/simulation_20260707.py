@@ -2,12 +2,12 @@ from marketsim.agent.washtrading_pool import WashTradingAgent
 from marketsim.simulator.simulator import Simulator
 
 sim = Simulator(
-    num_background_zi_agents=5,
-    sim_time=100,#1_000,
+    num_background_zi_agents=2,
+    sim_time=10,#1_000,
     num_assets=1,
-    lam=0.5,           # arrival intensity for background agents
+    lam=0.5,           # default arrival intensity for background agents
     mean=100.0,        # long-run fundamental value
-    r=0.2,             # mean-reversion strength
+    r=0.02,             # mean-reversion strength
     shock_var=10.0,    # volatility of fundamental shocks
     q_max=10,          # max order size for background agents (AK: max position)
     pv_var=10,         # variance of private values

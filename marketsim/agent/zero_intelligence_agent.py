@@ -10,8 +10,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class ZIAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0):
-        #self.agent_id = agent_id
+    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
@@ -22,6 +21,7 @@ class ZIAgent(Agent):
         self.cash = 0
         self.eta = eta
         self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+        self.lam = lam # activity parameter
 
     def get_id(self) -> int:
         return self.agent_id
@@ -38,46 +38,47 @@ class ZIAgent(Agent):
         return estimate
 
     def take_action(self, estimate=None):
-        side = random.choice([BUY, SELL])
-        t = self.market.get_time()
-        if estimate is None:
-            estimate = self.estimate_fundamental()
-        spread = self.shade[1] - self.shade[0]
-        valuation_offset = spread*random.random() + self.shade[0]
+        if random.random() < self.lam:
+            side = random.choice([BUY, SELL])
+            t = self.market.get_time()
+            if estimate is None:
+                estimate = self.estimate_fundamental()
+            spread = self.shade[1] - self.shade[0]
+            valuation_offset = spread*random.random() + self.shade[0]
 
-        # Cache private value lookup (avoid duplicate computation when eta != 1.0)
-        pv_value = self.pv.value_for_exchange(self.position, side)
+            # Cache private value lookup (avoid duplicate computation when eta != 1.0)
+            pv_value = self.pv.value_for_exchange(self.position, side)
 
-        if side == BUY:
-            price = estimate + pv_value - valuation_offset
-            #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
-        else:
-            price = estimate + pv_value + valuation_offset
-
-        if self.eta != 1.0:
-            base_price = estimate + pv_value
             if side == BUY:
-                best_price = self.market.order_book.get_best_ask()
-                if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
-                    price = best_price
+                price = estimate + pv_value - valuation_offset
+                #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
             else:
-                best_price = self.market.order_book.get_best_bid()
-                if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
-                    price = best_price
+                price = estimate + pv_value + valuation_offset
 
-        # Use counter for order ID (faster than random.randint)
-        self._order_counter += 1
-        order_id = id_generator.next()
+            if self.eta != 1.0:
+                base_price = estimate + pv_value
+                if side == BUY:
+                    best_price = self.market.order_book.get_best_ask()
+                    if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
+                        price = best_price
+                else:
+                    best_price = self.market.order_book.get_best_bid()
+                    if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
+                        price = best_price
 
-        order = Order(
-            price=price,
-            quantity=1,
-            agent_id=self.agent_id,
-            time=t,
-            order_type=side,
-        )
+            # Use counter for order ID (faster than random.randint)
+            self._order_counter += 1
+            order_id = id_generator.next()
 
-        return [order]
+            order = Order(
+                price=price,
+                quantity=1,
+                agent_id=self.agent_id,
+                time=t,
+                order_type=side,
+            )
+
+            return [order]
 
     def update_position(self, q, p):
         self.position += q

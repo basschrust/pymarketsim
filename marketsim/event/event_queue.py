@@ -18,7 +18,9 @@ class EventQueue:
 
     def step(self) -> List[Order]:
         random.shuffle(self.scheduled_activities[self.current_time])
-        self.current_time += 1
+        self.current_time += 1 # TODO: AK: isn't it redundant? step in market, step in queue.
+                               # that's why matched order has time t+1, while placed order t
+                                # without it nothing happens on the market, we have to align it somehow
 
         return self.scheduled_activities[self.current_time - 1]
 
