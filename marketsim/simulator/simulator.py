@@ -91,6 +91,7 @@ class Simulator:
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
+        print(f"Last traded price: {self.markets[0].last_traded_price}")
         values = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
@@ -98,12 +99,15 @@ class Simulator:
         print(f'At the end of the simulation we get valuations: {values}')
         positions_sum = 0
         cash_sum = 0
+        values_sum = 0
         for i, agent in self.agents.items():
             print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
             positions_sum += agent.position
             cash_sum += agent.cash
+            values_sum += self.markets[0].last_traded_price * agent.position
         print(f"Positions sum: {positions_sum}")
         print(f"Cash sum: {cash_sum}")
+        print(f"Sum of values by last traded price: {values_sum}")
 
     def run(self):
         print(f"Agents ({len(self.agents)}):")
