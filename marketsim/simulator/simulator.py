@@ -14,7 +14,6 @@ from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 
 
-
 class Simulator:
     def __init__(self,
                  num_background_zi_agents: int,
@@ -97,8 +96,14 @@ class Simulator:
             agent = self.agents[agent_id]
             values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
         print(f'At the end of the simulation we get valuations: {values}')
+        positions_sum = 0
+        cash_sum = 0
         for i, agent in self.agents.items():
             print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
+            positions_sum += agent.position
+            cash_sum += agent.cash
+        print(f"Positions sum: {positions_sum}")
+        print(f"Cash sum: {cash_sum}")
 
     def run(self):
         print(f"Agents ({len(self.agents)}):")
