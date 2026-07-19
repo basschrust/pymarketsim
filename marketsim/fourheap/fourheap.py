@@ -23,7 +23,8 @@ class FourHeap:
         self.heaps = [self.buy_matched, self.buy_unmatched, self.sell_matched, self.sell_unmatched]
         self.agent_id_map = defaultdict(list)
 
-        self.midprices = []
+        self.midprices = [] # AK: well, it should be tied to the time slots
+
 
     def handle_new_order(self, order):
         q_order = order.quantity

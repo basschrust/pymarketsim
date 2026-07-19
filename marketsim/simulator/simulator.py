@@ -35,7 +35,7 @@ class Simulator:
         self.num_assets = num_assets
         self.sim_time = sim_time
         self.lam = lam # activity factor
-        self.time = 0
+        self.current_time = 0
 
         self.markets = []
         for _ in range(num_assets):
@@ -67,26 +67,28 @@ class Simulator:
             self.agents[agent.get_id()] = agent
 
     def step(self):
-        print(f'It is time step {self.time}')
+        print(f'It is time step {self.current_time}')
         for market in self.markets:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
                 market.withdraw_all(agent_id)
-                orders = agent.take_action(current_time=self.time)
-                # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
+                orders = agent.take_action(current_time=self.current_time)
+                print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
-            new_orders = market.step(self.time)
+            new_orders = market.step(current_time=self.current_time)
             for matched_order in new_orders:
+                print(f"Matching order {str(matched_order)}")
                 agent_id = matched_order.order.agent_id
                 quantity = matched_order.order.order_type * matched_order.order.quantity
                 cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
-                self.agents[agent_id].update_position(quantity, cash)
-        self.time += 1
+                market.last_traded_price = matched_order.price
+                self.agents[agent_id].update_position(quantity=quantity, cash=cash)
+        self.current_time += 1
 
 
     def end_sim(self):
-        print(f"\n\nSimulation ended. time: {self.time}")
+        print(f"\n\nSimulation ended. time: {self.current_time}")
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")

@@ -1,7 +1,20 @@
 from abc import ABC, abstractmethod
-from marketsim.fourheap.order import Order
+import math
 from typing import List
+from marketsim.fourheap.order import Order
 
+
+def validate_update(quantity: int, cash: float) -> None:
+    if not math.isfinite(cash):
+        raise ValueError(f"cash must be finite (not NaN or ±inf) as here: {cash}")
+
+    if quantity <= 0:
+        if cash < 0:
+            raise ValueError("Cash cannot be negative if quantity is negative!")
+
+    if quantity >= 0:
+        if cash > 0:
+            raise ValueError("Cash cannot be positive if quantity is positive!")
 
 class Agent(ABC):
     position = 0
@@ -16,12 +29,17 @@ class Agent(ABC):
     def take_action(self) -> List[Order]:
         pass
 
+    @abstractmethod
     def get_pos_value(self) -> float:
         pass
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
+
+
+
+    def update_position(self, quantity: int, cash: float):
+        validate_update(quantity=quantity, cash=cash)
+        self.position += quantity
+        self.cash += cash
 
     def reset(self):
         self.position = 0

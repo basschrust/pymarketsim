@@ -5,10 +5,11 @@ from marketsim.fourheap import constants
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps):
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: float= None):
         self.order_book = FourHeap()
         self.matched_orders = []
         self.fundamental = fundamental
+        self.last_traded_price = reference_price if reference_price else 100
         self.event_queue = EventQueue()
         self.end_time = time_steps
 
@@ -62,6 +63,6 @@ class Market:
         self.order_book = FourHeap()
         self.matched_orders = []
         self.event_queue = EventQueue()
-        self.fundamental = fundamental  # AK: this implies some market concensus on the fundamental value
+        self.fundamental = fundamental  # AK: this implies some market consensus on the fundamental value
                             # it may make sense for the ZI agents group, but probably should be kept out of here
                             # and belong to the groups
