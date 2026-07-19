@@ -7,7 +7,7 @@ from marketsim.utils.id_generator import id_generator
 class Order:
     price: float
     order_type: int  # -1 for a sell order, +1 for a buy order
-    quantity: float
+    quantity: int
     agent_id: int
     time: int
     order_id: int
@@ -24,7 +24,7 @@ class Order:
     def update_quantity_filled(self, transact_quantity: float) -> None:
         self.quantity -= transact_quantity
 
-    def merge_order(self, q_additional):
+    def merge_order(self, q_additional: int) -> None:
         self.quantity += q_additional
 
     def copy_and_decrease(self, transact_quantity: float) -> 'Order':

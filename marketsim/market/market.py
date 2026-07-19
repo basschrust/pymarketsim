@@ -19,7 +19,7 @@ class Market:
         #return self.fundamental.get_value_at(t)
         return self.fundamental.get_value_at(current_time)
 
-    def get_final_fundamental(self):
+    def get_final_fundamental(self) -> float:
         return self.fundamental.get_final_fundamental()
 
     def withdraw_all(self, agent_id: int) -> None:
@@ -41,7 +41,7 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def step(self, current_time) -> list[Order]:
+    def step(self, current_time: int) -> list[Order]:
         # TODO Need to figure out how to handle ties for price and time
         #orders = self.event_queue.step()
         orders = self.event_queue.get_activities(current_time=current_time)

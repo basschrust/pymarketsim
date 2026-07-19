@@ -164,7 +164,7 @@ class FourHeap:
     def get_best_ask(self) -> float:
         return self.sell_unmatched.peek()
 
-    def update_midprice(self, lookback=14):
+    def update_midprice(self, lookback=14) -> None:
         best_ask = self.get_best_ask()
         best_bid = self.get_best_bid()
 
