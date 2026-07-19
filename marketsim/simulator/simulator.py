@@ -60,12 +60,12 @@ class Simulator:
                                             omega=0.01,
                                             )
 
-    def add_agents(self, agents: list[Agent] | None):
+    def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
             print(f"Adding agent {str(agent)}")
             self.agents[agent.get_id()] = agent
 
-    def step(self):
+    def step(self) -> None:
         print(f'It is time step {self.current_time}')
         for market in self.markets:
             for agent_id in self.agents:
@@ -86,7 +86,7 @@ class Simulator:
         self.current_time += 1
 
 
-    def end_sim(self):
+    def end_sim(self) -> None:
         print(f"\n\nSimulation ended. time: {self.current_time}")
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
@@ -101,7 +101,7 @@ class Simulator:
         cash_sum = 0
         values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
-            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
+            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash} value: {values[i]}")
             positions_sum += agent.position
             cash_sum += agent.cash
             values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
@@ -110,7 +110,7 @@ class Simulator:
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
         print(f"Sum of values: {sum(values.values())}")
 
-    def run(self):
+    def run(self) -> None:
         print(f"Agents ({len(self.agents)}):")
         for agent_id in range(len(self.agents)):
             print(f"{agent_id}: {str(self.agents[agent_id])}")

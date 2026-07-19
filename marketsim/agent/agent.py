@@ -34,12 +34,12 @@ class Agent(ABC):
         pass
 
 
-    def update_position(self, quantity: int, cash: float):
+    def update_position(self, quantity: int, cash: float) -> None:
         validate_update(quantity=quantity, cash=cash)
         self.position += quantity
         self.cash += cash
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = 0
         self.cash = 0
 
