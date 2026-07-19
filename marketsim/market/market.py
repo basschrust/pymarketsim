@@ -14,7 +14,7 @@ class Market:
         self.end_time = time_steps
 
 
-    def get_fundamental_value(self, current_time):
+    def get_fundamental_value(self, current_time: int) -> float:
         #t = self.get_time()
         #return self.fundamental.get_value_at(t)
         return self.fundamental.get_value_at(current_time)
@@ -23,18 +23,19 @@ class Market:
         return self.fundamental.get_final_fundamental()
 
     def withdraw_all(self, agent_id: int) -> None:
-        self.order_book.withdraw_all(agent_id)
+        self.order_book.withdraw_all(agent_id=agent_id)
 
     def clear_market(self, current_time: int) -> list[Order]:
         new_orders = self.order_book.market_clear(current_time=current_time) # self.get_time())
         self.matched_orders += new_orders
         return new_orders
 
-    def add_orders(self, orders):
+    def add_orders(self, orders: list[Order]) -> None:
         for order in orders:
             self.event_queue.schedule_activity(order)
 
     def get_time(self):
+        raise
         return self.event_queue.get_current_time()
 
     def get_info(self):
@@ -55,7 +56,7 @@ class Market:
         self.order_book.update_midprice()
         return new_orders
 
-    def get_midprices(self) ->list:
+    def get_midprices(self) -> list:
         return self.order_book.midprices
 
     def reset(self, fundamental: Fundamental) -> None:
