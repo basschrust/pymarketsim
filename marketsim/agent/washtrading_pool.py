@@ -26,8 +26,8 @@ class WashTradingAgent(Agent):
         return self.agent_id
 
 
-    def take_action(self, estimate=None):
-        t = self.market.get_time()
+    def take_action(self, current_time: int, estimate: float =None):
+        # t = self.market.get_time()
         estimate = 100
 
         price = estimate
@@ -36,7 +36,7 @@ class WashTradingAgent(Agent):
             price=price,
             quantity=1,
             agent_id=self.agent_id,
-            time=t,
+            time=current_time,
             order_type=1 if self.manipulation_side=='BUY' else -1,
         )
 

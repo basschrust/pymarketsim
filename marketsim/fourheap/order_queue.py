@@ -109,7 +109,8 @@ class OrderQueue:
     def remove(self, order_id: int):
         if self.contains(order_id):
             self.deleted_ids.add(order_id)
-            self.size -= self.order_dict[order_id].quantity
+            self.size -= self.order_dict[order_id].quantity # ?? AK - so what does the size contain?
+                                    # is it the size of the queue or the size of the order?
             
             # Clean up top of heap if needed
             try:

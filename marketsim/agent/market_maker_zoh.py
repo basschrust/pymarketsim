@@ -30,17 +30,17 @@ class MMZOHAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def take_action(self):
+    def take_action(self, current_time: int):
         orders = []
-        t = self.market.get_time()
+        #t = self.market.get_time()
         # add orders only in rebalance periods:
-        if t % self.rebalance_period == 0:
+        if current_time % self.rebalance_period == 0:
 
             # Get the best bid and best ask
             best_ask = self.market.order_book.get_best_ask()
             best_bid = self.market.order_book.get_best_bid()
 
-            estimate = (best_ask + best_bid) /2 # or takse last traded, but yet the market does not "publish" it
+            estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
             st = max(estimate + 1 / 2 * self.omega, best_bid)
             bt = min(estimate - 1 / 2 * self.omega, best_ask)
 
@@ -51,7 +51,7 @@ class MMZOHAgent(Agent):
                         price= bt - (k + 1) * self.xi,
                         quantity=1, # we ćould raise the quantity in each ladder step...
                         agent_id=self.agent_id,
-                        time=t,
+                        time=current_time,
                         order_type=BUY,
                     )
                 )
@@ -60,7 +60,7 @@ class MMZOHAgent(Agent):
                         price= st + (k + 1)*self.xi,
                         quantity=1,
                         agent_id=self.agent_id,
-                        time=t,
+                        time=current_time,
                         order_type=SELL,
                     )
                 )

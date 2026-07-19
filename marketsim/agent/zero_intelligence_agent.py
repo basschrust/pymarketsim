@@ -26,10 +26,11 @@ class ZIAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self):
+    def estimate_fundamental(self, current_time):
         mean, r, T = self.market.get_info()
-        t = self.market.get_time()
-        val = self.market.get_fundamental_value()
+        #t = self.market.get_time()
+        t = current_time
+        val = self.market.get_fundamental_value(current_time=current_time)
 
         rho = (1-r)**(T-t)  # TODO: AK - should be taken randomly in each step (?)
 
@@ -37,12 +38,14 @@ class ZIAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def take_action(self, estimate=None):
+    def take_action(self, current_time, estimate=None):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
-            t = self.market.get_time()
+            #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
+                        # no logic is tied to this
+            #t = current_time
             if estimate is None:
-                estimate = self.estimate_fundamental()
+                estimate = self.estimate_fundamental(current_time=current_time)
             spread = self.shade[1] - self.shade[0]
             valuation_offset = spread*random.random() + self.shade[0]
 
@@ -74,7 +77,7 @@ class ZIAgent(Agent):
                 price=price,
                 quantity=1,
                 agent_id=self.agent_id,
-                time=t,
+                time=current_time,
                 order_type=side,
             )
 

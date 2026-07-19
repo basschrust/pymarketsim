@@ -1,6 +1,7 @@
 import random
 from typing import List
 
+from fontTools.merge.util import current_time
 
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
@@ -66,16 +67,16 @@ class Simulator:
             self.agents[agent.get_id()] = agent
 
     def step(self):
-        # print(f'It is time step {self.time}')
+        print(f'It is time step {self.time}')
         for market in self.markets:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
                 market.withdraw_all(agent_id)
-                orders = agent.take_action()
+                orders = agent.take_action(current_time=self.time)
                 # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
                 market.add_orders(orders)
-            new_orders = market.step()
+            new_orders = market.step(self.time)
             for matched_order in new_orders:
                 agent_id = matched_order.order.agent_id
                 quantity = matched_order.order.order_type * matched_order.order.quantity
