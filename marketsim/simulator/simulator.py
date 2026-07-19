@@ -71,7 +71,7 @@ class Simulator:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
-                market.withdraw_all(agent_id)
+                market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
                 orders = agent.take_action(current_time=self.current_time)
                 print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
