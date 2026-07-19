@@ -99,15 +99,16 @@ class Simulator:
         print(f'At the end of the simulation we get valuations: {values}')
         positions_sum = 0
         cash_sum = 0
-        values_sum = 0
+        values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
             print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
             positions_sum += agent.position
             cash_sum += agent.cash
-            values_sum += self.markets[0].last_traded_price * agent.position
+            values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
         print(f"Positions sum: {positions_sum}")
         print(f"Cash sum: {cash_sum}")
-        print(f"Sum of values by last traded price: {values_sum}")
+        print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
+        print(f"Sum of values: {sum(values.values())}")
 
     def run(self):
         print(f"Agents ({len(self.agents)}):")

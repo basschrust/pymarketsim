@@ -34,8 +34,6 @@ class Agent(ABC):
         pass
 
 
-
-
     def update_position(self, quantity: int, cash: float):
         validate_update(quantity=quantity, cash=cash)
         self.position += quantity
