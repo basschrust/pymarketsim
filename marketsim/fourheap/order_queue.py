@@ -83,7 +83,7 @@ class OrderQueue:
         except IndexError:
             return None
 
-    def clear(self):
+    def clear(self) -> None:
         self.heap = []
         self.order_dict = {}
         self.deleted_ids = set()
@@ -106,7 +106,7 @@ class OrderQueue:
     def count(self) -> int:
         return self.size
 
-    def remove(self, order_id: int):
+    def remove(self, order_id: int) -> None:
         if self.contains(order_id):
             self.deleted_ids.add(order_id)
             self.size -= self.order_dict[order_id].quantity # ?? AK - so what does the size contain?
@@ -146,7 +146,7 @@ class OrderQueue:
                 return order
         return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = ''
         for _, order_id in self.heap:
             if order_id not in self.deleted_ids:
