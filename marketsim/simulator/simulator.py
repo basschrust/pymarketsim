@@ -1,11 +1,15 @@
 import random
 from typing import List
 
+from fontTools.merge.util import current_time
+
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.agent.zero_intelligence_agent import ZIAgent
+from marketsim.agent.market_maker_zoh import MMZOHAgent
+from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 
@@ -23,14 +27,14 @@ class Simulator:
                  q_max: int = 10,
                  pv_var: float = 5e6,
                  zi_shade: List = [0.1,0.3], #AK [10, 30],
-                 num_mm_agents: int = 16,
+                 num_mm_agents: int = 1,
                  ):
-        print("Initializing simulation...")
+        print("Initializing simulation with following parameters...")
         self.num_zi_agents = num_background_zi_agents
         self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
         self.sim_time = sim_time
-        self.lam = lam
+        self.lam = lam # activity factor
         self.time = 0
 
         self.markets = []
@@ -43,7 +47,6 @@ class Simulator:
         for agent_id in range(num_background_zi_agents):
             self.agents[agent_id] = (
                 ZIAgent(
-                    agent_id=agent_id,
                     market=self.markets[0],
                     q_max=q_max,
                     shade=zi_shade,
@@ -51,24 +54,29 @@ class Simulator:
                 ))
 
         for agent_id in range(num_background_zi_agents, num_background_zi_agents+num_mm_agents):
-            self.agents[agent_id] = MMAgent(agent_id=agent_id,
+            self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
                                             xi=0.1,
                                             K=3,
                                             omega=0.01,
                                             )
 
+    def add_agents(self, agents: list[Agent] | None):
+        for agent in agents:
+            print(f"Adding agent {str(agent)}")
+            self.agents[agent.get_id()] = agent
+
     def step(self):
-        # print(f'It is time step {self.time}')
+        print(f'It is time step {self.time}')
         for market in self.markets:
             for agent_id in self.agents:
-                if random.random() <= self.lam:
-                    agent = self.agents[agent_id]
-                    market.withdraw_all(agent_id)
-                    orders = agent.take_action()
-                    # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
-                    market.add_orders(orders)
-            new_orders = market.step()
+                #if random.random() <= self.lam:
+                agent = self.agents[agent_id]
+                market.withdraw_all(agent_id)
+                orders = agent.take_action(current_time=self.time)
+                # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
+                market.add_orders(orders)
+            new_orders = market.step(self.time)
             for matched_order in new_orders:
                 agent_id = matched_order.order.agent_id
                 quantity = matched_order.order.order_type * matched_order.order.quantity
@@ -78,16 +86,24 @@ class Simulator:
 
 
     def end_sim(self):
+        print(f"\n\nSimulation ended. time: {self.time}")
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
+        print(f"Orders matched: {len(self.markets[0].matched_orders)}")
         values = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
             values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
-        print(f'At the end of the simulation we get {values}')
+        print(f'At the end of the simulation we get valuations: {values}')
+        for i, agent in self.agents.items():
+            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
 
     def run(self):
-        print("go!")
+        print(f"Agents ({len(self.agents)}):")
+        for agent_id in range(len(self.agents)):
+            print(f"{agent_id}: {str(self.agents[agent_id])}")
+        # the core - running simulation steps:
         for t in range(self.sim_time):
+            print(f"Step: {t}.", end='')
             self.step()
         self.end_sim()

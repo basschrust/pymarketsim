@@ -8,43 +8,39 @@ from typing import List
 from marketsim.utils.id_generator import id_generator
 
 
-class MMAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float, rebalance_period: int=2):
-        self.agent_id = agent_id
+class MMZOHAgent(Agent):
+    ### Market Maker Zero Order Hold Agent -
+    # A MM which just takes into account last traded price and sets new order ladder
+    # symmetrically on both sides of this last traded price in each rebalance period
+    ###
+    def __init__(self, agent_id: int, market: Market, xi: float,
+                 K: int, omega: float, rebalance_period: int=2):
+        #self.agent_id = agent_id
+        self.agent_id = id_generator.next()
         self.market = market
 
         self.position = 0
         self.cash = 0
 
-        self.xi = xi
-        self.K = K
+        self.xi = xi # step of the order ladder
+        self.K = K # number of orders in the ladder
         self.omega = omega
         self.rebalance_period = rebalance_period
 
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self):
-        mean, r, T = self.market.get_info()
-        t = self.market.get_time()
-        val = self.market.get_fundamental_value()
-
-        rho = (1-r)**(T-t)
-
-        estimate = (1-rho)*mean + rho*val
-        return estimate
-
-    def take_action(self):
+    def take_action(self, current_time: int):
         orders = []
-        t = self.market.get_time()
+        #t = self.market.get_time()
         # add orders only in rebalance periods:
-        if t % self.rebalance_period == 0:
+        if current_time % self.rebalance_period == 0:
 
             # Get the best bid and best ask
             best_ask = self.market.order_book.get_best_ask()
             best_bid = self.market.order_book.get_best_bid()
 
-            estimate = self.estimate_fundamental()
+            estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
             st = max(estimate + 1 / 2 * self.omega, best_bid)
             bt = min(estimate - 1 / 2 * self.omega, best_ask)
 
@@ -53,9 +49,9 @@ class MMAgent(Agent):
                 orders.append(
                     Order(
                         price= bt - (k + 1) * self.xi,
-                        quantity=1,
-                        agent_id=self.get_id(),
-                        time=t,
+                        quantity=1, # we ćould raise the quantity in each ladder step...
+                        agent_id=self.agent_id,
+                        time=current_time,
                         order_type=BUY,
                     )
                 )
@@ -63,17 +59,14 @@ class MMAgent(Agent):
                     Order(
                         price= st + (k + 1)*self.xi,
                         quantity=1,
-                        agent_id=self.get_id(),
-                        time=t,
+                        agent_id=self.agent_id,
+                        time=current_time,
                         order_type=SELL,
                     )
                 )
 
         return orders
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
 
     def get_pos_value(self) -> float:
         return 0
@@ -81,6 +74,3 @@ class MMAgent(Agent):
     def __str__(self):
         return f'MM{self.agent_id}'
 
-    def reset(self):
-        self.position = 0
-        self.cash = 0

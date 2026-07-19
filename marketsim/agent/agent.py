@@ -4,6 +4,10 @@ from typing import List
 
 
 class Agent(ABC):
+    position = 0
+    cash = 0
+
+
     @abstractmethod
     def get_id(self) -> int:
         pass
@@ -12,10 +16,14 @@ class Agent(ABC):
     def take_action(self) -> List[Order]:
         pass
 
-    @abstractmethod
-    def reset(self):
-        pass
-
     def get_pos_value(self) -> float:
         pass
+
+    def update_position(self, q, p):
+        self.position += q
+        self.cash += p
+
+    def reset(self):
+        self.position = 0
+        self.cash = 0
 

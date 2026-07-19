@@ -10,8 +10,8 @@ from marketsim.utils.id_generator import id_generator
 
 
 class ZIAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0):
-        self.agent_id = agent_id
+    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
+        self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
         self.pv_var = pv_var
@@ -21,14 +21,16 @@ class ZIAgent(Agent):
         self.cash = 0
         self.eta = eta
         self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+        self.lam = lam # activity parameter
 
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self):
+    def estimate_fundamental(self, current_time):
         mean, r, T = self.market.get_info()
-        t = self.market.get_time()
-        val = self.market.get_fundamental_value()
+        #t = self.market.get_time()
+        t = current_time
+        val = self.market.get_fundamental_value(current_time=current_time)
 
         rho = (1-r)**(T-t)  # TODO: AK - should be taken randomly in each step (?)
 
@@ -36,48 +38,50 @@ class ZIAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def take_action(self, estimate=None):
-        side = random.choice([BUY, SELL])
-        t = self.market.get_time()
-        if estimate is None:
-            estimate = self.estimate_fundamental()
-        spread = self.shade[1] - self.shade[0]
-        valuation_offset = spread*random.random() + self.shade[0]
+    def take_action(self, current_time, estimate=None):
+        if random.random() < self.lam:
+            side = random.choice([BUY, SELL])
+            #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
+                        # no logic is tied to this
+            #t = current_time
+            if estimate is None:
+                estimate = self.estimate_fundamental(current_time=current_time)
+            spread = self.shade[1] - self.shade[0]
+            valuation_offset = spread*random.random() + self.shade[0]
 
-        # Cache private value lookup (avoid duplicate computation when eta != 1.0)
-        pv_value = self.pv.value_for_exchange(self.position, side)
+            # Cache private value lookup (avoid duplicate computation when eta != 1.0)
+            pv_value = self.pv.value_for_exchange(self.position, side)
 
-        if side == BUY:
-            price = estimate + pv_value - valuation_offset
-            #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
-        else:
-            price = estimate + pv_value + valuation_offset
-
-        if self.eta != 1.0:
-            base_price = estimate + pv_value
             if side == BUY:
-                best_price = self.market.order_book.get_best_ask()
-                if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
-                    price = best_price
+                price = estimate + pv_value - valuation_offset
+                #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
             else:
-                best_price = self.market.order_book.get_best_bid()
-                if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
-                    price = best_price
+                price = estimate + pv_value + valuation_offset
 
-        # Use counter for order ID (faster than random.randint)
-        self._order_counter += 1
-        order_id = id_generator.next()
+            if self.eta != 1.0:
+                base_price = estimate + pv_value
+                if side == BUY:
+                    best_price = self.market.order_book.get_best_ask()
+                    if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
+                        price = best_price
+                else:
+                    best_price = self.market.order_book.get_best_bid()
+                    if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
+                        price = best_price
 
-        order = Order(
-            price=price,
-            quantity=1,
-            agent_id=self.agent_id,
-            time=t,
-            order_type=side,
-            order_id=order_id
-        )
+            # Use counter for order ID (faster than random.randint)
+            self._order_counter += 1
+            order_id = id_generator.next()
 
-        return [order]
+            order = Order(
+                price=price,
+                quantity=1,
+                agent_id=self.agent_id,
+                time=current_time,
+                order_type=side,
+            )
+
+            return [order]
 
     def update_position(self, q, p):
         self.position += q

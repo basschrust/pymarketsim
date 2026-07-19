@@ -13,9 +13,10 @@ class Market:
         self.end_time = time_steps
 
 
-    def get_fundamental_value(self):
-        t = self.get_time()
-        return self.fundamental.get_value_at(t)
+    def get_fundamental_value(self, current_time):
+        #t = self.get_time()
+        #return self.fundamental.get_value_at(t)
+        return self.fundamental.get_value_at(current_time)
 
     def get_final_fundamental(self):
         return self.fundamental.get_final_fundamental()
@@ -23,8 +24,8 @@ class Market:
     def withdraw_all(self, agent_id: int):
         self.order_book.withdraw_all(agent_id)
 
-    def clear_market(self):
-        new_orders = self.order_book.market_clear(self.get_time())
+    def clear_market(self, current_time: int):
+        new_orders = self.order_book.market_clear(current_time=current_time) # self.get_time())
         self.matched_orders += new_orders
         return new_orders
 
@@ -38,15 +39,16 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def step(self):
+    def step(self, current_time):
         # TODO Need to figure out how to handle ties for price and time
-        orders = self.event_queue.step()
+        #orders = self.event_queue.step()
+        orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         for order in orders:
             if order.quantity <= 0:
                 continue
             self.order_book.insert(order)
-        new_orders = self.clear_market()
+        new_orders = self.clear_market(current_time=current_time)
 
         # Compute midprices.
         self.order_book.update_midprice()
@@ -56,7 +58,10 @@ class Market:
         return self.order_book.midprices
 
     def reset(self, fundamental):
+        print("Resetting market...")
         self.order_book = FourHeap()
         self.matched_orders = []
         self.event_queue = EventQueue()
-        self.fundamental = fundamental
+        self.fundamental = fundamental  # AK: this implies some market concensus on the fundamental value
+                            # it may make sense for the ZI agents group, but probably should be kept out of here
+                            # and belong to the groups
