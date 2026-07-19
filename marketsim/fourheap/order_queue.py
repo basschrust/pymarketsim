@@ -24,20 +24,6 @@ class OrderQueue:
             self.order_dict[order.order_id] = order
         self.size += order.quantity
 
-    # def peek(self) -> float:
-    #     c = -1 if self.is_max_heap else 1
-    #
-    #     if self.is_empty():
-    #         return c*math.inf
-    #
-    #     return c*self.heap[0][0]
-    #
-    # def peek_order(self) -> Order:
-    #     if self.is_empty():
-    #         # return None
-    #         return Order(price=0, agent_id=0, order_id=0, order_type=0, quantity=0, time=0)
-    #     order_id = self.heap[0][1]
-    #     return self.order_dict[order_id]
 
     def peek(self) -> float:
         c = -1 if self.is_max_heap else 1
@@ -89,7 +75,7 @@ class OrderQueue:
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, price: float, current_time: int) -> list[Order]|None:
+    def market_clear(self, price: float, current_time: int) -> list[Order]:
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
@@ -98,7 +84,7 @@ class OrderQueue:
                     matched_orders.append(MatchedOrder(price, current_time, order))
             self.clear()
             return matched_orders
-        return None
+        return []
 
     def is_empty(self) -> bool:
         return self.size <= 0 or len(self.heap) == 0

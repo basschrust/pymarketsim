@@ -143,11 +143,11 @@ class FourHeap:
                 self.remove(order_id)
             self.agent_id_map[agent_id] = []
 
-    def market_clear(self, current_time: int):
-        p = self.get_ask_quote() if self.plus_one else self.get_bid_quote()
+    def market_clear(self, current_time: int) -> list[Order]:
+        price = self.get_ask_quote() if self.plus_one else self.get_bid_quote()
 
-        buy_matched = self.buy_matched.market_clear(p, current_time=current_time)
-        sell_matched = self.sell_matched.market_clear(p, current_time=current_time)
+        buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+        sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
 
         matched_orders = buy_matched + sell_matched
         return matched_orders
