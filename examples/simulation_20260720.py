@@ -2,7 +2,8 @@ from marketsim.agent.washtrading_pool import WashTradingAgent
 from marketsim.simulator.simulator import Simulator
 
 sim = Simulator(
-    num_background_zi_agents=2,
+    num_background_zi_agents_informed=2,
+    num_background_zi_agents_not_informed=2,
     sim_time=20,#1_000,
     num_assets=1,
     lam=0.5,           # default arrival intensity for background agents

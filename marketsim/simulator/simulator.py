@@ -7,7 +7,8 @@ from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
-from marketsim.agent.zero_intelligence_agent import ZIAgent
+from marketsim.agent.zi_informed import ZIAgentInformed
+from marketsim.agent.zi_not_informed import ZIAgentNotInformed
 from marketsim.agent.market_maker_zoh import MMZOHAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
@@ -16,7 +17,8 @@ from marketsim.utils.id_generator import id_generator
 
 class Simulator:
     def __init__(self,
-                 num_background_zi_agents: int,
+                 num_background_zi_agents_informed: int,
+                 num_background_zi_agents_not_informed: int,
                  sim_time: int,
                  num_assets: int = 1,
                  lam: float = 0.1,
@@ -29,7 +31,8 @@ class Simulator:
                  num_mm_agents: int = 1,
                  ):
         print("Initializing simulation with following parameters...")
-        self.num_zi_agents = num_background_zi_agents
+        self.num_background_zi_agents_informed = num_background_zi_agents_informed
+        self.num_background_zi_agents_not_informed = num_background_zi_agents_not_informed
         self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
         self.sim_time = sim_time
@@ -43,16 +46,26 @@ class Simulator:
             self.markets.append(Market(fundamental=fundamental, time_steps=sim_time))
 
         self.agents = {}
-        for agent_id in range(num_background_zi_agents):
+        for agent_id in range(num_background_zi_agents_informed):
             self.agents[agent_id] = (
-                ZIAgent(
+                ZIAgentInformed(
                     market=self.markets[0],
                     q_max=q_max,
                     shade=zi_shade,
                     pv_var=pv_var
                 ))
 
-        for agent_id in range(num_background_zi_agents, num_background_zi_agents+num_mm_agents):
+        for agent_id in range(num_background_zi_agents_informed, num_background_zi_agents_informed+num_background_zi_agents_not_informed):
+            self.agents[agent_id] = (
+                ZIAgentNotInformed(
+                    market=self.markets[0],
+                    q_max=q_max,
+                    shade=zi_shade,
+                    pv_var=pv_var
+                ))
+
+        for agent_id in range(num_background_zi_agents_not_informed + num_background_zi_agents_informed
+                , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
                                             xi=0.04,
