@@ -83,9 +83,6 @@ class ZIAgent(Agent):
 
             return [order]
 
-    # def update_position(self, q, p):
-    #     self.position += q
-    #     self.cash += p
 
     def __str__(self):
         return f'ZI{self.agent_id}'
