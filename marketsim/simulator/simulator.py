@@ -55,9 +55,9 @@ class Simulator:
         for agent_id in range(num_background_zi_agents, num_background_zi_agents+num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
-                                            xi=0.1,
+                                            xi=0.04,
                                             K=3,
-                                            omega=0.01,
+                                            omega=0.02,
                                             )
 
     def add_agents(self, agents: list[Agent] | None) -> None:
@@ -71,7 +71,9 @@ class Simulator:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
-                market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                if not agent.is_market_maker():
+                    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                                # so moving this to take_action?
                 orders = agent.take_action(current_time=self.current_time)
                 print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)

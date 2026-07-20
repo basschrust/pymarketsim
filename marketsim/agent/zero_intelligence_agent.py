@@ -26,9 +26,8 @@ class ZIAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self, current_time):
+    def estimate_fundamental(self, current_time: int) -> float:
         mean, r, T = self.market.get_info()
-        #t = self.market.get_time()
         t = current_time
         val = self.market.get_fundamental_value(current_time=current_time)
 
@@ -38,7 +37,7 @@ class ZIAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def take_action(self, current_time, estimate=None):
+    def take_action(self, current_time: int, estimate=None):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
@@ -84,13 +83,13 @@ class ZIAgent(Agent):
             return [order]
 
 
-    def __str__(self):
-        return f'ZI{self.agent_id}'
+    def __str__(self) -> str:
+        return f'ZI{self.agent_id} with PVs: {self.pv.values}'
 
     def get_pos_value(self) -> float:
         return self.pv.value_at_position(self.position)
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = 0
         self.cash = 0
         self.pv = PrivateValues(self.q_max, self.pv_var)

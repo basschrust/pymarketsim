@@ -33,7 +33,6 @@ class Agent(ABC):
     def get_pos_value(self) -> float:
         pass
 
-
     def update_position(self, quantity: int, cash: float) -> None:
         validate_update(quantity=quantity, cash=cash)
         self.position += quantity
@@ -43,3 +42,5 @@ class Agent(ABC):
         self.position = 0
         self.cash = 0
 
+    def is_market_maker(self) -> bool:
+        return False
