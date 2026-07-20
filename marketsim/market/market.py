@@ -53,7 +53,7 @@ class Market:
         new_orders = self.clear_market(current_time=current_time)
 
         # Compute midprices.
-        self.order_book.update_midprice()
+        self.order_book.update_midprice(current_time=current_time)
         return new_orders
 
     def get_midprices(self) -> list:

@@ -101,7 +101,7 @@ class Simulator:
         cash_sum = 0
         values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
-            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash} value: {values[i]}")
+            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} \tvalue: {values[i]}")
             positions_sum += agent.position
             cash_sum += agent.cash
             values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
@@ -109,6 +109,7 @@ class Simulator:
         print(f"Cash sum: {cash_sum}")
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
         print(f"Sum of values: {sum(values.values())}")
+        print(f"Midprices: {self.markets[0].get_midprices()}")
 
     def run(self) -> None:
         print(f"Agents ({len(self.agents)}):")
