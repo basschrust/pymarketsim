@@ -40,7 +40,10 @@ class MMZOHAgent(Agent):
             best_ask = self.market.order_book.get_best_ask()
             best_bid = self.market.order_book.get_best_bid()
 
-            estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
+            print(f"Best ask: {best_ask}, Best bid {best_bid}")
+
+            # estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
+            estimate = self.market.last_traded_price
             st = max(estimate + 1 / 2 * self.omega, best_bid)
             bt = min(estimate - 1 / 2 * self.omega, best_ask)
 
@@ -72,5 +75,5 @@ class MMZOHAgent(Agent):
         return 0
 
     def __str__(self):
-        return f'MM{self.agent_id}'
+        return f'MM_ZOH{self.agent_id}'
 

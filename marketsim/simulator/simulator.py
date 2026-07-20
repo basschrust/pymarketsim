@@ -14,7 +14,6 @@ from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 
 
-
 class Simulator:
     def __init__(self,
                  num_background_zi_agents: int,
@@ -35,7 +34,7 @@ class Simulator:
         self.num_assets = num_assets
         self.sim_time = sim_time
         self.lam = lam # activity factor
-        self.time = 0
+        self.current_time = 0
 
         self.markets = []
         for _ in range(num_assets):
@@ -61,44 +60,58 @@ class Simulator:
                                             omega=0.01,
                                             )
 
-    def add_agents(self, agents: list[Agent] | None):
+    def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
             print(f"Adding agent {str(agent)}")
             self.agents[agent.get_id()] = agent
 
-    def step(self):
-        print(f'It is time step {self.time}')
+    def step(self) -> None:
+        print(f'It is time step {self.current_time}')
         for market in self.markets:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
-                market.withdraw_all(agent_id)
-                orders = agent.take_action(current_time=self.time)
-                # print(f'Agent {agent.agent_id} is entering the market and makes order {order}')
+                market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                orders = agent.take_action(current_time=self.current_time)
+                print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
-            new_orders = market.step(self.time)
+            new_orders = market.step(current_time=self.current_time)
             for matched_order in new_orders:
+                print(f"Matching order {str(matched_order)}")
                 agent_id = matched_order.order.agent_id
                 quantity = matched_order.order.order_type * matched_order.order.quantity
                 cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
-                self.agents[agent_id].update_position(quantity, cash)
-        self.time += 1
+                market.last_traded_price = matched_order.price
+                self.agents[agent_id].update_position(quantity=quantity, cash=cash)
+        self.current_time += 1
 
 
-    def end_sim(self):
-        print(f"\n\nSimulation ended. time: {self.time}")
+    def end_sim(self) -> None:
+        print(f"\n\nSimulation ended. time: {self.current_time}")
         fundamental_val = self.markets[0].get_final_fundamental()
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
+        print(f"Last traded price: {self.markets[0].last_traded_price}")
         values = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
             values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
         print(f'At the end of the simulation we get valuations: {values}')
+        positions_sum = 0
+        cash_sum = 0
+        values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
-            print(f"Agent {str(agent)}: position: {agent.position}  cash: {agent.cash}")
+            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} \tvalue: {values[i]}")
+            positions_sum += agent.position
+            cash_sum += agent.cash
+            values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
+        print(f"Positions sum: {positions_sum}")
+        print(f"Cash sum: {cash_sum}")
+        print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
+        print(f"Sum of values: {sum(values.values())}")
+        print(f"Midprices: {self.markets[0].get_midprices()}")
 
-    def run(self):
+    def run(self) -> None:
         print(f"Agents ({len(self.agents)}):")
         for agent_id in range(len(self.agents)):
             print(f"{agent_id}: {str(self.agents[agent_id])}")

@@ -24,20 +24,6 @@ class OrderQueue:
             self.order_dict[order.order_id] = order
         self.size += order.quantity
 
-    # def peek(self) -> float:
-    #     c = -1 if self.is_max_heap else 1
-    #
-    #     if self.is_empty():
-    #         return c*math.inf
-    #
-    #     return c*self.heap[0][0]
-    #
-    # def peek_order(self) -> Order:
-    #     if self.is_empty():
-    #         # return None
-    #         return Order(price=0, agent_id=0, order_id=0, order_type=0, quantity=0, time=0)
-    #     order_id = self.heap[0][1]
-    #     return self.order_dict[order_id]
 
     def peek(self) -> float:
         c = -1 if self.is_max_heap else 1
@@ -83,22 +69,22 @@ class OrderQueue:
         except IndexError:
             return None
 
-    def clear(self):
+    def clear(self) -> None:
         self.heap = []
         self.order_dict = {}
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, p, t):
+    def market_clear(self, price: float, current_time: int) -> list[Order]:
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
                 if order_id not in self.deleted_ids:
                     order = self.order_dict[order_id]
-                    matched_orders.append(MatchedOrder(p, t, order))
+                    matched_orders.append(MatchedOrder(price, current_time, order))
             self.clear()
             return matched_orders
-        return None
+        return []
 
     def is_empty(self) -> bool:
         return self.size <= 0 or len(self.heap) == 0
@@ -106,7 +92,7 @@ class OrderQueue:
     def count(self) -> int:
         return self.size
 
-    def remove(self, order_id: int):
+    def remove(self, order_id: int) -> None:
         if self.contains(order_id):
             self.deleted_ids.add(order_id)
             self.size -= self.order_dict[order_id].quantity # ?? AK - so what does the size contain?
@@ -146,7 +132,7 @@ class OrderQueue:
                 return order
         return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         s = ''
         for _, order_id in self.heap:
             if order_id not in self.deleted_ids:

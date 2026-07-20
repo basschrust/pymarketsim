@@ -27,7 +27,6 @@ class WashTradingAgent(Agent):
 
 
     def take_action(self, current_time: int, estimate: float =None):
-        # t = self.market.get_time()
         estimate = 100
 
         price = estimate
@@ -42,9 +41,6 @@ class WashTradingAgent(Agent):
 
         return [order]
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
 
     def __str__(self):
         return f'WT_{self.manipulation_type}_{self.manipulation_side}_{self.pool_id}_{self.agent_id}'

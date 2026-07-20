@@ -23,7 +23,8 @@ class FourHeap:
         self.heaps = [self.buy_matched, self.buy_unmatched, self.sell_matched, self.sell_unmatched]
         self.agent_id_map = defaultdict(list)
 
-        self.midprices = []
+        self.midprices = defaultdict(float) #[] # AK: well, it should be tied to the time slots
+
 
     def handle_new_order(self, order):
         q_order = order.quantity
@@ -142,11 +143,11 @@ class FourHeap:
                 self.remove(order_id)
             self.agent_id_map[agent_id] = []
 
-    def market_clear(self, current_time: int):
-        p = self.get_ask_quote() if self.plus_one else self.get_bid_quote()
+    def market_clear(self, current_time: int) -> list[Order]:
+        price = self.get_ask_quote() if self.plus_one else self.get_bid_quote()
 
-        buy_matched = self.buy_matched.market_clear(p, current_time)
-        sell_matched = self.sell_matched.market_clear(p, current_time)
+        buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+        sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
 
         matched_orders = buy_matched + sell_matched
         return matched_orders
@@ -163,17 +164,18 @@ class FourHeap:
     def get_best_ask(self) -> float:
         return self.sell_unmatched.peek()
 
-    def update_midprice(self, lookback=14):
+    def update_midprice(self, current_time: int, lookback=14) -> None:
         best_ask = self.get_best_ask()
         best_bid = self.get_best_bid()
 
         if math.isinf(best_ask) or math.isinf(best_bid):
             if len(self.midprices) < lookback and len(self.midprices) > 0:
-                self.midprices.append(np.mean(self.midprices))
+                #self.midprices.append(np.mean(self.midprices))
+                self.midprices[current_time] = np.mean(list(self.midprices.values()))
             elif len(self.midprices) >= lookback:
-                self.midprices.append(np.mean(self.midprices[-lookback:]))
+                self.midprices[current_time] = np.mean(list(self.midprices.values())[-lookback:])
         else:
-            self.midprices.append((best_ask + best_bid) / 2)
+            self.midprices[current_time] = (best_ask + best_bid) / 2
 
 
 
