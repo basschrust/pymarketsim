@@ -65,16 +65,17 @@ class Simulator:
                     q_max=q_max,
                     shade=zi_shade,
                     pv_var=pv_var,
-                    lam=0.5,
+                    lam=0.8,
                 ))
 
         for agent_id in range(num_background_zi_agents_not_informed + num_background_zi_agents_informed
                 , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
-                                            xi=Price(0.1),
-                                            K=3,
-                                            omega=Price(0.2),
+                                            xi=Price(0.2),
+                                            K=4,
+                                            omega=Price(0.4),
+                                            rebalance_period=10,
                                             )
 
     def add_agents(self, agents: list[Agent] | None) -> None:

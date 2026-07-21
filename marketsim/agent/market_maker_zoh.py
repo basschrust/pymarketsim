@@ -15,7 +15,7 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, agent_id: int, market: Market, xi: float,
-                 K: int, omega: float, rebalance_period: int=2):
+                 K: int, omega: float, rebalance_period: int=5):
         #self.agent_id = agent_id
         self.agent_id = id_generator.next()
         self.market = market
@@ -42,8 +42,11 @@ class MMZOHAgent(Agent):
         # add orders only in rebalance periods:
         if current_time % self.rebalance_period == 0:
             # AK - clear previous orders (should we?)
-            # print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
-            # self.market.withdraw_all(self.agent_id)
+            print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
+            self.market.withdraw_all(self.agent_id)
+            # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
+            # that's basically the same to just withdraw all and create new, the problem might be with timing
+            # - we could loose the slot in the queue of waiting orders
 
             # Get the best bid and best ask
             best_ask = self.market.order_book.get_best_ask()
