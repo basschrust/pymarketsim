@@ -12,7 +12,8 @@ from marketsim.market.price import Price
 
 
 class ZIAgentNotInformed(Agent):
-    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
+    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0
+                 , lam=1.0, mean_volume: float = 5.0):
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
@@ -22,8 +23,9 @@ class ZIAgentNotInformed(Agent):
         self.shade = shade
         self.cash = 0
         self.eta = eta
-        self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+        #self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
         self.lam = lam # activity parameter
+        self.mean_volume = mean_volume
 
     def get_id(self) -> int:
         return self.agent_id
@@ -37,8 +39,8 @@ class ZIAgentNotInformed(Agent):
         orders = []
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
-            #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
-                        # no logic is tied to this
+            quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
+
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))
             spread = self.shade[1] - self.shade[0]
@@ -65,8 +67,8 @@ class ZIAgentNotInformed(Agent):
                         price = best_price
 
             order = Order(
-                price=price,
-                quantity=1,
+                price=Price(price),
+                quantity=quantity,
                 agent_id=self.agent_id,
                 time=current_time,
                 order_type=side,

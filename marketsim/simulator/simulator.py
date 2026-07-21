@@ -23,12 +23,12 @@ class Simulator:
                  sim_time: int,
                  num_assets: int = 1,
                  lam: float = 0.1,
-                 mean: Price = Price(100),
+                 mean: Price = Price(300),
                  r: float = .6,
                  shock_var=10,
                  q_max: int = 10,
                  pv_var: float = 5e6,
-                 zi_shade: List = [Price(0.1), Price(0.3)], #AK [10, 30],
+                 zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
                  num_mm_agents: int = 1,
                  ):
         print("Initializing simulation with following parameters...")
@@ -41,6 +41,8 @@ class Simulator:
         self.current_time = 0
 
         self.markets = []
+
+
         for _ in range(num_assets):
             fundamental = GaussianMeanReverting(mean=mean, final_time=sim_time, r=r, shock_var=shock_var)
             # fundamental = LazyGaussianMeanReverting(mean=mean, final_time=sim_time, r=r, shock_var=shock_var)
@@ -105,6 +107,7 @@ class Simulator:
 
 
     def end_sim(self) -> None:
+        """ End the simulation and print summary """
         print(f"\n\nSimulation ended. time: {self.current_time}")
         fundamental_val = Price(self.markets[0].get_final_fundamental())
         print(f"Final fundamental: {fundamental_val}")

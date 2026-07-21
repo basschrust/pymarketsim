@@ -5,7 +5,7 @@ from marketsim.market.price import Price
 
 @dataclass
 class Order:
-    price: float
+    price: Price
     order_type: int  # -1 for a sell order, +1 for a buy order
     quantity: int
     agent_id: int
@@ -27,14 +27,12 @@ class Order:
     def merge_order(self, q_additional: int) -> None:
         self.quantity += q_additional
 
-    def copy_and_decrease(self, transact_quantity: float) -> 'Order':
-        new_order = Order(self.price,
-                          self.order_type,
-                          self.quantity - transact_quantity,
-                          self.agent_id,
-                          self.time,
-                          self.order_id,
-                          self.asset_id
+    def copy_and_decrease(self, transact_quantity: int) -> 'Order':
+        new_order = Order(price=self.price,
+                          order_type=self.order_type,
+                          quantity=self.quantity - transact_quantity,
+                          agent_id=self.agent_id,
+                          time=self.time,
                           )
         self.update_quantity_filled(self.quantity - transact_quantity)
         return new_order
