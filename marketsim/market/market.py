@@ -16,8 +16,6 @@ class Market:
 
 
     def get_fundamental_value(self, current_time: int) -> float:
-        #t = self.get_time()
-        #return self.fundamental.get_value_at(t)
         return self.fundamental.get_value_at(current_time)
 
     def get_final_fundamental(self) -> float:
@@ -36,7 +34,7 @@ class Market:
             self.event_queue.schedule_activity(order)
 
     def get_time(self):
-        raise
+        raise # to make sure it is not used
         return self.event_queue.get_current_time()
 
     def get_info(self):
@@ -44,7 +42,6 @@ class Market:
 
     def step(self, current_time: int) -> list[Order]:
         # TODO Need to figure out how to handle ties for price and time
-        #orders = self.event_queue.step()
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         for order in orders:

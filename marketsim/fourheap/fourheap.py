@@ -2,6 +2,7 @@ from collections import defaultdict
 from marketsim.fourheap import constants
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.order_queue import OrderQueue
+from marketsim.market.price import Price
 
 import math
 import numpy as np
@@ -23,7 +24,7 @@ class FourHeap:
         self.heaps = [self.buy_matched, self.buy_unmatched, self.sell_matched, self.sell_unmatched]
         self.agent_id_map = defaultdict(list)
 
-        self.midprices = defaultdict(float) #[] # AK: well, it should be tied to the time slots
+        self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
 
     def handle_new_order(self, order):

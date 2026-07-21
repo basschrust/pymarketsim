@@ -1,7 +1,7 @@
 import random
 from decimal import Decimal
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -58,7 +58,7 @@ class MMZOHAgent(Agent):
             for k in range(self.K):
                 orders.append(
                     Order(
-                        price= bt - (k + 1) * self.xi,
+                        price= Price(bt - (k + 1) * self.xi),
                         quantity=1, # we ćould raise the quantity in each ladder step...
                         agent_id=self.agent_id,
                         time=current_time,
@@ -67,7 +67,7 @@ class MMZOHAgent(Agent):
                 )
                 orders.append(
                     Order(
-                        price= st + (k + 1)*self.xi,
+                        price= Price(st + (k + 1)*self.xi),
                         quantity=1,
                         agent_id=self.agent_id,
                         time=current_time,
