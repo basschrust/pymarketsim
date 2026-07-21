@@ -30,6 +30,11 @@ class MMZOHAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
+
+    def is_market_maker(self) -> bool:
+        return True
+
+
     def take_action(self, current_time: int):
         orders = []
         #t = self.market.get_time()

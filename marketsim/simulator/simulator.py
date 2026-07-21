@@ -7,7 +7,8 @@ from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
-from marketsim.agent.zero_intelligence_agent import ZIAgent
+from marketsim.agent.zi_informed import ZIAgentInformed
+from marketsim.agent.zi_not_informed import ZIAgentNotInformed
 from marketsim.agent.market_maker_zoh import MMZOHAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
@@ -16,7 +17,8 @@ from marketsim.utils.id_generator import id_generator
 
 class Simulator:
     def __init__(self,
-                 num_background_zi_agents: int,
+                 num_background_zi_agents_informed: int,
+                 num_background_zi_agents_not_informed: int,
                  sim_time: int,
                  num_assets: int = 1,
                  lam: float = 0.1,
@@ -29,7 +31,8 @@ class Simulator:
                  num_mm_agents: int = 1,
                  ):
         print("Initializing simulation with following parameters...")
-        self.num_zi_agents = num_background_zi_agents
+        self.num_background_zi_agents_informed = num_background_zi_agents_informed
+        self.num_background_zi_agents_not_informed = num_background_zi_agents_not_informed
         self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
         self.sim_time = sim_time
@@ -43,21 +46,31 @@ class Simulator:
             self.markets.append(Market(fundamental=fundamental, time_steps=sim_time))
 
         self.agents = {}
-        for agent_id in range(num_background_zi_agents):
+        for agent_id in range(num_background_zi_agents_informed):
             self.agents[agent_id] = (
-                ZIAgent(
+                ZIAgentInformed(
                     market=self.markets[0],
                     q_max=q_max,
                     shade=zi_shade,
                     pv_var=pv_var
                 ))
 
-        for agent_id in range(num_background_zi_agents, num_background_zi_agents+num_mm_agents):
+        for agent_id in range(num_background_zi_agents_informed, num_background_zi_agents_informed+num_background_zi_agents_not_informed):
+            self.agents[agent_id] = (
+                ZIAgentNotInformed(
+                    market=self.markets[0],
+                    q_max=q_max,
+                    shade=zi_shade,
+                    pv_var=pv_var
+                ))
+
+        for agent_id in range(num_background_zi_agents_not_informed + num_background_zi_agents_informed
+                , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
-                                            xi=0.1,
+                                            xi=0.04,
                                             K=3,
-                                            omega=0.01,
+                                            omega=0.02,
                                             )
 
     def add_agents(self, agents: list[Agent] | None) -> None:
@@ -71,7 +84,9 @@ class Simulator:
             for agent_id in self.agents:
                 #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
-                market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                if not agent.is_market_maker():
+                    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                                # so moving this to take_action?
                 orders = agent.take_action(current_time=self.current_time)
                 print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
@@ -92,23 +107,26 @@ class Simulator:
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
         print(f"Last traded price: {self.markets[0].last_traded_price}")
-        values = {}
+        values_by_fundamental = {}
+        values_by_last_traded_price = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
-            values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
-        print(f'At the end of the simulation we get valuations: {values}')
+            values_by_fundamental[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
+            values_by_last_traded_price[agent_id] = agent.position * self.markets[0].last_traded_price + agent.cash
+        print(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
         positions_sum = 0
         cash_sum = 0
         values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
-            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} \tvalue: {values[i]}")
+            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
+                  f"\tvalue(by fund.): {values_by_fundamental[i]} \tvalue(by last trade): {values_by_last_traded_price[i]}")
             positions_sum += agent.position
             cash_sum += agent.cash
             values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
         print(f"Positions sum: {positions_sum}")
         print(f"Cash sum: {cash_sum}")
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-        print(f"Sum of values: {sum(values.values())}")
+        print(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         print(f"Midprices: {self.markets[0].get_midprices()}")
 
     def run(self) -> None:

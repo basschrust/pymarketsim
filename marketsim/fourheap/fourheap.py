@@ -13,7 +13,7 @@ class FourHeap:
     theory and implementation" (Wurman, 98)
     """
     def __init__(self, plus_one=False):
-        self.plus_one = plus_one
+        self.plus_one = plus_one # AK - wtf is that? if True gets ask price in clearing, bid otherwise
 
         self.buy_matched = OrderQueue(is_max_heap=False, is_matched=True)
         self.buy_unmatched = OrderQueue(is_max_heap=True, is_matched=False)

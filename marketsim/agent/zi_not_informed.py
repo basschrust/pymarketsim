@@ -9,7 +9,7 @@ import numpy as np
 from marketsim.utils.id_generator import id_generator
 
 
-class ZIAgent(Agent):
+class ZIAgentNotInformed(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
         self.agent_id = id_generator.next()
         self.market = market
@@ -26,19 +26,12 @@ class ZIAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self, current_time):
-        mean, r, T = self.market.get_info()
-        #t = self.market.get_time()
-        t = current_time
-        val = self.market.get_fundamental_value(current_time=current_time)
-
-        rho = (1-r)**(T-t)  # TODO: AK - should be taken randomly in each step (?)
-
-        estimate = (1-rho)*mean + rho*val
-        # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
+    def estimate_fundamental(self, current_time: int) -> float:
+        estimate = self.market.last_traded_price
+        print(f'It is time {current_time} with final I observed last traded price {estimate}, so my estimate is {estimate}')
         return estimate
 
-    def take_action(self, current_time, estimate=None):
+    def take_action(self, current_time: int, estimate=None):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
@@ -84,13 +77,14 @@ class ZIAgent(Agent):
             return [order]
 
 
-    def __str__(self):
-        return f'ZI{self.agent_id}'
+    def __str__(self) -> str:
+        return f'ZI_non_informed{self.agent_id}'
+        # TODO: AK to info func: with PVs: {self.pv.values}'
 
     def get_pos_value(self) -> float:
         return self.pv.value_at_position(self.position)
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = 0
         self.cash = 0
         self.pv = PrivateValues(self.q_max, self.pv_var)
