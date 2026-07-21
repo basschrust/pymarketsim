@@ -13,7 +13,7 @@ class Order:
     order_id: int
     asset_id: int = 1
 
-    def __init__(self, price: Price, order_type: int, quantity: float, agent_id: int, time:int):
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int):
         self.price = price
         self.order_type = order_type
         self.quantity = quantity
@@ -21,7 +21,7 @@ class Order:
         self.time = time
         self.order_id = id_generator.next()
 
-    def update_quantity_filled(self, transact_quantity: float) -> None:
+    def update_quantity_filled(self, transact_quantity: int) -> None:
         self.quantity -= transact_quantity
 
     def merge_order(self, q_additional: int) -> None:
