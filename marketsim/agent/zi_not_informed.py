@@ -1,4 +1,5 @@
 import random
+from decimal import Decimal
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market
 from marketsim.fourheap.order import Order
@@ -7,10 +8,12 @@ from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 import numpy as np
 from marketsim.utils.id_generator import id_generator
+from marketsim.market.price import Price
 
 
 class ZIAgentNotInformed(Agent):
-    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
+    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0
+                 , lam=1.0, mean_volume: float = 5.0):
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
@@ -20,8 +23,9 @@ class ZIAgentNotInformed(Agent):
         self.shade = shade
         self.cash = 0
         self.eta = eta
-        self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+        #self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
         self.lam = lam # activity parameter
+        self.mean_volume = mean_volume
 
     def get_id(self) -> int:
         return self.agent_id
@@ -32,18 +36,18 @@ class ZIAgentNotInformed(Agent):
         return estimate
 
     def take_action(self, current_time: int, estimate=None):
+        orders = []
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
-            #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
-                        # no logic is tied to this
-            #t = current_time
+            quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
+
             if estimate is None:
-                estimate = self.estimate_fundamental(current_time=current_time)
+                estimate = Price(self.estimate_fundamental(current_time=current_time))
             spread = self.shade[1] - self.shade[0]
-            valuation_offset = spread*random.random() + self.shade[0]
+            valuation_offset = Price(spread*Decimal(random.random())) + Price(self.shade[0])
 
             # Cache private value lookup (avoid duplicate computation when eta != 1.0)
-            pv_value = self.pv.value_for_exchange(self.position, side)
+            pv_value = Price(self.pv.value_for_exchange(self.position, side))
 
             if side == BUY:
                 price = estimate + pv_value - valuation_offset
@@ -62,19 +66,16 @@ class ZIAgentNotInformed(Agent):
                     if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
                         price = best_price
 
-            # Use counter for order ID (faster than random.randint)
-            self._order_counter += 1
-            order_id = id_generator.next()
-
             order = Order(
-                price=price,
-                quantity=1,
+                price=Price(price),
+                quantity=quantity,
                 agent_id=self.agent_id,
                 time=current_time,
                 order_type=side,
             )
+            orders.append(order)
 
-            return [order]
+        return orders
 
 
     def __str__(self) -> str:

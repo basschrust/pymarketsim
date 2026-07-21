@@ -1,6 +1,7 @@
 import random
+from decimal import Decimal
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -14,7 +15,7 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, agent_id: int, market: Market, xi: float,
-                 K: int, omega: float, rebalance_period: int=2):
+                 K: int, omega: float, rebalance_period: int=5):
         #self.agent_id = agent_id
         self.agent_id = id_generator.next()
         self.market = market
@@ -40,6 +41,12 @@ class MMZOHAgent(Agent):
         #t = self.market.get_time()
         # add orders only in rebalance periods:
         if current_time % self.rebalance_period == 0:
+            # AK - clear previous orders (should we?)
+            print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
+            self.market.withdraw_all(self.agent_id)
+            # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
+            # that's basically the same to just withdraw all and create new, the problem might be with timing
+            # - we could loose the slot in the queue of waiting orders
 
             # Get the best bid and best ask
             best_ask = self.market.order_book.get_best_ask()
@@ -47,16 +54,16 @@ class MMZOHAgent(Agent):
 
             print(f"Best ask: {best_ask}, Best bid {best_bid}")
 
-            # estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
             estimate = self.market.last_traded_price
-            st = max(estimate + 1 / 2 * self.omega, best_bid)
-            bt = min(estimate - 1 / 2 * self.omega, best_ask)
+            HALF = Decimal("0.5")
+            st = max(estimate + HALF * self.omega, best_bid)
+            bt = min(estimate - HALF * self.omega, best_ask)
 
 
             for k in range(self.K):
                 orders.append(
                     Order(
-                        price= bt - (k + 1) * self.xi,
+                        price= Price(bt - (k + 1) * self.xi),
                         quantity=1, # we ćould raise the quantity in each ladder step...
                         agent_id=self.agent_id,
                         time=current_time,
@@ -65,7 +72,7 @@ class MMZOHAgent(Agent):
                 )
                 orders.append(
                     Order(
-                        price= st + (k + 1)*self.xi,
+                        price= Price(st + (k + 1)*self.xi),
                         quantity=1,
                         agent_id=self.agent_id,
                         time=current_time,

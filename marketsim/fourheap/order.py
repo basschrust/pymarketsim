@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from marketsim.utils.id_generator import id_generator
-
+from marketsim.market.price import Price
 
 @dataclass
 class Order:
-    price: float
+    price: Price
     order_type: int  # -1 for a sell order, +1 for a buy order
     quantity: int
     agent_id: int
@@ -13,7 +13,7 @@ class Order:
     order_id: int
     asset_id: int = 1
 
-    def __init__(self, price: float, order_type: int, quantity: float, agent_id: int, time:int):
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int):
         self.price = price
         self.order_type = order_type
         self.quantity = quantity
@@ -21,20 +21,18 @@ class Order:
         self.time = time
         self.order_id = id_generator.next()
 
-    def update_quantity_filled(self, transact_quantity: float) -> None:
+    def update_quantity_filled(self, transact_quantity: int) -> None:
         self.quantity -= transact_quantity
 
     def merge_order(self, q_additional: int) -> None:
         self.quantity += q_additional
 
-    def copy_and_decrease(self, transact_quantity: float) -> 'Order':
-        new_order = Order(self.price,
-                          self.order_type,
-                          self.quantity - transact_quantity,
-                          self.agent_id,
-                          self.time,
-                          self.order_id,
-                          self.asset_id
+    def copy_and_decrease(self, transact_quantity: int) -> 'Order':
+        new_order = Order(price=self.price,
+                          order_type=self.order_type,
+                          quantity=self.quantity - transact_quantity,
+                          agent_id=self.agent_id,
+                          time=self.time,
                           )
         self.update_quantity_filled(self.quantity - transact_quantity)
         return new_order
@@ -56,6 +54,6 @@ class Order:
 
 @dataclass
 class MatchedOrder:
-    price: float
+    price: Price
     time: int
     order: Order
