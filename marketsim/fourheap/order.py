@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from marketsim.utils.id_generator import id_generator
-
+from marketsim.market.price import Price
 
 @dataclass
 class Order:
@@ -13,7 +13,7 @@ class Order:
     order_id: int
     asset_id: int = 1
 
-    def __init__(self, price: float, order_type: int, quantity: float, agent_id: int, time:int):
+    def __init__(self, price: Price, order_type: int, quantity: float, agent_id: int, time:int):
         self.price = price
         self.order_type = order_type
         self.quantity = quantity
@@ -56,6 +56,6 @@ class Order:
 
 @dataclass
 class MatchedOrder:
-    price: float
+    price: Price
     time: int
     order: Order

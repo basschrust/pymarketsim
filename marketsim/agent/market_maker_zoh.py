@@ -1,4 +1,5 @@
 import random
+from decimal import Decimal
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market
 from marketsim.fourheap.order import Order
@@ -49,8 +50,9 @@ class MMZOHAgent(Agent):
 
             # estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
             estimate = self.market.last_traded_price
-            st = max(estimate + 1 / 2 * self.omega, best_bid)
-            bt = min(estimate - 1 / 2 * self.omega, best_ask)
+            HALF = Decimal("0.5")
+            st = max(estimate + HALF * self.omega, best_bid)
+            bt = min(estimate - HALF * self.omega, best_ask)
 
 
             for k in range(self.K):

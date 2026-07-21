@@ -3,6 +3,7 @@ from typing import List
 
 from fontTools.merge.util import current_time
 
+from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
@@ -22,12 +23,12 @@ class Simulator:
                  sim_time: int,
                  num_assets: int = 1,
                  lam: float = 0.1,
-                 mean: float = 100,
+                 mean: Price = Price(100),
                  r: float = .6,
                  shock_var=10,
                  q_max: int = 10,
                  pv_var: float = 5e6,
-                 zi_shade: List = [0.1,0.3], #AK [10, 30],
+                 zi_shade: List = [Price(0.1), Price(0.3)], #AK [10, 30],
                  num_mm_agents: int = 1,
                  ):
         print("Initializing simulation with following parameters...")
@@ -68,9 +69,9 @@ class Simulator:
                 , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
-                                            xi=0.04,
+                                            xi=Price(0.04),
                                             K=3,
-                                            omega=0.02,
+                                            omega=Price(0.02),
                                             )
 
     def add_agents(self, agents: list[Agent] | None) -> None:
@@ -103,7 +104,7 @@ class Simulator:
 
     def end_sim(self) -> None:
         print(f"\n\nSimulation ended. time: {self.current_time}")
-        fundamental_val = self.markets[0].get_final_fundamental()
+        fundamental_val = Price(self.markets[0].get_final_fundamental())
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
         print(f"Last traded price: {self.markets[0].last_traded_price}")
@@ -111,7 +112,7 @@ class Simulator:
         values_by_last_traded_price = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
-            values_by_fundamental[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
+            values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
             values_by_last_traded_price[agent_id] = agent.position * self.markets[0].last_traded_price + agent.cash
         print(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
         positions_sum = 0

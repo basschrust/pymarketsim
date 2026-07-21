@@ -1,3 +1,4 @@
+from marketsim.market.price import Price
 from marketsim.event.event_queue import EventQueue
 from marketsim.fourheap.fourheap import FourHeap, Order
 from marketsim.fundamental.fundamental_abc import Fundamental
@@ -5,7 +6,7 @@ from marketsim.fourheap import constants
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: float= 100):
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100)):
         self.order_book = FourHeap()
         self.matched_orders = []
         self.fundamental = fundamental

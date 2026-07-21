@@ -1,12 +1,14 @@
 import random
+from decimal import Decimal
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 import numpy as np
 from marketsim.utils.id_generator import id_generator
+
 
 
 class ZIAgentInformed(Agent):
@@ -44,12 +46,12 @@ class ZIAgentInformed(Agent):
                         # no logic is tied to this
             #t = current_time
             if estimate is None:
-                estimate = self.estimate_fundamental(current_time=current_time)
+                estimate = Price(self.estimate_fundamental(current_time=current_time))
             spread = self.shade[1] - self.shade[0]
-            valuation_offset = spread*random.random() + self.shade[0]
+            valuation_offset = spread*Decimal(random.random()) + self.shade[0]
 
             # Cache private value lookup (avoid duplicate computation when eta != 1.0)
-            pv_value = self.pv.value_for_exchange(self.position, side)
+            pv_value = Price(self.pv.value_for_exchange(self.position, side))
 
             if side == BUY:
                 price = estimate + pv_value - valuation_offset
@@ -69,11 +71,10 @@ class ZIAgentInformed(Agent):
                         price = best_price
 
             # Use counter for order ID (faster than random.randint)
-            self._order_counter += 1
-            order_id = id_generator.next()
+            #self._order_counter += 1
 
             order = Order(
-                price=price,
+                price=Price(price),
                 quantity=1,
                 agent_id=self.agent_id,
                 time=current_time,
