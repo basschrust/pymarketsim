@@ -1,5 +1,13 @@
+simulation:
+  steps: 30
+markets:
+  number: 1
 agents:
-  num_background_zi_agents_informed: 0
-  num_background_zi_agents_not_informed: 30
-  mmzoh: 1
+  zi_agents_informed:
+    number: 0
+  zi_agents_not_informed:
+    number: 30
+    lam: 0.8
+  mmzoh:
+    number: 1
 
