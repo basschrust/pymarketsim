@@ -1,0 +1,5 @@
+agents:
+  num_background_zi_agents_informed: 0
+  num_background_zi_agents_not_informed: 30
+  mmzoh: 1
+
