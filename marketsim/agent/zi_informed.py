@@ -84,7 +84,8 @@ class ZIAgentInformed(Agent):
 
 
     def __str__(self) -> str:
-        return f'ZI_informed_{self.agent_id} with PVs: {self.pv.values}'
+        return f"ZI_informed_{self.agent_id}"
+                # AK - create some info function to show this f' with PVs: {self.pv.values}')
 
     def get_pos_value(self) -> float:
         return self.pv.value_at_position(self.position)

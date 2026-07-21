@@ -107,23 +107,26 @@ class Simulator:
         print(f"Final fundamental: {fundamental_val}")
         print(f"Orders matched: {len(self.markets[0].matched_orders)}")
         print(f"Last traded price: {self.markets[0].last_traded_price}")
-        values = {}
+        values_by_fundamental = {}
+        values_by_last_traded_price = {}
         for agent_id in self.agents:
             agent = self.agents[agent_id]
-            values[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
-        print(f'At the end of the simulation we get valuations: {values}')
+            values_by_fundamental[agent_id] = agent.get_pos_value() + agent.position * fundamental_val + agent.cash
+            values_by_last_traded_price[agent_id] = agent.position * self.markets[0].last_traded_price + agent.cash
+        print(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
         positions_sum = 0
         cash_sum = 0
         values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
-            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} \tvalue: {values[i]}")
+            print(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
+                  f"\tvalue(by fund.): {values_by_fundamental[i]} \tvalue(by last trade): {values_by_last_traded_price[i]}")
             positions_sum += agent.position
             cash_sum += agent.cash
             values_by_last_trade_sum += self.markets[0].last_traded_price * agent.position
         print(f"Positions sum: {positions_sum}")
         print(f"Cash sum: {cash_sum}")
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-        print(f"Sum of values: {sum(values.values())}")
+        print(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         print(f"Midprices: {self.markets[0].get_midprices()}")
 
     def run(self) -> None:

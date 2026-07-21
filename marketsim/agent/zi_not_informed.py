@@ -78,7 +78,8 @@ class ZIAgentNotInformed(Agent):
 
 
     def __str__(self) -> str:
-        return f'ZI_non_informed{self.agent_id} with PVs: {self.pv.values}'
+        return f'ZI_non_informed{self.agent_id}'
+        # TODO: AK to info func: with PVs: {self.pv.values}'
 
     def get_pos_value(self) -> float:
         return self.pv.value_at_position(self.position)
