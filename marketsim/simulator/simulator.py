@@ -62,16 +62,17 @@ class Simulator:
                     market=self.markets[0],
                     q_max=q_max,
                     shade=zi_shade,
-                    pv_var=pv_var
+                    pv_var=pv_var,
+                    lam=0.5,
                 ))
 
         for agent_id in range(num_background_zi_agents_not_informed + num_background_zi_agents_informed
                 , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
             self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
                                             market=self.markets[0],
-                                            xi=Price(0.04),
+                                            xi=Price(0.1),
                                             K=3,
-                                            omega=Price(0.02),
+                                            omega=Price(0.2),
                                             )
 
     def add_agents(self, agents: list[Agent] | None) -> None:
@@ -80,10 +81,9 @@ class Simulator:
             self.agents[agent.get_id()] = agent
 
     def step(self) -> None:
-        print(f'It is time step {self.current_time}')
+        print(f'\nIt is time step {self.current_time}')
         for market in self.markets:
             for agent_id in self.agents:
-                #if random.random() <= self.lam:
                 agent = self.agents[agent_id]
                 if not agent.is_market_maker():
                     market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
@@ -99,6 +99,8 @@ class Simulator:
                 cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
                 market.last_traded_price = matched_order.price
                 self.agents[agent_id].update_position(quantity=quantity, cash=cash)
+            print(f'After clearing the market the last traded price is: {market.last_traded_price}')
+            print(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
         self.current_time += 1
 
 

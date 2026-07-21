@@ -41,6 +41,9 @@ class MMZOHAgent(Agent):
         #t = self.market.get_time()
         # add orders only in rebalance periods:
         if current_time % self.rebalance_period == 0:
+            # AK - clear previous orders (should we?)
+            # print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
+            # self.market.withdraw_all(self.agent_id)
 
             # Get the best bid and best ask
             best_ask = self.market.order_book.get_best_ask()
@@ -48,7 +51,6 @@ class MMZOHAgent(Agent):
 
             print(f"Best ask: {best_ask}, Best bid {best_bid}")
 
-            # estimate = (best_ask + best_bid) /2 # AK: or take last traded, but yet the market does not "publish" it
             estimate = self.market.last_traded_price
             HALF = Decimal("0.5")
             st = max(estimate + HALF * self.omega, best_bid)

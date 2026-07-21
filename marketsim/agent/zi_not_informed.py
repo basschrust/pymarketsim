@@ -34,11 +34,11 @@ class ZIAgentNotInformed(Agent):
         return estimate
 
     def take_action(self, current_time: int, estimate=None):
+        orders = []
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             #t = self.market.get_time() # for ZI agent it is just for the construction of the Order object itself,
                         # no logic is tied to this
-            #t = current_time
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))
             spread = self.shade[1] - self.shade[0]
@@ -64,10 +64,6 @@ class ZIAgentNotInformed(Agent):
                     if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
                         price = best_price
 
-            # Use counter for order ID (faster than random.randint)
-            self._order_counter += 1
-            order_id = id_generator.next()
-
             order = Order(
                 price=price,
                 quantity=1,
@@ -75,8 +71,9 @@ class ZIAgentNotInformed(Agent):
                 time=current_time,
                 order_type=side,
             )
+            orders.append(order)
 
-            return [order]
+        return orders
 
 
     def __str__(self) -> str:

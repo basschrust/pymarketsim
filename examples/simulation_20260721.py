@@ -3,7 +3,7 @@ from marketsim.simulator.simulator import Simulator
 
 sim = Simulator(
     num_background_zi_agents_informed=0,
-    num_background_zi_agents_not_informed=10,
+    num_background_zi_agents_not_informed=40,
     sim_time=30,#1_000,
     num_assets=1,
     lam=0.5,           # default arrival intensity for background agents
