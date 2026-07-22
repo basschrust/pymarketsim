@@ -8,7 +8,7 @@ from marketsim.fourheap import constants
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
                  market_type: str = "discrete"):
-        self.order_book = FourHeap()
+        self.order_book = FourHeap(plus_one=True)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.fundamental = fundamental
         self.last_traded_price = reference_price

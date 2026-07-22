@@ -157,6 +157,7 @@ class FourHeap:
             return matched_orders
 
         elif mode == "continuous":
+            raise
             # in this mode the orders arrive one by one and are cleared. So when handling this queue of matched orders
             # they are treated as placed in sequential time points (later we will work out with the fractal time structure)
             # let's check if it is gonna even work properly - will the set of matched orders be exactly the same as in the
@@ -173,11 +174,12 @@ class FourHeap:
         else:
             raise ValueError(f"Invalid mode: {mode}")
 
-    def get_bid_quote(self) -> float:
+    def get_bid_quote(self) -> Price:
         return max(self.buy_unmatched.peek(), self.sell_matched.peek())
 
-    def get_ask_quote(self) -> float:
-        return max(self.sell_unmatched.peek(), self.buy_matched.peek())
+    def get_ask_quote(self) -> Price:
+        # should be min, but maybe prices are reversed to negative here?
+        return min(self.sell_unmatched.peek(), self.buy_matched.peek())
 
     def get_best_bid(self) -> float:
         return self.buy_unmatched.peek()

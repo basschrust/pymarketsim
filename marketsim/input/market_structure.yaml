@@ -26,7 +26,7 @@ agent_groups:
     number: 1
     config:
       xi: 0.2
-      K: 4
+      K: 5
       omega: 0.2
       rebalance_period: 10
 
