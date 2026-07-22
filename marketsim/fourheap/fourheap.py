@@ -1,6 +1,6 @@
 from collections import defaultdict
 from marketsim.fourheap import constants
-from marketsim.fourheap.order import Order
+from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.fourheap.order_queue import OrderQueue
 from marketsim.market.price import Price
 
@@ -144,7 +144,7 @@ class FourHeap:
                 self.remove(order_id)
             self.agent_id_map[agent_id] = []
 
-    def market_clear(self, current_time: int, mode:str = "opening") -> list[Order]:
+    def market_clear(self, current_time: int, mode:str = "opening") -> list[MatchedOrder]:
         if mode == "opening":
             price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
             # TODO: this is original, works strangely, let's make it a strategy so that we can compute continuous prices
@@ -161,7 +161,9 @@ class FourHeap:
             # they are treated as placed in sequential time points (later we will work out with the fractal time structure)
             # let's check if it is gonna even work properly - will the set of matched orders be exactly the same as in the
             # opening (standard) mode?
-            price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
+            # let's assume that this method is called after each new order placed
+            #price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
+            price = self.market.last_traded_price
 
             buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
             sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
@@ -189,7 +191,6 @@ class FourHeap:
 
         if math.isinf(best_ask) or math.isinf(best_bid):
             if len(self.midprices) < lookback and len(self.midprices) > 0:
-                #self.midprices.append(np.mean(self.midprices))
                 self.midprices[current_time] = np.mean(list(self.midprices.values()))
             elif len(self.midprices) >= lookback:
                 self.midprices[current_time] = np.mean(list(self.midprices.values())[-lookback:])

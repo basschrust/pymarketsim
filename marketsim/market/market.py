@@ -1,6 +1,6 @@
 from marketsim.market.price import Price
 from marketsim.event.event_queue import EventQueue
-from marketsim.fourheap.fourheap import FourHeap, Order
+from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.fourheap import constants
 
@@ -24,10 +24,10 @@ class Market:
     def withdraw_all(self, agent_id: int) -> None:
         self.order_book.withdraw_all(agent_id=agent_id)
 
-    def clear_market(self, current_time: int) -> list[Order]:
-        new_orders = self.order_book.market_clear(current_time=current_time) # self.get_time())
-        self.matched_orders += new_orders
-        return new_orders
+    def clear_market(self, current_time: int) -> list[MatchedOrder]:
+        newly_matched_orders = self.order_book.market_clear(current_time=current_time)
+        self.matched_orders += newly_matched_orders
+        return newly_matched_orders
 
     def add_orders(self, orders: list[Order]) -> None:
         for order in orders:
@@ -40,7 +40,7 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def step(self, current_time: int) -> list[Order]:
+    def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0

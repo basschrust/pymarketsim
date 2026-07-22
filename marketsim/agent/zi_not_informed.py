@@ -46,8 +46,8 @@ class ZIAgentNotInformed(Agent):
 
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))
-                print(f"The estimate: {estimate}")
-                print(f"Private values: {self.pv.values}")
+                #print(f"The estimate: {estimate}")
+                #print(f"Private values: {self.pv.values}")
             spread = Decimal(self.shade[1] - self.shade[0])
             valuation_offset = Price(spread*Decimal(random.random())+ Decimal(self.shade[0]))
 

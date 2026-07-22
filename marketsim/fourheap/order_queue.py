@@ -1,8 +1,9 @@
 import heapq
 import math
 from typing import Optional
-from marketsim.fourheap.order import Order, MatchedOrder
 
+from marketsim.fourheap.order import Order, MatchedOrder
+from marketsim.market.price import Price
 
 class OrderQueue:
     def __init__(self, is_max_heap=False, is_matched=False):
@@ -75,7 +76,7 @@ class OrderQueue:
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, price: float, current_time: int) -> list[Order]:
+    def market_clear(self, price: Price, current_time: int) -> list[MatchedOrder]:
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
