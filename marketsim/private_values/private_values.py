@@ -12,13 +12,14 @@ class PrivateValues:
     as well as calculate the cumulative value up to a given position.
     """
 
-    def __init__(self, q_max: int, val_var=5e6):
+    def __init__(self, q_max: int, val_var: float=5e6):
         """
         Initialize the PrivateValues object.
 
         :param q_max: The maximum quantity.
         :param val_var: The variance of the values (default: 1).
         """
+        #print(f"type of val_var: {type(val_var)}")
         self.values = np.random.randn(2 * q_max) * np.sqrt(val_var)
         self.values = np.sort(self.values)[::-1]  # Sort descending
 

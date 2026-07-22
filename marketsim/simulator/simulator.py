@@ -18,37 +18,54 @@ from marketsim.utils.id_generator import id_generator
 
 class Simulator:
     def __init__(self,
-                 num_background_zi_agents_informed: int,
-                 num_background_zi_agents_not_informed: int,
+                 # CONFIG: dict,
+                 # num_background_zi_agents_informed: int,
+                 # num_background_zi_agents_not_informed: int,
                  sim_time: int,
                  num_assets: int = 1,
                  lam: float = 0.1,
-                 mean: Price = Price(300),
+                 mean: float = 100.0,
                  r: float = .6,
                  shock_var=10,
+                 agent_groups: dict = {},
                  q_max: int = 10,
                  pv_var: float = 5e6,
                  zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
                  num_mm_agents: int = 1,
                  ):
         print("Initializing simulation with following parameters...")
-        self.num_background_zi_agents_informed = num_background_zi_agents_informed
-        self.num_background_zi_agents_not_informed = num_background_zi_agents_not_informed
-        self.num_mm_agents = num_mm_agents
+        # self.num_background_zi_agents_informed = num_background_zi_agents_informed
+        # self.num_background_zi_agents_not_informed = num_background_zi_agents_not_informed
+        # self.num_mm_agents = num_mm_agents
         self.num_assets = num_assets
         self.sim_time = sim_time
-        self.lam = lam # activity factor
-        self.current_time = 0
+        self.lam = lam # lambda (activity factor)
+        self.mean = mean
+        self.r = r
+        self.shock_var = shock_var
 
+        self.current_time = 0
         self.markets = []
 
-
-        for _ in range(num_assets):
-            fundamental = GaussianMeanReverting(mean=mean, final_time=sim_time, r=r, shock_var=shock_var)
+        # creating the market:
+        for _ in range(self.num_assets):
+            fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r, shock_var=self.shock_var)
             # fundamental = LazyGaussianMeanReverting(mean=mean, final_time=sim_time, r=r, shock_var=shock_var)
-            self.markets.append(Market(fundamental=fundamental, time_steps=sim_time))
+
+            self.markets.append(Market(fundamental=fundamental, time_steps=self.sim_time))
 
         self.agents = {}
+        for group_name, agent_group in agent_groups.items():
+            for i in range(agent_group["number"]):
+                # let's make it in case/ series of ifs to avoid security breach (if used the class name as code direcltly)
+                if agent_group["agent_class"] == "ZIAgentNotInformed":
+                    agent = ZIAgentNotInformed(market=self.markets[0], **agent_group["config"])
+
+                    self.agents[i] = agent
+
+
+
+        return
         for agent_id in range(num_background_zi_agents_informed):
             self.agents[agent_id] = (
                 ZIAgentInformed(

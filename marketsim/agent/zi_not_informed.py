@@ -18,24 +18,27 @@ class ZIAgentNotInformed(Agent):
         self.market = market
         self.q_max = q_max
         self.pv_var = pv_var
-        self.pv = PrivateValues(q_max, pv_var)
+        # print(f"q_max: {self.q_max}, pv_var: {self.pv_var}")
+        self.pv = PrivateValues(q_max, float(pv_var))
         self.position = 0
         self.shade = shade
+        # print(f"shade: {self.shade}")
         self.cash = 0
         self.eta = eta
         #self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
+            # not used any more, but maybe we want to count the orders placed by each agent
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
 
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self, current_time: int) -> float:
+    def estimate_fundamental(self, current_time: int) -> Price:
         estimate = self.market.last_traded_price
         print(f'It is time {current_time} with final I observed last traded price {estimate}, so my estimate is {estimate}')
         return estimate
 
-    def take_action(self, current_time: int, estimate=None):
+    def take_action(self, current_time: int, estimate: Price = None):
         orders = []
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
@@ -43,8 +46,10 @@ class ZIAgentNotInformed(Agent):
 
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))
-            spread = self.shade[1] - self.shade[0]
-            valuation_offset = Price(spread*Decimal(random.random())) + Price(self.shade[0])
+                print(f"The estimate: {estimate}")
+                print(f"Private values: {self.pv.values}")
+            spread = Decimal(self.shade[1] - self.shade[0])
+            valuation_offset = Price(spread*Decimal(random.random())+ Decimal(self.shade[0]))
 
             # Cache private value lookup (avoid duplicate computation when eta != 1.0)
             pv_value = Price(self.pv.value_for_exchange(self.position, side))

@@ -3,6 +3,10 @@ from dataclasses import dataclass
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
 
+def validate_price(price: Price) -> None:
+    if price <=0:
+        raise ValueError('Price must be greater than 0')
+
 @dataclass
 class Order:
     price: Price
@@ -14,6 +18,7 @@ class Order:
     asset_id: int = 1
 
     def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int):
+        validate_price(price)
         self.price = price
         self.order_type = order_type
         self.quantity = quantity
