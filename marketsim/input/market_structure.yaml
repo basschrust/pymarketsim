@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 num_assets: 1
-sim_time: 30
+sim_time: 50
 lam: 0.8
 
 
@@ -20,10 +20,13 @@ agent_groups:
       shade:
         - 0.1
         - 0.3
-      pv_var: 5.0e1
+      pv_var: 5.0e2
   mmzoh:
     agent_class: MMZOHAgent
     number: 1
     config:
-
+      xi: 0.2
+      K: 4
+      omega: 0.4
+      rebalance_period: 10
 

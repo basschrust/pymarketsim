@@ -55,13 +55,19 @@ class Simulator:
             self.markets.append(Market(fundamental=fundamental, time_steps=self.sim_time))
 
         self.agents = {}
+
         for group_name, agent_group in agent_groups.items():
             for i in range(agent_group["number"]):
                 # let's make it in case/ series of ifs to avoid security breach (if used the class name as code direcltly)
+                # ZI agents:
                 if agent_group["agent_class"] == "ZIAgentNotInformed":
                     agent = ZIAgentNotInformed(market=self.markets[0], **agent_group["config"])
+                    self.add_agents([agent])
+                # MMs:
+                if agent_group["agent_class"] == "MMZOHAgent":
+                    agent = MMZOHAgent(market=self.markets[0], **agent_group["config"])
+                    self.add_agents([agent])
 
-                    self.agents[i] = agent
 
 
 

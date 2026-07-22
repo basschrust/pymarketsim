@@ -14,18 +14,18 @@ class MMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, agent_id: int, market: Market, xi: float,
-                 K: int, omega: float, rebalance_period: int=5):
-        #self.agent_id = agent_id
-        self.agent_id = id_generator.next()
+    def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
+                 K: int = 3, omega: float= 0.1, rebalance_period: int=5):
+
+        self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market
 
         self.position = 0
         self.cash = 0
 
-        self.xi = xi # step of the order ladder
+        self.xi = Decimal(xi) # step of the order ladder
         self.K = K # number of orders in the ladder
-        self.omega = omega
+        self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
 
     def get_id(self) -> int:
