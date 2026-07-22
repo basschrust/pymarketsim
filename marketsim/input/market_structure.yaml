@@ -1,0 +1,32 @@
+# market structure configuration file
+
+# generic simulation parameters
+num_assets: 1
+sim_time: 50
+lam: 0.8
+
+
+markets:
+  number: 1
+agent_groups:
+  zi_agents_informed:
+    number: 0
+  zi_agents_not_informed:
+    agent_class: ZIAgentNotInformed
+    number: 30
+    config:
+      lam: 0.8
+      q_max: 10
+      shade:
+        - 0.1
+        - 0.3
+      pv_var: 5.0e2
+  mmzoh:
+    agent_class: MMZOHAgent
+    number: 1
+    config:
+      xi: 0.2
+      K: 4
+      omega: 0.2
+      rebalance_period: 10
+
