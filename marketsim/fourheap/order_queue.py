@@ -26,7 +26,7 @@ class OrderQueue:
         self.size += order.quantity
 
 
-    def peek(self) -> float:
+    def peek(self) -> Price|float:
         c = -1 if self.is_max_heap else 1
         # Return infinity if empty
         if self.is_empty() or len(self.heap) == 0:
@@ -47,7 +47,7 @@ class OrderQueue:
         
         return c*self.heap[0][0]
 
-    def peek_order(self) -> Order:
+    def peek_order(self) -> Order | None:
         if self.is_empty() or len(self.heap) == 0:
             return None
         # Safely clean up deleted orders
@@ -62,7 +62,7 @@ class OrderQueue:
         except (IndexError, KeyError):
             return None
 
-    def peek_order_id(self) -> float:
+    def peek_order_id(self) -> float | None:
         if self.is_empty() or len(self.heap) == 0:
             return None
         try:

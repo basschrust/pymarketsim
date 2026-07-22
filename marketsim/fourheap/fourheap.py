@@ -27,7 +27,7 @@ class FourHeap:
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
 
-    def handle_new_order(self, order):
+    def handle_new_order(self, order) -> None:
         q_order = order.quantity
         order_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
@@ -51,7 +51,7 @@ class FourHeap:
                 order_matched.add_order(order)
                 self.insert(new_order)
 
-    def handle_replace(self, order):
+    def handle_replace(self, order) -> None:
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
@@ -72,7 +72,7 @@ class FourHeap:
                 unmatched.add_order(replaced)
                 self.insert(new_order)
 
-    def insert(self, order: Order):
+    def insert(self, order: Order) -> None:
         self.agent_id_map[order.agent_id].append(order.order_id)
         if order.order_type == constants.SELL:
             # Cache peek values to avoid redundant heap cleanup operations
@@ -95,7 +95,7 @@ class FourHeap:
             else:
                 self.buy_unmatched.add_order(order)
 
-    def remove(self, order_id: int):
+    def remove(self, order_id: int) -> None:
         if self.buy_unmatched.contains(order_id):
             self.buy_unmatched.remove(order_id)
         elif self.sell_unmatched.contains(order_id):
@@ -137,7 +137,7 @@ class FourHeap:
                     b = self.buy_matched.push_to()
                     b_quantity = b.quantity
 
-    def withdraw_all(self, agent_id: int):
+    def withdraw_all(self, agent_id: int) -> None:
         # Check if agent has any orders before trying to remove them
         if agent_id in self.agent_id_map and self.agent_id_map[agent_id]:
             for order_id in self.agent_id_map[agent_id]:
