@@ -32,6 +32,7 @@ class Simulator:
                  pv_var: float = 5e6,
                  zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
                  num_mm_agents: int = 1,
+                 market_type:str = "discrete",  #discrete or continuous
                  ):
         print("Initializing simulation with following parameters...")
         # self.num_background_zi_agents_informed = num_background_zi_agents_informed
@@ -52,7 +53,7 @@ class Simulator:
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r, shock_var=self.shock_var)
             # fundamental = LazyGaussianMeanReverting(mean=mean, final_time=sim_time, r=r, shock_var=shock_var)
 
-            self.markets.append(Market(fundamental=fundamental, time_steps=self.sim_time))
+            self.markets.append(Market(fundamental=fundamental, time_steps=self.sim_time, market_type=market_type))
 
         self.agents = {}
 

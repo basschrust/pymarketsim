@@ -6,13 +6,15 @@ from marketsim.fourheap import constants
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100)):
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
+                 market_type: str = "discrete"):
         self.order_book = FourHeap()
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.fundamental = fundamental
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
+        self.market_type = market_type # "discrete" or "continuous"
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -44,15 +46,20 @@ class Market:
         # TODO Need to figure out how to handle ties for price and time
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
+        newly_matched_orders = []
         for order in orders:
             if order.quantity <= 0:
                 continue
             self.order_book.insert(order)
-        new_orders = self.clear_market(current_time=current_time)
+            # if we are in continuous mode we should clear the market here, after entering each order
+            #let's see what happens ...
+            if self.market_type == "continuous":
+                newly_matched_orders += self.clear_market(current_time=current_time)
+        newly_matched_orders += self.clear_market(current_time=current_time)
 
-        # Compute midprices.
+        # Compute midprices. AK - in continuous mode it may need a change
         self.order_book.update_midprice(current_time=current_time)
-        return new_orders
+        return newly_matched_orders
 
     def get_midprices(self) -> list:
         return self.order_book.midprices

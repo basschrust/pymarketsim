@@ -4,7 +4,7 @@
 num_assets: 1
 sim_time: 50
 lam: 0.8
-
+market_type: continuous
 
 markets:
   number: 1
