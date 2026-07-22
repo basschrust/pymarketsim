@@ -117,8 +117,8 @@ class Simulator:
                 orders = agent.take_action(current_time=self.current_time)
                 print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
-            new_orders = market.step(current_time=self.current_time)
-            for matched_order in new_orders:
+            new_orders_to_match = market.step(current_time=self.current_time)
+            for matched_order in new_orders_to_match:
                 print(f"Matching order {str(matched_order)}")
                 agent_id = matched_order.order.agent_id
                 quantity = matched_order.order.order_type * matched_order.order.quantity

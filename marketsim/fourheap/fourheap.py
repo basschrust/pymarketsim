@@ -144,14 +144,32 @@ class FourHeap:
                 self.remove(order_id)
             self.agent_id_map[agent_id] = []
 
-    def market_clear(self, current_time: int) -> list[Order]:
-        price = self.get_ask_quote() if self.plus_one else self.get_bid_quote()
+    def market_clear(self, current_time: int, mode:str = "opening") -> list[Order]:
+        if mode == "opening":
+            price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
+            # TODO: this is original, works strangely, let's make it a strategy so that we can compute continuous prices
+            # based on the order book
 
-        buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
-        sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
+            buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+            sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
 
-        matched_orders = buy_matched + sell_matched
-        return matched_orders
+            matched_orders = buy_matched + sell_matched
+            return matched_orders
+
+        elif mode == "continuous":
+            # in this mode the orders arrive one by one and are cleared. So when handling this queue of matched orders
+            # they are treated as placed in sequential time points (later we will work out with the fractal time structure)
+            # let's check if it is gonna even work properly - will the set of matched orders be exactly the same as in the
+            # opening (standard) mode?
+            price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
+
+            buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+            sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
+
+            matched_orders = buy_matched + sell_matched
+            return matched_orders
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
     def get_bid_quote(self) -> float:
         return max(self.buy_unmatched.peek(), self.sell_matched.peek())

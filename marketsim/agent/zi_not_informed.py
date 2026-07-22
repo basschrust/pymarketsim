@@ -71,14 +71,17 @@ class ZIAgentNotInformed(Agent):
                     if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
                         price = best_price
 
-            order = Order(
-                price=Price(price),
-                quantity=quantity,
-                agent_id=self.agent_id,
-                time=current_time,
-                order_type=side,
-            )
-            orders.append(order)
+            if price > 0:
+                order = Order(
+                    price=Price(price),
+                    quantity=quantity,
+                    agent_id=self.agent_id,
+                    time=current_time,
+                    order_type=side,
+                )
+                orders.append(order)
+            else:
+                print(f"Order not placed as calculated price was negative: {price}, q: {quantity}")
 
         return orders
 
