@@ -16,8 +16,9 @@ class Order:
     time: int
     order_id: int
     asset_id: int = 1
+    parent_id: int | None = None
 
-    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int):
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None) -> None:
         validate_price(price)
         self.price = price
         self.order_type = order_type
@@ -25,6 +26,7 @@ class Order:
         self.agent_id = agent_id
         self.time = time
         self.order_id = id_generator.next()
+        self.parent_id = parent_id
 
     def update_quantity_filled(self, transact_quantity: int) -> None:
         self.quantity -= transact_quantity
@@ -38,6 +40,7 @@ class Order:
                           quantity=self.quantity - transact_quantity,
                           agent_id=self.agent_id,
                           time=self.time,
+                          parent_id=self.order_id,
                           )
         self.update_quantity_filled(self.quantity - transact_quantity)
         return new_order
