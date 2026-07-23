@@ -15,14 +15,22 @@ class OrderQueue:
         self.order_dict = {}
         self.deleted_ids = set()
 
-    def add_order(self, order: Order):
+    def add_order(self, order: Order, executed_price: Price | None = None) -> None:
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):
             self.order_dict[order_id].merge_order(order.quantity)
+            # this may be a problem if we want to merge with order already executed
+            # so - in unmatched heaps - no problem
+            # - in matched heaps - well, in continuous mode there should not be such a situation?
+            if self.is_matched:
+                raise # to confirm that for matched it never happens, but somehow for not matched it doesn't happen either
         else:
             heapq.heappush(self.heap, (price, order.order_id))
             self.order_dict[order.order_id] = order
+            if self.is_matched:
+                order.executed_price = executed_price # hmm, the price from the other side peek which is not
+                                # available here... so we pass it here :)
         self.size += order.quantity
 
 

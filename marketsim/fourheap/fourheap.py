@@ -27,28 +27,29 @@ class FourHeap:
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
 
-    def handle_new_order(self, order) -> None:
+    def handle_new_order(self, order: Order) -> None:
         q_order = order.quantity
         order_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
         to_match = counter_unmatched.push_to()
+        executed_price = counter_unmatched.peek()
         if to_match is not None:
             to_match_quantity = to_match.quantity
             if to_match_quantity == q_order:
-                order_matched.add_order(order)
+                order_matched.add_order(order, executed_price=executed_price)
                 counter_matched.add_order(to_match)
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
-                order_matched.add_order(order)
+                order_matched.add_order(order, executed_price=executed_price)
                 counter_matched.add_order(to_match)
                 counter_unmatched.add_order(excess_order)
             elif q_order > to_match_quantity:
                 # There's a better way to do this, but I think it's not worth it
                 counter_matched.add_order(to_match)
                 new_order = order.copy_and_decrease(to_match_quantity)
-                order_matched.add_order(order)
+                order_matched.add_order(order, executed_price=executed_price)
                 self.insert(new_order)
 
     def handle_replace(self, order) -> None:
