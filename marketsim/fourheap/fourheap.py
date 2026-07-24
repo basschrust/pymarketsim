@@ -33,21 +33,21 @@ class FourHeap:
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
-        to_match = counter_unmatched.push_to()
-        executed_price = counter_unmatched.peek()
+        to_match = counter_unmatched.push_to() # this pops the top order from the queue
+        executed_price = to_match.price #counter_unmatched.peek() # so this took next order limit, which was wrong
         if to_match is not None:
             to_match_quantity = to_match.quantity
             if to_match_quantity == q_order:
                 order_matched.add_order(order, executed_price=executed_price)
-                counter_matched.add_order(to_match)
+                counter_matched.add_order(to_match, executed_price=executed_price)
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
                 order_matched.add_order(order, executed_price=executed_price)
-                counter_matched.add_order(to_match)
+                counter_matched.add_order(to_match, executed_price=executed_price)
                 counter_unmatched.add_order(excess_order)
             elif q_order > to_match_quantity:
                 # There's a better way to do this, but I think it's not worth it
-                counter_matched.add_order(to_match)
+                counter_matched.add_order(to_match, executed_price=executed_price)
                 new_order = order.copy_and_decrease(to_match_quantity)
                 order_matched.add_order(order, executed_price=executed_price)
                 self.insert(new_order)
@@ -90,8 +90,13 @@ class FourHeap:
             sell_unmatched_peek = self.sell_unmatched.peek()
             buy_matched_peek = self.buy_matched.peek()
             if order.price >= sell_unmatched_peek and buy_matched_peek >= sell_unmatched_peek:
+                # AK: crosses with existing orders, transaction will be made
                 self.handle_new_order(order)
             elif order.price >= buy_matched_peek:
+                # no transaction, but the spread becomes smaller
+                print(f"buy_matched_peek: {buy_matched_peek}")
+                #raise # in continous market should never happen as buy_matched_peek == inf
+                 # but it happened in step 3
                 self.handle_replace(order)
             else:
                 self.buy_unmatched.add_order(order)

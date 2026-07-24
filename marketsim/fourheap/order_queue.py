@@ -52,7 +52,11 @@ class OrderQueue:
         # If we get here, heap should have at least one valid element
         if len(self.heap) == 0:
             return c*math.inf
-        
+
+        # AK - for matched heaps this should always be empty, always return inf
+        if self.is_matched:
+            print(f"Peeking matched heap: {self.heap[0]}")
+            # raise
         return c*self.heap[0][0]
 
     def peek_order(self) -> Order | None:

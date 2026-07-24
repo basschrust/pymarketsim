@@ -43,13 +43,22 @@ class Market:
         return self.fundamental.get_info()
 
     def step(self, current_time: int) -> list[MatchedOrder]:
-        # TODO Need to figure out how to handle ties for price and time
+        # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
+        print(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
+        print(
+            f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
+            f", sell: {self.order_book.sell_unmatched.heap[0][1] if not self.order_book.sell_unmatched.is_empty() else '<None>'}")
+        print(
+            f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
+            f", sell: {self.order_book.sell_unmatched.peek_order()}")
+
         for order in orders:
             if order.quantity <= 0:
                 continue
+            print(f"Inserting order: {order.order_id}")
             self.order_book.insert(order)
             # if we are in continuous mode we should clear the market here, after entering each order
             #let's see what happens ...

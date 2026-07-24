@@ -69,38 +69,8 @@ class Simulator:
                     agent = MMZOHAgent(market=self.markets[0], **agent_group["config"])
                     self.add_agents([agent])
 
-
-
-
         return
-        for agent_id in range(num_background_zi_agents_informed):
-            self.agents[agent_id] = (
-                ZIAgentInformed(
-                    market=self.markets[0],
-                    q_max=q_max,
-                    shade=zi_shade,
-                    pv_var=pv_var
-                ))
 
-        for agent_id in range(num_background_zi_agents_informed, num_background_zi_agents_informed+num_background_zi_agents_not_informed):
-            self.agents[agent_id] = (
-                ZIAgentNotInformed(
-                    market=self.markets[0],
-                    q_max=q_max,
-                    shade=zi_shade,
-                    pv_var=pv_var,
-                    lam=0.8,
-                ))
-
-        for agent_id in range(num_background_zi_agents_not_informed + num_background_zi_agents_informed
-                , num_background_zi_agents_informed + num_background_zi_agents_not_informed +num_mm_agents):
-            self.agents[agent_id] = MMZOHAgent(agent_id=agent_id,
-                                            market=self.markets[0],
-                                            xi=Price(0.2),
-                                            K=4,
-                                            omega=Price(0.4),
-                                            rebalance_period=10,
-                                            )
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
@@ -118,7 +88,10 @@ class Simulator:
                 orders = agent.take_action(current_time=self.current_time)
                 print(f'Agent {agent.agent_id} is entering the market and makes orders {orders}')
                 market.add_orders(orders)
+            print(f"Starting orders execution, matched queues should be empty here: {len(market.order_book.buy_matched.heap)}"
+                  f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
+            print(f"Starting to clear out orders.")
             for matched_order in new_orders_matched:
                 print(f"Matched order {str(matched_order)}")
                 agent_id = matched_order.order.agent_id
