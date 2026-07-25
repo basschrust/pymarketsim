@@ -17,6 +17,7 @@ class Order:
     order_id: int
     asset_id: int = 1
     executed_price: Price | None = None
+    executed_mode: str | None = None # arrived - executed immediately after placing/waited - placed in the LOB and later crossed with an order which arrived later
     parent_id: int | None = None
 
     def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None) -> None:
@@ -66,3 +67,4 @@ class MatchedOrder:
     price: Price
     time: int
     order: Order
+    phase: str | None = None

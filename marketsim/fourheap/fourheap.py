@@ -38,8 +38,8 @@ class FourHeap:
         if to_match is not None:
             to_match_quantity = to_match.quantity
             if to_match_quantity == q_order:
-                order_matched.add_order(order, executed_price=executed_price)
-                counter_matched.add_order(to_match, executed_price=executed_price)
+                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
                 order_matched.add_order(order, executed_price=executed_price)

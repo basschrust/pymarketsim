@@ -15,7 +15,7 @@ class OrderQueue:
         self.order_dict = {}
         self.deleted_ids = set()
 
-    def add_order(self, order: Order, executed_price: Price | None = None) -> None:
+    def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None) -> None:
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):
@@ -31,6 +31,7 @@ class OrderQueue:
             if self.is_matched:
                 order.executed_price = executed_price # hmm, the price from the other side peek which is not
                                 # available here... so we pass it here :)
+                order.executed_mode = executed_mode
         self.size += order.quantity
 
 
