@@ -42,17 +42,18 @@ class FourHeap:
                 counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
-                order_matched.add_order(order, executed_price=executed_price)
-                counter_matched.add_order(to_match, executed_price=executed_price)
+                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
                 counter_unmatched.add_order(excess_order)
             elif q_order > to_match_quantity:
                 # There's a better way to do this, but I think it's not worth it
-                counter_matched.add_order(to_match, executed_price=executed_price)
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
                 new_order = order.copy_and_decrease(to_match_quantity)
-                order_matched.add_order(order, executed_price=executed_price)
+                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
                 self.insert(new_order)
 
     def handle_replace(self, order) -> None:
+        #raise # is it ever used in coninuous mode? yes
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
