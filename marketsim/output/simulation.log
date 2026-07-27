@@ -11261,3 +11261,855 @@
 2026-07-27 05:18:17.526 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by last traded price: 0.00
 2026-07-27 05:18:17.526 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by fundamental: 3.27
 2026-07-27 05:18:17.526 | INFO     | marketsim.loggers.basic:write:10 - Midprices: defaultdict(<class 'marketsim.market.price.Price'>, {1: Decimal('106.50'), 2: Decimal('101.58'), 3: Decimal('104.04'), 4: Decimal('104.04'), 5: Decimal('83.11'), 6: Decimal('82.28'), 7: Decimal('82.35'), 8: Decimal('82.38'), 9: Decimal('82.285')})
+2026-07-27 05:25:00.155 | INFO     | marketsim.loggers.basic:write:10 - Initializing simulation with following parameters...
+2026-07-27 05:25:00.157 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed0
+2026-07-27 05:25:00.158 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed1
+2026-07-27 05:25:00.159 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed2
+2026-07-27 05:25:00.159 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed3
+2026-07-27 05:25:00.159 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed4
+2026-07-27 05:25:00.160 | INFO     | marketsim.loggers.basic:write:10 - Adding agent MM_ZOH5
+2026-07-27 05:25:00.160 | INFO     | marketsim.loggers.basic:write:10 - Agents (6):
+2026-07-27 05:25:00.160 | INFO     | marketsim.loggers.basic:write:10 - 0: ZI_non_informed0
+2026-07-27 05:25:00.161 | INFO     | marketsim.loggers.basic:write:10 - 1: ZI_non_informed1
+2026-07-27 05:25:00.161 | INFO     | marketsim.loggers.basic:write:10 - 2: ZI_non_informed2
+2026-07-27 05:25:00.161 | INFO     | marketsim.loggers.basic:write:10 - 3: ZI_non_informed3
+2026-07-27 05:25:00.161 | INFO     | marketsim.loggers.basic:write:10 - 4: ZI_non_informed4
+2026-07-27 05:25:00.162 | INFO     | marketsim.loggers.basic:write:10 - 5: MM_ZOH5
+2026-07-27 05:25:00.162 | INFO     | marketsim.loggers.basic:write:10 - Step: 0.
+2026-07-27 05:25:00.162 | INFO     | marketsim.loggers.basic:write:10 - It is time step 0
+2026-07-27 05:25:00.163 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:00.163 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:00.164 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.164 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('97.84'), order_type=1, quantity=4, agent_id=0, time=0, order_id=6, asset_id=1)]
+2026-07-27 05:25:00.165 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:00.165 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:00.166 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.166 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('86.99'), order_type=1, quantity=6, agent_id=1, time=0, order_id=7, asset_id=1)]
+2026-07-27 05:25:00.166 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:00.167 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:00.167 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.168 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('97.93'), order_type=1, quantity=4, agent_id=2, time=0, order_id=8, asset_id=1)]
+2026-07-27 05:25:00.168 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders []
+2026-07-27 05:25:00.168 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:00.169 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:00.169 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.170 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('97.21'), order_type=-1, quantity=8, agent_id=4, time=0, order_id=9, asset_id=1)]
+2026-07-27 05:25:00.170 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:00.170 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:00.171 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('99.70'), order_type=1, quantity=1, agent_id=5, time=0, order_id=10, asset_id=1), Order(price=Decimal('100.30'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=11, asset_id=1), Order(price=Decimal('99.50'), order_type=1, quantity=1, agent_id=5, time=0, order_id=12, asset_id=1), Order(price=Decimal('100.50'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=13, asset_id=1), Order(price=Decimal('99.30'), order_type=1, quantity=1, agent_id=5, time=0, order_id=14, asset_id=1), Order(price=Decimal('100.70'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=15, asset_id=1), Order(price=Decimal('99.10'), order_type=1, quantity=1, agent_id=5, time=0, order_id=16, asset_id=1), Order(price=Decimal('100.90'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=17, asset_id=1)]
+2026-07-27 05:25:00.171 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('97.93'), order_type=1, quantity=4, agent_id=2, time=0, order_id=8, asset_id=1))
+2026-07-27 05:25:00.172 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('99.10'), order_type=1, quantity=1, agent_id=5, time=0, order_id=16, asset_id=1))
+2026-07-27 05:25:00.172 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('99.50'), order_type=1, quantity=1, agent_id=5, time=0, order_id=12, asset_id=1))
+2026-07-27 05:25:00.173 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('99.70'), order_type=1, quantity=1, agent_id=5, time=0, order_id=10, asset_id=1))
+2026-07-27 05:25:00.173 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('99.30'), order_type=1, quantity=1, agent_id=5, time=0, order_id=14, asset_id=1))
+2026-07-27 05:25:00.173 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('97.21'), order_type=-1, quantity=1, agent_id=4, time=0, order_id=9, asset_id=1))
+2026-07-27 05:25:00.174 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('97.21'), order_type=-1, quantity=4, agent_id=4, time=0, order_id=18, asset_id=1))
+2026-07-27 05:25:00.174 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.84'), time=0, order=Order(price=Decimal('97.21'), order_type=-1, quantity=3, agent_id=4, time=0, order_id=19, asset_id=1))
+2026-07-27 05:25:00.174 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 97.84
+2026-07-27 05:25:00.175 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 97.84 100.30
+2026-07-27 05:25:00.175 | INFO     | marketsim.loggers.basic:write:10 - Step: 1.
+2026-07-27 05:25:00.175 | INFO     | marketsim.loggers.basic:write:10 - It is time step 1
+2026-07-27 05:25:00.175 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 97.84, so my estimate is 97.84
+2026-07-27 05:25:00.176 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.84
+2026-07-27 05:25:00.177 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.177 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('99.63'), order_type=-1, quantity=1, agent_id=0, time=1, order_id=23, asset_id=1)]
+2026-07-27 05:25:00.178 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 97.84, so my estimate is 97.84
+2026-07-27 05:25:00.178 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.84
+2026-07-27 05:25:00.179 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.179 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('87.65'), order_type=-1, quantity=3, agent_id=1, time=1, order_id=24, asset_id=1)]
+2026-07-27 05:25:00.179 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 97.84, so my estimate is 97.84
+2026-07-27 05:25:00.180 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.84
+2026-07-27 05:25:00.180 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.181 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('82.18'), order_type=-1, quantity=2, agent_id=2, time=1, order_id=25, asset_id=1)]
+2026-07-27 05:25:00.181 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 97.84, so my estimate is 97.84
+2026-07-27 05:25:00.182 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.84
+2026-07-27 05:25:00.182 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.183 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('102.41'), order_type=-1, quantity=5, agent_id=3, time=1, order_id=26, asset_id=1)]
+2026-07-27 05:25:00.183 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:00.183 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.184 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('97.84'), order_type=1, quantity=1, agent_id=0, time=0, order_id=20, asset_id=1))
+2026-07-27 05:25:00.184 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('97.84'), order_type=1, quantity=1, agent_id=0, time=0, order_id=21, asset_id=1))
+2026-07-27 05:25:00.184 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('97.84'), order_type=1, quantity=1, agent_id=0, time=0, order_id=22, asset_id=1))
+2026-07-27 05:25:00.185 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('87.65'), order_type=-1, quantity=1, agent_id=1, time=1, order_id=28, asset_id=1))
+2026-07-27 05:25:00.185 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('82.18'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=25, asset_id=1))
+2026-07-27 05:25:00.186 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.65'), time=1, order=Order(price=Decimal('82.18'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=29, asset_id=1))
+2026-07-27 05:25:00.186 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 87.65
+2026-07-27 05:25:00.186 | INFO     | marketsim.loggers.basic:write:10 - And the spread: -inf 87.65
+2026-07-27 05:25:00.187 | INFO     | marketsim.loggers.basic:write:10 - Step: 2.
+2026-07-27 05:25:00.187 | INFO     | marketsim.loggers.basic:write:10 - It is time step 2
+2026-07-27 05:25:00.187 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 87.65, so my estimate is 87.65
+2026-07-27 05:25:00.188 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.65
+2026-07-27 05:25:00.188 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.189 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('77.07'), order_type=-1, quantity=3, agent_id=0, time=2, order_id=30, asset_id=1)]
+2026-07-27 05:25:00.189 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:00.190 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 87.65, so my estimate is 87.65
+2026-07-27 05:25:00.190 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.65
+2026-07-27 05:25:00.191 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.191 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('80.55'), order_type=1, quantity=2, agent_id=2, time=2, order_id=31, asset_id=1)]
+2026-07-27 05:25:00.191 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 87.65, so my estimate is 87.65
+2026-07-27 05:25:00.192 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.65
+2026-07-27 05:25:00.192 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.193 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('92.09'), order_type=-1, quantity=8, agent_id=3, time=2, order_id=32, asset_id=1)]
+2026-07-27 05:25:00.193 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 87.65, so my estimate is 87.65
+2026-07-27 05:25:00.193 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.65
+2026-07-27 05:25:00.194 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.195 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('99.88'), order_type=1, quantity=7, agent_id=4, time=2, order_id=33, asset_id=1)]
+2026-07-27 05:25:00.195 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.195 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.09'), time=2, order=Order(price=Decimal('99.88'), order_type=1, quantity=3, agent_id=4, time=2, order_id=33, asset_id=1))
+2026-07-27 05:25:00.196 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.09'), time=2, order=Order(price=Decimal('99.88'), order_type=1, quantity=4, agent_id=4, time=2, order_id=34, asset_id=1))
+2026-07-27 05:25:00.197 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.09'), time=2, order=Order(price=Decimal('92.09'), order_type=-1, quantity=4, agent_id=3, time=2, order_id=35, asset_id=1))
+2026-07-27 05:25:00.197 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.09'), time=2, order=Order(price=Decimal('77.07'), order_type=-1, quantity=3, agent_id=0, time=2, order_id=30, asset_id=1))
+2026-07-27 05:25:00.197 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 92.09
+2026-07-27 05:25:00.197 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 80.55 92.09
+2026-07-27 05:25:00.198 | INFO     | marketsim.loggers.basic:write:10 - Step: 3.
+2026-07-27 05:25:00.198 | INFO     | marketsim.loggers.basic:write:10 - It is time step 3
+2026-07-27 05:25:00.198 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 92.09, so my estimate is 92.09
+2026-07-27 05:25:00.199 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.09
+2026-07-27 05:25:00.199 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.200 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('93.79'), order_type=-1, quantity=5, agent_id=0, time=3, order_id=36, asset_id=1)]
+2026-07-27 05:25:00.200 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 92.09, so my estimate is 92.09
+2026-07-27 05:25:00.200 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.09
+2026-07-27 05:25:00.246 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.246 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('87.74'), order_type=-1, quantity=4, agent_id=1, time=3, order_id=37, asset_id=1)]
+2026-07-27 05:25:00.247 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 92.09, so my estimate is 92.09
+2026-07-27 05:25:00.247 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.09
+2026-07-27 05:25:00.248 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.248 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('89.90'), order_type=-1, quantity=1, agent_id=2, time=3, order_id=38, asset_id=1)]
+2026-07-27 05:25:00.248 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders []
+2026-07-27 05:25:00.248 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:00.249 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:00.249 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:00.249 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('91.79'), order_type=1, quantity=1, agent_id=5, time=3, order_id=39, asset_id=1), Order(price=Decimal('92.39'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=40, asset_id=1), Order(price=Decimal('91.59'), order_type=1, quantity=1, agent_id=5, time=3, order_id=41, asset_id=1), Order(price=Decimal('92.59'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=42, asset_id=1), Order(price=Decimal('91.39'), order_type=1, quantity=1, agent_id=5, time=3, order_id=43, asset_id=1), Order(price=Decimal('92.79'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=44, asset_id=1), Order(price=Decimal('91.19'), order_type=1, quantity=1, agent_id=5, time=3, order_id=45, asset_id=1), Order(price=Decimal('92.99'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=46, asset_id=1)]
+2026-07-27 05:25:00.250 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('91.19'), order_type=1, quantity=1, agent_id=5, time=3, order_id=45, asset_id=1))
+2026-07-27 05:25:00.250 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('91.59'), order_type=1, quantity=1, agent_id=5, time=3, order_id=41, asset_id=1))
+2026-07-27 05:25:00.251 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('91.39'), order_type=1, quantity=1, agent_id=5, time=3, order_id=43, asset_id=1))
+2026-07-27 05:25:00.251 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('91.79'), order_type=1, quantity=1, agent_id=5, time=3, order_id=39, asset_id=1))
+2026-07-27 05:25:00.251 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('87.74'), order_type=-1, quantity=1, agent_id=1, time=3, order_id=37, asset_id=1))
+2026-07-27 05:25:00.252 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('87.74'), order_type=-1, quantity=1, agent_id=1, time=3, order_id=48, asset_id=1))
+2026-07-27 05:25:00.252 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('87.74'), order_type=-1, quantity=1, agent_id=1, time=3, order_id=47, asset_id=1))
+2026-07-27 05:25:00.252 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('87.74'), time=3, order=Order(price=Decimal('87.74'), order_type=-1, quantity=1, agent_id=1, time=3, order_id=49, asset_id=1))
+2026-07-27 05:25:00.252 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 87.74
+2026-07-27 05:25:00.253 | INFO     | marketsim.loggers.basic:write:10 - And the spread: -inf 89.90
+2026-07-27 05:25:00.253 | INFO     | marketsim.loggers.basic:write:10 - Step: 4.
+2026-07-27 05:25:00.253 | INFO     | marketsim.loggers.basic:write:10 - It is time step 4
+2026-07-27 05:25:00.253 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:00.254 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 87.74, so my estimate is 87.74
+2026-07-27 05:25:00.254 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.74
+2026-07-27 05:25:00.255 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.255 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('96.59'), order_type=-1, quantity=6, agent_id=1, time=4, order_id=50, asset_id=1)]
+2026-07-27 05:25:00.255 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 87.74, so my estimate is 87.74
+2026-07-27 05:25:00.256 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.74
+2026-07-27 05:25:00.256 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.256 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('80.65'), order_type=1, quantity=5, agent_id=2, time=4, order_id=51, asset_id=1)]
+2026-07-27 05:25:00.257 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 87.74, so my estimate is 87.74
+2026-07-27 05:25:00.257 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.74
+2026-07-27 05:25:00.258 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.258 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('108.76'), order_type=1, quantity=7, agent_id=3, time=4, order_id=52, asset_id=1)]
+2026-07-27 05:25:00.258 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 87.74, so my estimate is 87.74
+2026-07-27 05:25:00.259 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 87.74
+2026-07-27 05:25:00.259 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.260 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('85.84'), order_type=-1, quantity=4, agent_id=4, time=4, order_id=53, asset_id=1)]
+2026-07-27 05:25:00.260 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.260 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=52, asset_id=1))
+2026-07-27 05:25:00.261 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=56, asset_id=1))
+2026-07-27 05:25:00.261 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=54, asset_id=1))
+2026-07-27 05:25:00.261 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=59, asset_id=1))
+2026-07-27 05:25:00.262 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=58, asset_id=1))
+2026-07-27 05:25:00.262 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=57, asset_id=1))
+2026-07-27 05:25:00.262 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('108.76'), order_type=1, quantity=1, agent_id=3, time=4, order_id=55, asset_id=1))
+2026-07-27 05:25:00.263 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('92.79'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=44, asset_id=1))
+2026-07-27 05:25:00.263 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('92.39'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=40, asset_id=1))
+2026-07-27 05:25:00.263 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('92.59'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=42, asset_id=1))
+2026-07-27 05:25:00.264 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('85.84'), order_type=-1, quantity=1, agent_id=4, time=4, order_id=66, asset_id=1))
+2026-07-27 05:25:00.264 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('85.84'), order_type=-1, quantity=1, agent_id=4, time=4, order_id=65, asset_id=1))
+2026-07-27 05:25:00.264 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('85.84'), order_type=-1, quantity=1, agent_id=4, time=4, order_id=53, asset_id=1))
+2026-07-27 05:25:00.265 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('92.79'), time=4, order=Order(price=Decimal('85.84'), order_type=-1, quantity=1, agent_id=4, time=4, order_id=67, asset_id=1))
+2026-07-27 05:25:00.265 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 92.79
+2026-07-27 05:25:00.265 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 80.65 92.99
+2026-07-27 05:25:00.265 | INFO     | marketsim.loggers.basic:write:10 - Step: 5.
+2026-07-27 05:25:00.266 | INFO     | marketsim.loggers.basic:write:10 - It is time step 5
+2026-07-27 05:25:00.266 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.266 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.267 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.267 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('90.60'), order_type=1, quantity=3, agent_id=0, time=5, order_id=68, asset_id=1)]
+2026-07-27 05:25:00.267 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:00.268 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders []
+2026-07-27 05:25:00.268 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.268 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.269 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.269 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('94.20'), order_type=-1, quantity=4, agent_id=3, time=5, order_id=69, asset_id=1)]
+2026-07-27 05:25:00.270 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:00.270 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.271 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 92.79
+2026-07-27 05:25:00.271 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 90.60 92.99
+2026-07-27 05:25:00.271 | INFO     | marketsim.loggers.basic:write:10 - Step: 6.
+2026-07-27 05:25:00.272 | INFO     | marketsim.loggers.basic:write:10 - It is time step 6
+2026-07-27 05:25:00.272 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:00.272 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:00.272 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.273 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.273 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.274 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('85.76'), order_type=1, quantity=8, agent_id=2, time=6, order_id=70, asset_id=1)]
+2026-07-27 05:25:00.274 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.274 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.275 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.275 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('79.71'), order_type=1, quantity=4, agent_id=3, time=6, order_id=71, asset_id=1)]
+2026-07-27 05:25:00.275 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.276 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.276 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.277 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('102.66'), order_type=-1, quantity=8, agent_id=4, time=6, order_id=72, asset_id=1)]
+2026-07-27 05:25:00.277 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:00.277 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:00.277 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('92.49'), order_type=1, quantity=1, agent_id=5, time=6, order_id=73, asset_id=1), Order(price=Decimal('93.09'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=74, asset_id=1), Order(price=Decimal('92.29'), order_type=1, quantity=1, agent_id=5, time=6, order_id=75, asset_id=1), Order(price=Decimal('93.29'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=76, asset_id=1), Order(price=Decimal('92.09'), order_type=1, quantity=1, agent_id=5, time=6, order_id=77, asset_id=1), Order(price=Decimal('93.49'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=78, asset_id=1), Order(price=Decimal('91.89'), order_type=1, quantity=1, agent_id=5, time=6, order_id=79, asset_id=1), Order(price=Decimal('93.69'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=80, asset_id=1)]
+2026-07-27 05:25:00.278 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 92.79
+2026-07-27 05:25:00.278 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 92.49 93.09
+2026-07-27 05:25:00.278 | INFO     | marketsim.loggers.basic:write:10 - Step: 7.
+2026-07-27 05:25:00.279 | INFO     | marketsim.loggers.basic:write:10 - It is time step 7
+2026-07-27 05:25:00.279 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.279 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.280 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.280 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('94.54'), order_type=-1, quantity=2, agent_id=0, time=7, order_id=81, asset_id=1)]
+2026-07-27 05:25:00.280 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.281 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.281 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.281 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('99.35'), order_type=1, quantity=0, agent_id=1, time=7, order_id=82, asset_id=1)]
+2026-07-27 05:25:00.282 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.282 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.283 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.283 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('85.65'), order_type=1, quantity=3, agent_id=2, time=7, order_id=83, asset_id=1)]
+2026-07-27 05:25:00.283 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.283 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.284 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.284 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('94.32'), order_type=-1, quantity=2, agent_id=3, time=7, order_id=84, asset_id=1)]
+2026-07-27 05:25:00.284 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:00.285 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.285 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 92.79
+2026-07-27 05:25:00.285 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 92.49 93.09
+2026-07-27 05:25:00.285 | INFO     | marketsim.loggers.basic:write:10 - Step: 8.
+2026-07-27 05:25:00.286 | INFO     | marketsim.loggers.basic:write:10 - It is time step 8
+2026-07-27 05:25:00.286 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:00.286 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.286 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.287 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 22.82065124  19.36687175  18.77257686  12.41282858   8.54675657
+   6.76544339   5.14068132   2.30937455  -4.55120091 -10.48235516
+ -12.71221098 -14.61956495 -14.62060109 -24.74167382 -25.04445846
+ -25.69113276 -32.05101149 -40.27793651 -49.72169459 -62.18742673]
+2026-07-27 05:25:00.287 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('101.60'), order_type=-1, quantity=7, agent_id=1, time=8, order_id=85, asset_id=1)]
+2026-07-27 05:25:00.288 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders []
+2026-07-27 05:25:00.288 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.288 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.289 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.289 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('79.68'), order_type=1, quantity=3, agent_id=3, time=8, order_id=86, asset_id=1)]
+2026-07-27 05:25:00.290 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 92.79, so my estimate is 92.79
+2026-07-27 05:25:00.290 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 92.79
+2026-07-27 05:25:00.291 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.292 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('97.44'), order_type=1, quantity=6, agent_id=4, time=8, order_id=87, asset_id=1)]
+2026-07-27 05:25:00.292 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:00.292 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('97.44'), order_type=1, quantity=1, agent_id=4, time=8, order_id=89, asset_id=1))
+2026-07-27 05:25:00.293 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('97.44'), order_type=1, quantity=1, agent_id=4, time=8, order_id=90, asset_id=1))
+2026-07-27 05:25:00.293 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('97.44'), order_type=1, quantity=1, agent_id=4, time=8, order_id=91, asset_id=1))
+2026-07-27 05:25:00.293 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('97.44'), order_type=1, quantity=1, agent_id=4, time=8, order_id=92, asset_id=1))
+2026-07-27 05:25:00.293 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('93.69'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=80, asset_id=1))
+2026-07-27 05:25:00.294 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('93.49'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=78, asset_id=1))
+2026-07-27 05:25:00.294 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('93.29'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=76, asset_id=1))
+2026-07-27 05:25:00.294 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('97.44'), time=8, order=Order(price=Decimal('93.09'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=74, asset_id=1))
+2026-07-27 05:25:00.295 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 97.44
+2026-07-27 05:25:00.295 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 97.44 101.60
+2026-07-27 05:25:00.295 | INFO     | marketsim.loggers.basic:write:10 - Step: 9.
+2026-07-27 05:25:00.296 | INFO     | marketsim.loggers.basic:write:10 - It is time step 9
+2026-07-27 05:25:00.296 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 97.44, so my estimate is 97.44
+2026-07-27 05:25:00.297 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.44
+2026-07-27 05:25:00.297 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 38.78901295  26.49839444  11.93817324  10.22802896   8.28977026
+   4.50462019   4.28719714   3.66619735   3.44657298   1.58151974
+  -1.92532003  -2.44102179 -10.75835985 -12.4747774  -12.87937625
+ -14.64444415 -17.85913052 -25.26296722 -33.02708303 -37.39158215]
+2026-07-27 05:25:00.298 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('99.24'), order_type=-1, quantity=6, agent_id=0, time=9, order_id=93, asset_id=1)]
+2026-07-27 05:25:00.298 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:00.298 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 97.44, so my estimate is 97.44
+2026-07-27 05:25:00.298 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.44
+2026-07-27 05:25:00.299 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 40.843591    29.16333733  21.25319338  12.82729357  12.68960822
+   6.00701982   4.73984953   2.29093189   1.36657673  -0.15198107
+  -1.82765074  -2.42954577  -6.92168631 -15.94691913 -20.22588242
+ -24.36205715 -30.31266458 -30.70424384 -32.15100984 -43.8027272 ]
+2026-07-27 05:25:00.299 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('95.24'), order_type=-1, quantity=6, agent_id=2, time=9, order_id=94, asset_id=1)]
+2026-07-27 05:25:00.299 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 97.44, so my estimate is 97.44
+2026-07-27 05:25:00.300 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.44
+2026-07-27 05:25:00.300 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.2550694   30.8065649   28.06654134  24.89036477  22.08079381
+  21.86728952  21.19710963  19.46035411  12.45262231   4.27668144
+   1.64970154   1.30442517   1.27455259 -12.82760181 -13.99740828
+ -17.3274977  -19.35887306 -19.62661037 -23.30758035 -23.33596664]
+2026-07-27 05:25:00.300 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('98.90'), order_type=-1, quantity=3, agent_id=3, time=9, order_id=95, asset_id=1)]
+2026-07-27 05:25:00.301 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 97.44, so my estimate is 97.44
+2026-07-27 05:25:00.301 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 97.44
+2026-07-27 05:25:00.301 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 31.07448667  17.26031258  12.41821487  11.96969087   9.73560357
+   4.91249561   3.60451335  -1.29902968  -2.01783706  -2.90274619
+  -2.96962118  -3.51623011  -4.78189566  -5.13616435 -17.80738826
+ -20.48723982 -20.50180888 -27.93568518 -38.44235867 -48.66916395]
+2026-07-27 05:25:00.302 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('94.38'), order_type=1, quantity=2, agent_id=4, time=9, order_id=96, asset_id=1)]
+2026-07-27 05:25:00.302 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:00.302 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:00.303 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('97.14'), order_type=1, quantity=1, agent_id=5, time=9, order_id=97, asset_id=1), Order(price=Decimal('97.74'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=98, asset_id=1), Order(price=Decimal('96.94'), order_type=1, quantity=1, agent_id=5, time=9, order_id=99, asset_id=1), Order(price=Decimal('97.94'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=100, asset_id=1), Order(price=Decimal('96.74'), order_type=1, quantity=1, agent_id=5, time=9, order_id=101, asset_id=1), Order(price=Decimal('98.14'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=102, asset_id=1), Order(price=Decimal('96.54'), order_type=1, quantity=1, agent_id=5, time=9, order_id=103, asset_id=1), Order(price=Decimal('98.34'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=104, asset_id=1)]
+2026-07-27 05:25:00.303 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('96.54'), order_type=1, quantity=1, agent_id=5, time=9, order_id=103, asset_id=1))
+2026-07-27 05:25:00.303 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('96.74'), order_type=1, quantity=1, agent_id=5, time=9, order_id=101, asset_id=1))
+2026-07-27 05:25:00.303 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('96.94'), order_type=1, quantity=1, agent_id=5, time=9, order_id=99, asset_id=1))
+2026-07-27 05:25:00.304 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('97.14'), order_type=1, quantity=1, agent_id=5, time=9, order_id=97, asset_id=1))
+2026-07-27 05:25:00.304 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('95.24'), order_type=-1, quantity=1, agent_id=2, time=9, order_id=94, asset_id=1))
+2026-07-27 05:25:00.304 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('95.24'), order_type=-1, quantity=1, agent_id=2, time=9, order_id=107, asset_id=1))
+2026-07-27 05:25:00.305 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('95.24'), order_type=-1, quantity=1, agent_id=2, time=9, order_id=109, asset_id=1))
+2026-07-27 05:25:00.305 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('95.24'), time=9, order=Order(price=Decimal('95.24'), order_type=-1, quantity=1, agent_id=2, time=9, order_id=108, asset_id=1))
+2026-07-27 05:25:00.305 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 95.24
+2026-07-27 05:25:00.305 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.38 95.24
+2026-07-27 05:25:00.305 | INFO     | marketsim.loggers.basic:write:10 - Simulation ended. time: 10
+2026-07-27 05:25:00.306 | INFO     | marketsim.loggers.basic:write:10 - Final fundamental: 102.33
+2026-07-27 05:25:00.306 | INFO     | marketsim.loggers.basic:write:10 - Orders matched: 56
+2026-07-27 05:25:00.306 | INFO     | marketsim.loggers.basic:write:10 - Last traded price: 95.24
+2026-07-27 05:25:00.307 | INFO     | marketsim.loggers.basic:write:10 - At the end of the simulation we get valuations by fundamental: {0: Decimal('13.32'), 1: Decimal('-72.22'), 2: Decimal('-40.97'), 3: Decimal('30.05'), 4: Decimal('20.06'), 5: Decimal('56.50')}
+2026-07-27 05:25:00.307 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed0: 	position: 0  	cash: 13.32 	value(by fund.): 13.32 	value(by last trade): 13.32
+2026-07-27 05:25:00.307 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed1: 	position: -5  	cash: 438.61 	value(by fund.): -72.22 	value(by last trade): -37.59
+2026-07-27 05:25:00.307 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed2: 	position: -2  	cash: 164.90 	value(by fund.): -40.97 	value(by last trade): -25.58
+2026-07-27 05:25:00.308 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed3: 	position: 3  	cash: -281.17 	value(by fund.): 30.05 	value(by last trade): 4.55
+2026-07-27 05:25:00.308 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed4: 	position: -1  	cash: 119.49 	value(by fund.): 20.06 	value(by last trade): 24.25
+2026-07-27 05:25:00.308 | INFO     | marketsim.loggers.basic:write:10 - Agent MM_ZOH5: 	position: 5  	cash: -455.15 	value(by fund.): 56.50 	value(by last trade): 21.05
+2026-07-27 05:25:00.308 | INFO     | marketsim.loggers.basic:write:10 - Positions sum: 0
+2026-07-27 05:25:00.309 | INFO     | marketsim.loggers.basic:write:10 - Cash sum: 0.00
+2026-07-27 05:25:00.309 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by last traded price: 0.00
+2026-07-27 05:25:00.309 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by fundamental: 6.74
+2026-07-27 05:25:00.310 | INFO     | marketsim.loggers.basic:write:10 - Midprices: defaultdict(<class 'marketsim.market.price.Price'>, {0: Decimal('99.07'), 1: Decimal('99.07'), 2: Decimal('86.32'), 3: Decimal('94.82'), 4: Decimal('86.82'), 5: Decimal('91.795'), 6: Decimal('92.79'), 7: Decimal('92.79'), 8: Decimal('99.52'), 9: Decimal('94.81')})
+2026-07-27 05:25:02.154 | INFO     | marketsim.loggers.basic:write:10 - Traceback (most recent call last):
+  File "C:\projects_AK\Daedalus\pymarketsim\examples\simulation_20260727.py", line 36, in <module>
+    sim.run()
+  File "c:\projects_ak\daedalus\pymarketsim\marketsim\simulator\simulator.py", line 172, in run
+    self.end_sim()
+  File "c:\projects_ak\daedalus\pymarketsim\marketsim\simulator\simulator.py", line 162, in end_sim
+    simple_plot(range(0,self.current_time), self.markets[0].get_midprices(), "marketsim/output/middle_prices.png")
+  File "c:\projects_ak\daedalus\pymarketsim\marketsim\plot\simple_plot.py", line 4, in simple_plot
+    plt.plot(x, y)
+  File "C:\Users\akuropatwinski\PycharmProjects\pythonProject5\Daedalus\lib\site-packages\matplotlib\pyplot.py", line 3578, in plot
+    return gca().plot(
+  File "C:\Users\akuropatwinski\PycharmProjects\pythonProject5\Daedalus\lib\site-packages\matplotlib\axes\_axes.py", line 1721, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+  File "C:\Users\akuropatwinski\PycharmProjects\pythonProject5\Daedalus\lib\site-packages\matplotlib\axes\_base.py", line 303, in __call__
+    yield from self._plot_args(
+  File "C:\Users\akuropatwinski\PycharmProjects\pythonProject5\Daedalus\lib\site-packages\matplotlib\axes\_base.py", line 499, in _plot_args
+    raise ValueError(f"x and y must have same first dimension, but "
+ValueError: x and y must have same first dimension, but have shapes (10,) and (1,)
+2026-07-27 05:25:44.597 | INFO     | marketsim.loggers.basic:write:10 - Initializing simulation with following parameters...
+2026-07-27 05:25:44.599 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed0
+2026-07-27 05:25:44.600 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed1
+2026-07-27 05:25:44.600 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed2
+2026-07-27 05:25:44.601 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed3
+2026-07-27 05:25:44.601 | INFO     | marketsim.loggers.basic:write:10 - Adding agent ZI_non_informed4
+2026-07-27 05:25:44.601 | INFO     | marketsim.loggers.basic:write:10 - Adding agent MM_ZOH5
+2026-07-27 05:25:44.602 | INFO     | marketsim.loggers.basic:write:10 - Agents (6):
+2026-07-27 05:25:44.602 | INFO     | marketsim.loggers.basic:write:10 - 0: ZI_non_informed0
+2026-07-27 05:25:44.602 | INFO     | marketsim.loggers.basic:write:10 - 1: ZI_non_informed1
+2026-07-27 05:25:44.603 | INFO     | marketsim.loggers.basic:write:10 - 2: ZI_non_informed2
+2026-07-27 05:25:44.603 | INFO     | marketsim.loggers.basic:write:10 - 3: ZI_non_informed3
+2026-07-27 05:25:44.603 | INFO     | marketsim.loggers.basic:write:10 - 4: ZI_non_informed4
+2026-07-27 05:25:44.604 | INFO     | marketsim.loggers.basic:write:10 - 5: MM_ZOH5
+2026-07-27 05:25:44.604 | INFO     | marketsim.loggers.basic:write:10 - Step: 0.
+2026-07-27 05:25:44.604 | INFO     | marketsim.loggers.basic:write:10 - It is time step 0
+2026-07-27 05:25:44.604 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:44.605 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:44.605 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.606 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('103.80'), order_type=-1, quantity=3, agent_id=0, time=0, order_id=6, asset_id=1)]
+2026-07-27 05:25:44.606 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:44.607 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:44.607 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.608 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('95.06'), order_type=-1, quantity=2, agent_id=1, time=0, order_id=7, asset_id=1)]
+2026-07-27 05:25:44.608 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:44.609 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:44.609 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.610 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('93.78'), order_type=1, quantity=5, agent_id=2, time=0, order_id=8, asset_id=1)]
+2026-07-27 05:25:44.610 | INFO     | marketsim.loggers.basic:write:10 - It is time 0 with final I observed last traded price 100.00, so my estimate is 100.00
+2026-07-27 05:25:44.610 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.00
+2026-07-27 05:25:44.611 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.612 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('96.12'), order_type=1, quantity=8, agent_id=3, time=0, order_id=9, asset_id=1)]
+2026-07-27 05:25:44.612 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:44.612 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:44.613 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:44.613 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('99.70'), order_type=1, quantity=1, agent_id=5, time=0, order_id=10, asset_id=1), Order(price=Decimal('100.30'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=11, asset_id=1), Order(price=Decimal('99.50'), order_type=1, quantity=1, agent_id=5, time=0, order_id=12, asset_id=1), Order(price=Decimal('100.50'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=13, asset_id=1), Order(price=Decimal('99.30'), order_type=1, quantity=1, agent_id=5, time=0, order_id=14, asset_id=1), Order(price=Decimal('100.70'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=15, asset_id=1), Order(price=Decimal('99.10'), order_type=1, quantity=1, agent_id=5, time=0, order_id=16, asset_id=1), Order(price=Decimal('100.90'), order_type=-1, quantity=1, agent_id=5, time=0, order_id=17, asset_id=1)]
+2026-07-27 05:25:44.613 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('99.30'), time=0, order=Order(price=Decimal('99.50'), order_type=1, quantity=1, agent_id=5, time=0, order_id=12, asset_id=1))
+2026-07-27 05:25:44.614 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('99.30'), time=0, order=Order(price=Decimal('99.70'), order_type=1, quantity=1, agent_id=5, time=0, order_id=10, asset_id=1))
+2026-07-27 05:25:44.614 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('99.30'), time=0, order=Order(price=Decimal('95.06'), order_type=-1, quantity=1, agent_id=1, time=0, order_id=7, asset_id=1))
+2026-07-27 05:25:44.614 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('99.30'), time=0, order=Order(price=Decimal('95.06'), order_type=-1, quantity=1, agent_id=1, time=0, order_id=18, asset_id=1))
+2026-07-27 05:25:44.615 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 99.30
+2026-07-27 05:25:44.615 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 99.30 100.30
+2026-07-27 05:25:44.615 | INFO     | marketsim.loggers.basic:write:10 - Step: 1.
+2026-07-27 05:25:44.615 | INFO     | marketsim.loggers.basic:write:10 - It is time step 1
+2026-07-27 05:25:44.615 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 99.30, so my estimate is 99.30
+2026-07-27 05:25:44.616 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 99.30
+2026-07-27 05:25:44.616 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.616 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('101.82'), order_type=1, quantity=9, agent_id=0, time=1, order_id=19, asset_id=1)]
+2026-07-27 05:25:44.617 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 99.30, so my estimate is 99.30
+2026-07-27 05:25:44.617 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 99.30
+2026-07-27 05:25:44.618 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.618 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('105.17'), order_type=-1, quantity=2, agent_id=1, time=1, order_id=20, asset_id=1)]
+2026-07-27 05:25:44.618 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 99.30, so my estimate is 99.30
+2026-07-27 05:25:44.618 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 99.30
+2026-07-27 05:25:44.619 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.619 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('94.65'), order_type=-1, quantity=12, agent_id=2, time=1, order_id=21, asset_id=1)]
+2026-07-27 05:25:44.620 | INFO     | marketsim.loggers.basic:write:10 - It is time 1 with final I observed last traded price 99.30, so my estimate is 99.30
+2026-07-27 05:25:44.620 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 99.30
+2026-07-27 05:25:44.620 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.621 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('96.05'), order_type=-1, quantity=5, agent_id=3, time=1, order_id=22, asset_id=1)]
+2026-07-27 05:25:44.621 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:44.622 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.622 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('99.10'), order_type=1, quantity=1, agent_id=5, time=0, order_id=16, asset_id=1))
+2026-07-27 05:25:44.663 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('99.30'), order_type=1, quantity=1, agent_id=5, time=0, order_id=14, asset_id=1))
+2026-07-27 05:25:44.663 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=23, asset_id=1))
+2026-07-27 05:25:44.663 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=26, asset_id=1))
+2026-07-27 05:25:44.664 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=19, asset_id=1))
+2026-07-27 05:25:44.664 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=28, asset_id=1))
+2026-07-27 05:25:44.664 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=24, asset_id=1))
+2026-07-27 05:25:44.664 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=30, asset_id=1))
+2026-07-27 05:25:44.665 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=27, asset_id=1))
+2026-07-27 05:25:44.665 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=29, asset_id=1))
+2026-07-27 05:25:44.666 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('101.82'), order_type=1, quantity=1, agent_id=0, time=1, order_id=25, asset_id=1))
+2026-07-27 05:25:44.666 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=31, asset_id=1))
+2026-07-27 05:25:44.666 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=33, asset_id=1))
+2026-07-27 05:25:44.667 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=32, asset_id=1))
+2026-07-27 05:25:44.667 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=34, asset_id=1))
+2026-07-27 05:25:44.667 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=36, asset_id=1))
+2026-07-27 05:25:44.668 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=35, asset_id=1))
+2026-07-27 05:25:44.668 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=40, asset_id=1))
+2026-07-27 05:25:44.668 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=37, asset_id=1))
+2026-07-27 05:25:44.668 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=38, asset_id=1))
+2026-07-27 05:25:44.669 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=39, asset_id=1))
+2026-07-27 05:25:44.669 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.65'), time=1, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=2, time=1, order_id=41, asset_id=1))
+2026-07-27 05:25:44.669 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 94.65
+2026-07-27 05:25:44.670 | INFO     | marketsim.loggers.basic:write:10 - And the spread: -inf 94.65
+2026-07-27 05:25:44.670 | INFO     | marketsim.loggers.basic:write:10 - Step: 2.
+2026-07-27 05:25:44.670 | INFO     | marketsim.loggers.basic:write:10 - It is time step 2
+2026-07-27 05:25:44.671 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.671 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.672 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.672 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('49.77'), order_type=1, quantity=5, agent_id=0, time=2, order_id=42, asset_id=1)]
+2026-07-27 05:25:44.673 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.673 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.674 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.674 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('94.98'), order_type=1, quantity=7, agent_id=1, time=2, order_id=43, asset_id=1)]
+2026-07-27 05:25:44.675 | INFO     | marketsim.loggers.basic:write:10 - It is time 2 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.675 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.675 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.676 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('129.77'), order_type=-1, quantity=4, agent_id=2, time=2, order_id=44, asset_id=1)]
+2026-07-27 05:25:44.676 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders []
+2026-07-27 05:25:44.676 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:44.677 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.677 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 94.65
+2026-07-27 05:25:44.677 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.98 100.30
+2026-07-27 05:25:44.678 | INFO     | marketsim.loggers.basic:write:10 - Step: 3.
+2026-07-27 05:25:44.678 | INFO     | marketsim.loggers.basic:write:10 - It is time step 3
+2026-07-27 05:25:44.678 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.678 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.679 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.680 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('49.74'), order_type=1, quantity=4, agent_id=0, time=3, order_id=45, asset_id=1)]
+2026-07-27 05:25:44.680 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.680 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.681 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.681 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('100.42'), order_type=-1, quantity=3, agent_id=1, time=3, order_id=46, asset_id=1)]
+2026-07-27 05:25:44.681 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.682 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.682 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.683 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('129.65'), order_type=-1, quantity=3, agent_id=2, time=3, order_id=47, asset_id=1)]
+2026-07-27 05:25:44.683 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders []
+2026-07-27 05:25:44.683 | INFO     | marketsim.loggers.basic:write:10 - It is time 3 with final I observed last traded price 94.65, so my estimate is 94.65
+2026-07-27 05:25:44.684 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.65
+2026-07-27 05:25:44.684 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.685 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('98.55'), order_type=1, quantity=7, agent_id=4, time=3, order_id=48, asset_id=1)]
+2026-07-27 05:25:44.685 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:44.685 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:44.686 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('94.35'), order_type=1, quantity=1, agent_id=5, time=3, order_id=49, asset_id=1), Order(price=Decimal('94.95'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=50, asset_id=1), Order(price=Decimal('94.15'), order_type=1, quantity=1, agent_id=5, time=3, order_id=51, asset_id=1), Order(price=Decimal('95.15'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=52, asset_id=1), Order(price=Decimal('93.95'), order_type=1, quantity=1, agent_id=5, time=3, order_id=53, asset_id=1), Order(price=Decimal('95.35'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=54, asset_id=1), Order(price=Decimal('93.75'), order_type=1, quantity=1, agent_id=5, time=3, order_id=55, asset_id=1), Order(price=Decimal('95.55'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=56, asset_id=1)]
+2026-07-27 05:25:44.686 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('98.55'), order_type=1, quantity=1, agent_id=4, time=3, order_id=59, asset_id=1))
+2026-07-27 05:25:44.687 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('98.55'), order_type=1, quantity=1, agent_id=4, time=3, order_id=61, asset_id=1))
+2026-07-27 05:25:44.687 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('98.55'), order_type=1, quantity=1, agent_id=4, time=3, order_id=60, asset_id=1))
+2026-07-27 05:25:44.687 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('98.55'), order_type=1, quantity=1, agent_id=4, time=3, order_id=62, asset_id=1))
+2026-07-27 05:25:44.688 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('95.55'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=56, asset_id=1))
+2026-07-27 05:25:44.688 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('95.35'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=54, asset_id=1))
+2026-07-27 05:25:44.689 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('95.15'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=52, asset_id=1))
+2026-07-27 05:25:44.689 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('98.55'), time=3, order=Order(price=Decimal('94.95'), order_type=-1, quantity=1, agent_id=5, time=3, order_id=50, asset_id=1))
+2026-07-27 05:25:44.690 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 98.55
+2026-07-27 05:25:44.690 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 98.55 100.42
+2026-07-27 05:25:44.690 | INFO     | marketsim.loggers.basic:write:10 - Step: 4.
+2026-07-27 05:25:44.690 | INFO     | marketsim.loggers.basic:write:10 - It is time step 4
+2026-07-27 05:25:44.691 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 98.55, so my estimate is 98.55
+2026-07-27 05:25:44.691 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 98.55
+2026-07-27 05:25:44.692 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.692 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('53.55'), order_type=1, quantity=3, agent_id=0, time=4, order_id=63, asset_id=1)]
+2026-07-27 05:25:44.693 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:44.693 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 98.55, so my estimate is 98.55
+2026-07-27 05:25:44.693 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 98.55
+2026-07-27 05:25:44.694 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.694 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('133.18'), order_type=1, quantity=4, agent_id=2, time=4, order_id=64, asset_id=1)]
+2026-07-27 05:25:44.695 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 98.55, so my estimate is 98.55
+2026-07-27 05:25:44.695 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 98.55
+2026-07-27 05:25:44.696 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.696 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('95.30'), order_type=-1, quantity=4, agent_id=3, time=4, order_id=65, asset_id=1)]
+2026-07-27 05:25:44.696 | INFO     | marketsim.loggers.basic:write:10 - It is time 4 with final I observed last traded price 98.55, so my estimate is 98.55
+2026-07-27 05:25:44.697 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 98.55
+2026-07-27 05:25:44.697 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.698 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('92.10'), order_type=-1, quantity=5, agent_id=4, time=4, order_id=66, asset_id=1)]
+2026-07-27 05:25:44.698 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.698 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.15'), time=4, order=Order(price=Decimal('94.35'), order_type=1, quantity=1, agent_id=5, time=3, order_id=49, asset_id=1))
+2026-07-27 05:25:44.699 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.15'), time=4, order=Order(price=Decimal('133.18'), order_type=1, quantity=4, agent_id=2, time=4, order_id=64, asset_id=1))
+2026-07-27 05:25:44.699 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.15'), time=4, order=Order(price=Decimal('92.10'), order_type=-1, quantity=4, agent_id=4, time=4, order_id=66, asset_id=1))
+2026-07-27 05:25:44.699 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.15'), time=4, order=Order(price=Decimal('92.10'), order_type=-1, quantity=1, agent_id=4, time=4, order_id=67, asset_id=1))
+2026-07-27 05:25:44.700 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 94.15
+2026-07-27 05:25:44.700 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.15 95.30
+2026-07-27 05:25:44.700 | INFO     | marketsim.loggers.basic:write:10 - Step: 5.
+2026-07-27 05:25:44.701 | INFO     | marketsim.loggers.basic:write:10 - It is time step 5
+2026-07-27 05:25:44.701 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:44.701 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 94.15, so my estimate is 94.15
+2026-07-27 05:25:44.702 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.15
+2026-07-27 05:25:44.702 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.702 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('99.92'), order_type=-1, quantity=4, agent_id=1, time=5, order_id=68, asset_id=1)]
+2026-07-27 05:25:44.703 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 94.15, so my estimate is 94.15
+2026-07-27 05:25:44.703 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.15
+2026-07-27 05:25:44.704 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.704 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('122.65'), order_type=-1, quantity=4, agent_id=2, time=5, order_id=69, asset_id=1)]
+2026-07-27 05:25:44.705 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 94.15, so my estimate is 94.15
+2026-07-27 05:25:44.705 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.15
+2026-07-27 05:25:44.706 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.707 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('91.02'), order_type=-1, quantity=2, agent_id=3, time=5, order_id=70, asset_id=1)]
+2026-07-27 05:25:44.707 | INFO     | marketsim.loggers.basic:write:10 - It is time 5 with final I observed last traded price 94.15, so my estimate is 94.15
+2026-07-27 05:25:44.708 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.15
+2026-07-27 05:25:44.708 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.709 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('100.99'), order_type=-1, quantity=2, agent_id=4, time=5, order_id=71, asset_id=1)]
+2026-07-27 05:25:44.709 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.709 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('93.75'), time=5, order=Order(price=Decimal('93.95'), order_type=1, quantity=1, agent_id=5, time=3, order_id=53, asset_id=1))
+2026-07-27 05:25:44.710 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('93.75'), time=5, order=Order(price=Decimal('94.15'), order_type=1, quantity=1, agent_id=5, time=3, order_id=51, asset_id=1))
+2026-07-27 05:25:44.710 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('93.75'), time=5, order=Order(price=Decimal('91.02'), order_type=-1, quantity=1, agent_id=3, time=5, order_id=70, asset_id=1))
+2026-07-27 05:25:44.710 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('93.75'), time=5, order=Order(price=Decimal('91.02'), order_type=-1, quantity=1, agent_id=3, time=5, order_id=72, asset_id=1))
+2026-07-27 05:25:44.711 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 93.75
+2026-07-27 05:25:44.711 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 93.75 99.92
+2026-07-27 05:25:44.711 | INFO     | marketsim.loggers.basic:write:10 - Step: 6.
+2026-07-27 05:25:44.711 | INFO     | marketsim.loggers.basic:write:10 - It is time step 6
+2026-07-27 05:25:44.712 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 93.75, so my estimate is 93.75
+2026-07-27 05:25:44.712 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 93.75
+2026-07-27 05:25:44.713 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.713 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('52.54'), order_type=-1, quantity=4, agent_id=0, time=6, order_id=73, asset_id=1)]
+2026-07-27 05:25:44.713 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 93.75, so my estimate is 93.75
+2026-07-27 05:25:44.714 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 93.75
+2026-07-27 05:25:44.714 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.715 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('94.07'), order_type=1, quantity=8, agent_id=1, time=6, order_id=74, asset_id=1)]
+2026-07-27 05:25:44.715 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 93.75, so my estimate is 93.75
+2026-07-27 05:25:44.715 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 93.75
+2026-07-27 05:25:44.716 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.716 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('122.15'), order_type=-1, quantity=9, agent_id=2, time=6, order_id=75, asset_id=1)]
+2026-07-27 05:25:44.717 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders []
+2026-07-27 05:25:44.717 | INFO     | marketsim.loggers.basic:write:10 - It is time 6 with final I observed last traded price 93.75, so my estimate is 93.75
+2026-07-27 05:25:44.717 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 93.75
+2026-07-27 05:25:44.718 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.718 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('98.24'), order_type=1, quantity=2, agent_id=4, time=6, order_id=76, asset_id=1)]
+2026-07-27 05:25:44.719 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:44.719 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid -inf
+2026-07-27 05:25:44.719 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('93.45'), order_type=1, quantity=1, agent_id=5, time=6, order_id=77, asset_id=1), Order(price=Decimal('94.05'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=78, asset_id=1), Order(price=Decimal('93.25'), order_type=1, quantity=1, agent_id=5, time=6, order_id=79, asset_id=1), Order(price=Decimal('94.25'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=80, asset_id=1), Order(price=Decimal('93.05'), order_type=1, quantity=1, agent_id=5, time=6, order_id=81, asset_id=1), Order(price=Decimal('94.45'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=82, asset_id=1), Order(price=Decimal('92.85'), order_type=1, quantity=1, agent_id=5, time=6, order_id=83, asset_id=1), Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=84, asset_id=1)]
+2026-07-27 05:25:44.720 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('94.07'), order_type=1, quantity=1, agent_id=1, time=6, order_id=74, asset_id=1))
+2026-07-27 05:25:44.720 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('94.07'), order_type=1, quantity=2, agent_id=1, time=6, order_id=85, asset_id=1))
+2026-07-27 05:25:44.720 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('98.24'), order_type=1, quantity=1, agent_id=4, time=6, order_id=76, asset_id=1))
+2026-07-27 05:25:44.721 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('98.24'), order_type=1, quantity=1, agent_id=4, time=6, order_id=86, asset_id=1))
+2026-07-27 05:25:44.721 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('94.05'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=78, asset_id=1))
+2026-07-27 05:25:44.721 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('52.54'), order_type=-1, quantity=1, agent_id=0, time=6, order_id=73, asset_id=1))
+2026-07-27 05:25:44.722 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('52.54'), order_type=-1, quantity=1, agent_id=0, time=6, order_id=87, asset_id=1))
+2026-07-27 05:25:44.722 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('94.07'), time=6, order=Order(price=Decimal('52.54'), order_type=-1, quantity=2, agent_id=0, time=6, order_id=88, asset_id=1))
+2026-07-27 05:25:44.722 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 94.07
+2026-07-27 05:25:44.723 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.07 94.25
+2026-07-27 05:25:44.723 | INFO     | marketsim.loggers.basic:write:10 - Step: 7.
+2026-07-27 05:25:44.723 | INFO     | marketsim.loggers.basic:write:10 - It is time step 7
+2026-07-27 05:25:44.724 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.724 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.725 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.06798322  27.85746803  22.33784713  18.80589361  14.06041637
+  12.54708155   8.8013953    7.35027621   5.35207655   3.49604301
+   2.77617425   2.54176849  -1.18738181  -6.66514595 -13.56381557
+ -20.94627841 -21.66175137 -25.96299411 -41.31058732 -44.78296675]
+2026-07-27 05:25:44.725 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders [Order(price=Decimal('72.84'), order_type=1, quantity=4, agent_id=0, time=7, order_id=90, asset_id=1)]
+2026-07-27 05:25:44.725 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders []
+2026-07-27 05:25:44.726 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.726 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.727 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.727 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('122.48'), order_type=-1, quantity=2, agent_id=2, time=7, order_id=91, asset_id=1)]
+2026-07-27 05:25:44.727 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.728 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.728 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.729 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('92.58'), order_type=1, quantity=6, agent_id=3, time=7, order_id=92, asset_id=1)]
+2026-07-27 05:25:44.729 | INFO     | marketsim.loggers.basic:write:10 - It is time 7 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.729 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.730 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.730 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('90.38'), order_type=1, quantity=3, agent_id=4, time=7, order_id=93, asset_id=1)]
+2026-07-27 05:25:44.730 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.731 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 94.07
+2026-07-27 05:25:44.731 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.07 94.25
+2026-07-27 05:25:44.731 | INFO     | marketsim.loggers.basic:write:10 - Step: 8.
+2026-07-27 05:25:44.732 | INFO     | marketsim.loggers.basic:write:10 - It is time step 8
+2026-07-27 05:25:44.732 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:44.732 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.733 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.733 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.734 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('85.16'), order_type=1, quantity=4, agent_id=1, time=8, order_id=94, asset_id=1)]
+2026-07-27 05:25:44.734 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.734 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.735 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.735 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('108.72'), order_type=1, quantity=5, agent_id=2, time=8, order_id=95, asset_id=1)]
+2026-07-27 05:25:44.735 | INFO     | marketsim.loggers.basic:write:10 - It is time 8 with final I observed last traded price 94.07, so my estimate is 94.07
+2026-07-27 05:25:44.736 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 94.07
+2026-07-27 05:25:44.736 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.737 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('100.43'), order_type=-1, quantity=3, agent_id=3, time=8, order_id=96, asset_id=1)]
+2026-07-27 05:25:44.737 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders []
+2026-07-27 05:25:44.737 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders []
+2026-07-27 05:25:44.738 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('108.72'), order_type=1, quantity=1, agent_id=2, time=8, order_id=95, asset_id=1))
+2026-07-27 05:25:44.738 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('108.72'), order_type=1, quantity=1, agent_id=2, time=8, order_id=97, asset_id=1))
+2026-07-27 05:25:44.739 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('108.72'), order_type=1, quantity=1, agent_id=2, time=8, order_id=100, asset_id=1))
+2026-07-27 05:25:44.739 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('108.72'), order_type=1, quantity=1, agent_id=2, time=8, order_id=99, asset_id=1))
+2026-07-27 05:25:44.739 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('108.72'), order_type=1, quantity=1, agent_id=2, time=8, order_id=98, asset_id=1))
+2026-07-27 05:25:44.740 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('100.43'), order_type=-1, quantity=1, agent_id=3, time=8, order_id=101, asset_id=1))
+2026-07-27 05:25:44.740 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('100.43'), order_type=-1, quantity=1, agent_id=3, time=8, order_id=102, asset_id=1))
+2026-07-27 05:25:44.740 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('94.45'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=82, asset_id=1))
+2026-07-27 05:25:44.741 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('94.25'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=80, asset_id=1))
+2026-07-27 05:25:44.741 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.43'), time=8, order=Order(price=Decimal('94.65'), order_type=-1, quantity=1, agent_id=5, time=6, order_id=84, asset_id=1))
+2026-07-27 05:25:44.741 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 100.43
+2026-07-27 05:25:44.741 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 94.07 100.43
+2026-07-27 05:25:44.741 | INFO     | marketsim.loggers.basic:write:10 - Step: 9.
+2026-07-27 05:25:44.742 | INFO     | marketsim.loggers.basic:write:10 - It is time step 9
+2026-07-27 05:25:44.742 | INFO     | marketsim.loggers.basic:write:10 - Agent 0 is entering the market and makes orders []
+2026-07-27 05:25:44.742 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 100.43, so my estimate is 100.43
+2026-07-27 05:25:44.742 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.43
+2026-07-27 05:25:44.743 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 26.91735642  14.48069419  14.26366064  12.21511768  11.47881801
+   9.05484284   6.74677767   5.65566319   0.61396306  -5.23826122
+  -7.08677829  -8.76065278 -11.29246663 -12.77314085 -15.33653553
+ -15.44299479 -19.8819416  -22.08785751 -28.14648956 -30.12902283]
+2026-07-27 05:25:44.743 | INFO     | marketsim.loggers.basic:write:10 - Agent 1 is entering the market and makes orders [Order(price=Decimal('91.40'), order_type=1, quantity=10, agent_id=1, time=9, order_id=103, asset_id=1)]
+2026-07-27 05:25:44.744 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 100.43, so my estimate is 100.43
+2026-07-27 05:25:44.744 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.43
+2026-07-27 05:25:44.745 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 34.90089263  31.41135498  28.29492976  14.89900536  12.73715852
+   4.15028703   1.90988436   1.01879838  -1.14170833  -4.78890104
+  -6.00561112  -7.54057694 -17.12893189 -19.2923308  -20.32938757
+ -20.71361892 -30.75480843 -31.14944528 -36.77662547 -40.23983317]
+2026-07-27 05:25:44.745 | INFO     | marketsim.loggers.basic:write:10 - Agent 2 is entering the market and makes orders [Order(price=Decimal('101.65'), order_type=-1, quantity=2, agent_id=2, time=9, order_id=104, asset_id=1)]
+2026-07-27 05:25:44.745 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 100.43, so my estimate is 100.43
+2026-07-27 05:25:44.745 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.43
+2026-07-27 05:25:44.746 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 29.57504053  26.12544218  26.09301758  19.00804901  18.18753612
+  13.37562941  12.42258211   6.18552556  -1.26965118  -3.36221034
+  -3.72038731  -5.19944425  -6.20980111  -8.44143088  -9.49951614
+ -16.60881356 -20.41091723 -20.46028264 -28.70267589 -31.78544449]
+2026-07-27 05:25:44.746 | INFO     | marketsim.loggers.basic:write:10 - Agent 3 is entering the market and makes orders [Order(price=Decimal('112.74'), order_type=1, quantity=2, agent_id=3, time=9, order_id=105, asset_id=1)]
+2026-07-27 05:25:44.747 | INFO     | marketsim.loggers.basic:write:10 - It is time 9 with final I observed last traded price 100.43, so my estimate is 100.43
+2026-07-27 05:25:44.747 | INFO     | marketsim.loggers.basic:write:10 - The estimate: 100.43
+2026-07-27 05:25:44.748 | INFO     | marketsim.loggers.basic:write:10 - Private values: [ 28.50499801  23.75910205  23.6031595   17.72089648   9.56157954
+   8.7250473    8.62894536   8.19479645   6.57087846   4.62526566
+   4.06737285  -3.48941402  -5.39306724  -6.66085848  -7.3585385
+  -9.21542839 -10.35860474 -10.79816365 -23.03223687 -36.99479382]
+2026-07-27 05:25:44.748 | INFO     | marketsim.loggers.basic:write:10 - Agent 4 is entering the market and makes orders [Order(price=Decimal('96.84'), order_type=1, quantity=9, agent_id=4, time=9, order_id=106, asset_id=1)]
+2026-07-27 05:25:44.748 | INFO     | marketsim.loggers.basic:write:10 - Withdrawing previous orders ()
+2026-07-27 05:25:44.749 | INFO     | marketsim.loggers.basic:write:10 - Best ask: inf, Best bid 94.07
+2026-07-27 05:25:44.749 | INFO     | marketsim.loggers.basic:write:10 - Agent 5 is entering the market and makes orders [Order(price=Decimal('100.13'), order_type=1, quantity=1, agent_id=5, time=9, order_id=107, asset_id=1), Order(price=Decimal('100.73'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=108, asset_id=1), Order(price=Decimal('99.93'), order_type=1, quantity=1, agent_id=5, time=9, order_id=109, asset_id=1), Order(price=Decimal('100.93'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=110, asset_id=1), Order(price=Decimal('99.73'), order_type=1, quantity=1, agent_id=5, time=9, order_id=111, asset_id=1), Order(price=Decimal('101.13'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=112, asset_id=1), Order(price=Decimal('99.53'), order_type=1, quantity=1, agent_id=5, time=9, order_id=113, asset_id=1), Order(price=Decimal('101.33'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=114, asset_id=1)]
+2026-07-27 05:25:44.749 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.93'), time=9, order=Order(price=Decimal('112.74'), order_type=1, quantity=1, agent_id=3, time=9, order_id=105, asset_id=1))
+2026-07-27 05:25:44.750 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.93'), time=9, order=Order(price=Decimal('112.74'), order_type=1, quantity=1, agent_id=3, time=9, order_id=115, asset_id=1))
+2026-07-27 05:25:44.750 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.93'), time=9, order=Order(price=Decimal('100.93'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=110, asset_id=1))
+2026-07-27 05:25:44.750 | INFO     | marketsim.loggers.basic:write:10 - Matching order MatchedOrder(price=Decimal('100.93'), time=9, order=Order(price=Decimal('100.73'), order_type=-1, quantity=1, agent_id=5, time=9, order_id=108, asset_id=1))
+2026-07-27 05:25:44.750 | INFO     | marketsim.loggers.basic:write:10 - After clearing the market the last traded price is: 100.93
+2026-07-27 05:25:44.751 | INFO     | marketsim.loggers.basic:write:10 - And the spread: 100.13 101.13
+2026-07-27 05:25:44.751 | INFO     | marketsim.loggers.basic:write:10 - Simulation ended. time: 10
+2026-07-27 05:25:44.751 | INFO     | marketsim.loggers.basic:write:10 - Final fundamental: 101.57
+2026-07-27 05:25:44.752 | INFO     | marketsim.loggers.basic:write:10 - Orders matched: 64
+2026-07-27 05:25:44.752 | INFO     | marketsim.loggers.basic:write:10 - Last traded price: 100.93
+2026-07-27 05:25:44.752 | INFO     | marketsim.loggers.basic:write:10 - At the end of the simulation we get valuations by fundamental: {0: Decimal('16.18'), 1: Decimal('10.87'), 2: Decimal('-34.81'), 3: Decimal('-12.01'), 4: Decimal('-5.95'), 5: Decimal('17.16')}
+2026-07-27 05:25:44.753 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed0: 	position: 5  	cash: -475.57 	value(by fund.): 16.18 	value(by last trade): 29.08
+2026-07-27 05:25:44.753 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed1: 	position: 1  	cash: -83.61 	value(by fund.): 10.87 	value(by last trade): 17.32
+2026-07-27 05:25:44.753 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed2: 	position: -2  	cash: 162.40 	value(by fund.): -34.81 	value(by last trade): -39.46
+2026-07-27 05:25:44.753 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed3: 	position: -2  	cash: 186.50 	value(by fund.): -12.01 	value(by last trade): -15.36
+2026-07-27 05:25:44.753 | INFO     | marketsim.loggers.basic:write:10 - Agent ZI_non_informed4: 	position: 1  	cash: -111.59 	value(by fund.): -5.95 	value(by last trade): -10.66
+2026-07-27 05:25:44.754 | INFO     | marketsim.loggers.basic:write:10 - Agent MM_ZOH5: 	position: -3  	cash: 321.87 	value(by fund.): 17.16 	value(by last trade): 19.08
+2026-07-27 05:25:44.754 | INFO     | marketsim.loggers.basic:write:10 - Positions sum: 0
+2026-07-27 05:25:44.754 | INFO     | marketsim.loggers.basic:write:10 - Cash sum: 0.00
+2026-07-27 05:25:44.754 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by last traded price: 0.00
+2026-07-27 05:25:44.754 | INFO     | marketsim.loggers.basic:write:10 - Sum of values by fundamental: -8.56
+2026-07-27 05:25:44.755 | INFO     | marketsim.loggers.basic:write:10 - Midprices: defaultdict(<class 'marketsim.market.price.Price'>, {0: Decimal('99.80'), 1: Decimal('99.80'), 2: Decimal('97.64'), 3: Decimal('99.485'), 4: Decimal('94.725'), 5: Decimal('96.835'), 6: Decimal('94.16'), 7: Decimal('94.16'), 8: Decimal('97.25'), 9: Decimal('100.63')})

@@ -5,6 +5,7 @@ from marketsim.simulator.simulator import Simulator
 from marketsim.market.market import Price
 from marketsim.input.config import CONFIG
 from marketsim.loggers.basic import StreamToLogger
+from marketsim.plot.simple_plot import simple_plot
 
 
 def kwargs_for(func, config):
