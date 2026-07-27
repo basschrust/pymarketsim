@@ -1,8 +1,8 @@
 import random
 from typing import List
+from loguru import logger
 
-from fontTools.merge.util import current_time
-
+from marketsim.loggers import basic
 # from marketsim import Market
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -136,7 +136,8 @@ class Simulator:
         print(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         print(f"Midprices: {self.markets[0].get_midprices()}")
         print(f"Traded prices {self.markets[0].traded_prices}")
-        simple_plot(range(0,self.current_time), self.markets[0].get_midprices().values(), "marketsim/output/middle_prices.png")
+        middle_prices_filename = f"marketsim/output/{basic.log_dir}/middle_prices.png"
+        simple_plot(range(0,self.current_time), self.markets[0].get_midprices().values(), middle_prices_filename)
 
     def run(self) -> None:
         print(f"Agents ({len(self.agents)}):")

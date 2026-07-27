@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 num_assets: 1
-sim_time: 10
+sim_time: 100
 lam: 0.8
 market_type: continuous
 
@@ -28,5 +28,5 @@ agent_groups:
       xi: 0.2
       K: 5
       omega: 0.2
-      rebalance_period: 3
+      rebalance_period: 10
 
