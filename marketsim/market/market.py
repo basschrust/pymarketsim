@@ -1,3 +1,5 @@
+import pandas as pd
+
 from marketsim.market.price import Price
 from marketsim.event.event_queue import EventQueue
 from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
@@ -14,6 +16,12 @@ class Market:
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
+        self.traded_prices = pd.DataFrame({"time": [],
+                                           "open": [],
+                                           "high": [],
+                                           "low":  [],
+                                           "close" : [],
+                                           "volume": []})
         self.market_type = market_type # "discrete" or "continuous"
 
 

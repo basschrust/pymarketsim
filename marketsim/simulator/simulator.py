@@ -14,6 +14,7 @@ from marketsim.agent.market_maker_zoh import MMZOHAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
+from marketsim.plot.simple_plot import simple_plot
 
 
 class Simulator:
@@ -132,6 +133,7 @@ class Simulator:
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
         print(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         print(f"Midprices: {self.markets[0].get_midprices()}")
+        simple_plot(range(0,self.current_time), self.markets[0].get_midprices().values(), "marketsim/output/middle_prices.png")
 
     def run(self) -> None:
         print(f"Agents ({len(self.agents)}):")

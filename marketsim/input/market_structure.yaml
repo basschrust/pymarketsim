@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 num_assets: 1
-sim_time: 50
+sim_time: 10
 lam: 0.8
 market_type: continuous
 
@@ -13,7 +13,7 @@ agent_groups:
     number: 0
   zi_agents_not_informed:
     agent_class: ZIAgentNotInformed
-    number: 30
+    number: 5
     config:
       lam: 0.8
       q_max: 10
@@ -28,5 +28,5 @@ agent_groups:
       xi: 0.2
       K: 5
       omega: 0.2
-      rebalance_period: 10
+      rebalance_period: 3
 
