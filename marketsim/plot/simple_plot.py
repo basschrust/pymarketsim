@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import mplfinance as mpf
 
 def simple_plot(x: list, y: list, output_file: str) -> None:
     plt.plot(x, y)
