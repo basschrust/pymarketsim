@@ -3,6 +3,7 @@ from typing import List
 
 from fontTools.merge.util import current_time
 
+# from marketsim import Market
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
@@ -100,6 +101,7 @@ class Simulator:
                 cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
                 market.last_traded_price = matched_order.price
                 self.agents[agent_id].update_position(quantity=quantity, cash=cash)
+                market.record_trade(current_time=self.current_time, price=matched_order.price, volume=abs(quantity))
             print(f'After clearing the market the last traded price is: {market.last_traded_price}')
             print(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
         self.current_time += 1
@@ -133,6 +135,7 @@ class Simulator:
         print(f"Sum of values by last traded price: {values_by_last_trade_sum}")
         print(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         print(f"Midprices: {self.markets[0].get_midprices()}")
+        print(f"Traded prices {self.markets[0].traded_prices}")
         simple_plot(range(0,self.current_time), self.markets[0].get_midprices().values(), "marketsim/output/middle_prices.png")
 
     def run(self) -> None:
