@@ -1,18 +1,20 @@
 from marketsim.market.price import Price
 from marketsim.event.event_queue import EventQueue
-from marketsim.fourheap.fourheap import FourHeap, Order
+from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.fourheap import constants
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100)):
-        self.order_book = FourHeap()
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
+                 market_type: str = "discrete"):
+        self.order_book = FourHeap(plus_one=True)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.fundamental = fundamental
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
+        self.market_type = market_type # "discrete" or "continuous"
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -24,10 +26,10 @@ class Market:
     def withdraw_all(self, agent_id: int) -> None:
         self.order_book.withdraw_all(agent_id=agent_id)
 
-    def clear_market(self, current_time: int) -> list[Order]:
-        new_orders = self.order_book.market_clear(current_time=current_time) # self.get_time())
-        self.matched_orders += new_orders
-        return new_orders
+    def clear_market(self, current_time: int) -> list[MatchedOrder]:
+        newly_matched_orders = self.order_book.market_clear(current_time=current_time)
+        self.matched_orders += newly_matched_orders
+        return newly_matched_orders
 
     def add_orders(self, orders: list[Order]) -> None:
         for order in orders:
@@ -40,19 +42,33 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def step(self, current_time: int) -> list[Order]:
-        # TODO Need to figure out how to handle ties for price and time
+    def step(self, current_time: int) -> list[MatchedOrder]:
+        # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
+        newly_matched_orders = []
+        print(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
+        print(
+            f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
+            f", sell: {self.order_book.sell_unmatched.heap[0][1] if not self.order_book.sell_unmatched.is_empty() else '<None>'}")
+        print(
+            f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
+            f", sell: {self.order_book.sell_unmatched.peek_order()}")
+
         for order in orders:
             if order.quantity <= 0:
                 continue
+            print(f"Inserting order: {order.order_id}")
             self.order_book.insert(order)
-        new_orders = self.clear_market(current_time=current_time)
+            # if we are in continuous mode we should clear the market here, after entering each order
+            #let's see what happens ...
+            if self.market_type == "continuous":
+                newly_matched_orders += self.clear_market(current_time=current_time)
+        newly_matched_orders += self.clear_market(current_time=current_time)
 
-        # Compute midprices.
+        # Compute midprices. AK - in continuous mode it may need a change
         self.order_book.update_midprice(current_time=current_time)
-        return new_orders
+        return newly_matched_orders
 
     def get_midprices(self) -> list:
         return self.order_book.midprices

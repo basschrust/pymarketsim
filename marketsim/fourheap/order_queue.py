@@ -1,8 +1,9 @@
 import heapq
 import math
 from typing import Optional
-from marketsim.fourheap.order import Order, MatchedOrder
 
+from marketsim.fourheap.order import Order, MatchedOrder
+from marketsim.market.price import Price
 
 class OrderQueue:
     def __init__(self, is_max_heap=False, is_matched=False):
@@ -14,18 +15,27 @@ class OrderQueue:
         self.order_dict = {}
         self.deleted_ids = set()
 
-    def add_order(self, order: Order):
+    def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None) -> None:
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):
             self.order_dict[order_id].merge_order(order.quantity)
+            # this may be a problem if we want to merge with order already executed
+            # so - in unmatched heaps - no problem
+            # - in matched heaps - well, in continuous mode there should not be such a situation?
+            if self.is_matched:
+                raise # to confirm that for matched it never happens, but somehow for not matched it doesn't happen either
         else:
             heapq.heappush(self.heap, (price, order.order_id))
             self.order_dict[order.order_id] = order
+            if self.is_matched:
+                order.executed_price = executed_price # hmm, the price from the other side peek which is not
+                                # available here... so we pass it here :)
+                order.executed_mode = executed_mode
         self.size += order.quantity
 
 
-    def peek(self) -> float:
+    def peek(self) -> Price|float:
         c = -1 if self.is_max_heap else 1
         # Return infinity if empty
         if self.is_empty() or len(self.heap) == 0:
@@ -43,10 +53,14 @@ class OrderQueue:
         # If we get here, heap should have at least one valid element
         if len(self.heap) == 0:
             return c*math.inf
-        
+
+        # AK - for matched heaps this should always be empty, always return inf
+        if self.is_matched:
+            print(f"Peeking matched heap: {self.heap[0]}")
+            # raise
         return c*self.heap[0][0]
 
-    def peek_order(self) -> Order:
+    def peek_order(self) -> Order | None:
         if self.is_empty() or len(self.heap) == 0:
             return None
         # Safely clean up deleted orders
@@ -61,7 +75,7 @@ class OrderQueue:
         except (IndexError, KeyError):
             return None
 
-    def peek_order_id(self) -> float:
+    def peek_order_id(self) -> float | None:
         if self.is_empty() or len(self.heap) == 0:
             return None
         try:
@@ -75,7 +89,7 @@ class OrderQueue:
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, price: float, current_time: int) -> list[Order]:
+    def market_clear(self, price: Price, current_time: int) -> list[MatchedOrder]:
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:

@@ -43,11 +43,12 @@ class ZIAgentNotInformed(Agent):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
+            quantity = 3 if side == BUY else 5 # just for tests
 
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))
-                print(f"The estimate: {estimate}")
-                print(f"Private values: {self.pv.values}")
+                #print(f"The estimate: {estimate}")
+                #print(f"Private values: {self.pv.values}")
             spread = Decimal(self.shade[1] - self.shade[0])
             valuation_offset = Price(spread*Decimal(random.random())+ Decimal(self.shade[0]))
 

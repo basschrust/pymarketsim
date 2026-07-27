@@ -26,7 +26,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def take_action(self) -> List[Order]:
+    def take_action(self, current_time: int) -> List[Order]:
         pass
 
     @abstractmethod
