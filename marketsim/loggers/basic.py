@@ -9,7 +9,7 @@ logger.remove()
 log_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S")
 
 logger.add(f"marketsim/output/{log_dir}/main.log",
-           format="{elapsed} | {message}",)
+           format="{elapsed:HH:mm:ss.SSS} | {message}",)
 
 class StreamToLogger:
     def write(self, log):
