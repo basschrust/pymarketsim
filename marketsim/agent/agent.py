@@ -19,6 +19,8 @@ def validate_update(quantity: int, cash: float) -> None:
 class Agent(ABC):
     position = 0
     cash = 0
+    trade_history = {}
+    position_value_history = {}
 
 
     @abstractmethod

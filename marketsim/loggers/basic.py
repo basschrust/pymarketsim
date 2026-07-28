@@ -6,9 +6,9 @@ from datetime import datetime
 logger.remove()
 
 # One file per each run:
-log_filename = datetime.now().strftime("main_%Y%m%d_%H%M%S")
+log_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S")
 
-logger.add(f"marketsim/output/{log_filename}.log")
+logger.add(f"marketsim/output/{log_dir}/main.log")
 
 class StreamToLogger:
     def write(self, log):

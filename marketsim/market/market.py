@@ -16,12 +16,7 @@ class Market:
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
-        self.traded_prices = pd.DataFrame({"time": [],
-                                           "open": [],
-                                           "high": [],
-                                           "low":  [],
-                                           "close" : [],
-                                           "volume": []})
+        self.traded_prices = {}
         self.market_type = market_type # "discrete" or "continuous"
 
 
@@ -89,3 +84,22 @@ class Market:
         self.fundamental = fundamental  # AK: this implies some market consensus on the fundamental value
                             # it may make sense for the ZI agents group, but probably should be kept out of here
                             # and belong to the groups
+
+    def record_trade(self, current_time: int, price: Price, volume: int) -> None:
+        if current_time in self.traded_prices:
+            # update data
+            if price > self.traded_prices[current_time]["High"]:
+                self.traded_prices[current_time]["High"] = price
+            elif price < self.traded_prices[current_time]["Low"]:
+                self.traded_prices[current_time]["Low"] = price
+            old_volume = self.traded_prices[current_time]["Volume"]
+            self.traded_prices[current_time]["Volume"] = volume + old_volume
+            self.traded_prices[current_time]["Close"] = price
+        else:
+            # enter as first day in this time tick
+            self.traded_prices[current_time] = { "Open": price,
+                                                 "Low": price,
+                                                 "High": price,
+                                                 "Close": price,
+                                                 "Volume": volume,}
+
