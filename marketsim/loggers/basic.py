@@ -8,7 +8,8 @@ logger.remove()
 # One file per each run:
 log_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S")
 
-logger.add(f"marketsim/output/{log_dir}/main.log")
+logger.add(f"marketsim/output/{log_dir}/main.log",
+           format="{elapsed} | {message}",)
 
 class StreamToLogger:
     def write(self, log):

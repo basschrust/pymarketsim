@@ -530,9 +530,9 @@ class HBLAgent(Agent):
 
                     if sell_high != best_ask:
                         sell_mid = float(sell_high) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_high))
-                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders)
+                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
                         sell_half = sell_high + self.sell_half_shade * abs(best_ask - sell_high)
-                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders)
+                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                         #interpolate sell_high to sell_mid
                         if sell_high != sell_half:
                             interpolate(sell_high, sell_half, sell_high_belief, sell_half_belief)
