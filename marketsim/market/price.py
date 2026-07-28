@@ -1,5 +1,8 @@
 from decimal import Decimal, ROUND_HALF_UP
 
+def D(value):
+    return Decimal(str(value))
+
 class Price(Decimal):
     TICK_SIZE = Decimal("0.01")
 

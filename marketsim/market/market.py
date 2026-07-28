@@ -1,6 +1,6 @@
 import pandas as pd
 
-from marketsim.market.price import Price
+from marketsim.market.price import Price, D
 from marketsim.event.event_queue import EventQueue
 from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
 from marketsim.fundamental.fundamental_abc import Fundamental

@@ -6,7 +6,7 @@ import numpy as np
 from loguru import logger
 
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.market import Market, Price, D
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -335,7 +335,7 @@ class HBLAgent(Agent):
                 return max_x.x.item(), -max_x.fun
 
             buy_high = float(buy_orders_memory[-1].price)
-            buy_high_belief = self.belief_function(buy_high, BUY, last_L_orders)
+            buy_high_belief = float(self.belief_function(buy_high, BUY, last_L_orders))
             buy_low, buy_low_belief = self.find_worst_order(BUY, buy_orders_memory, last_L_orders)
             optimal_price = (0,-sys.maxsize)
 
@@ -462,16 +462,37 @@ class HBLAgent(Agent):
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
                 test_points = np.linspace(float(lb), float(ub), 40)
                 vOptimize = np.vectorize(optimize)
-                point_surpluses = vOptimize(test_points)
-                min_index = np.argmin(point_surpluses)
-                min_survey = test_points[min_index]
-                max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[lb, ub]])
+                # AK - fixing for nan values:
+                point_surpluses = np.asarray(vOptimize(test_points), dtype=float)
+
+                valid = np.isfinite(point_surpluses)
+
+                if not np.any(valid):
+                    raise RuntimeError("Objective function is NaN everywhere.")
+
+                valid_points = test_points[valid]
+                valid_surpluses = point_surpluses[valid]
+
+                min_survey = valid_points[np.argmin(valid_surpluses)]
+
+                # point_surpluses = vOptimize(test_points)
+                # min_index = np.argmin(point_surpluses)
+                # min_survey = test_points[min_index]
+                # AK debug
+                # print(test_points)
+                # print(point_surpluses)
+                # print(min_index)
+                # print(vOptimize(min_survey)) # it is None
+                # print(vOptimize([min_survey]))
+                # print(vOptimize(np.array([min_survey])))
+                # AK debug end
+                max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[float(lb), float(ub)]])
                 return max_x.x.item(), -max_x.fun
 
             if best_buy > sell_low:
-                sell_low = best_buy
+                sell_low = float(best_buy)
                 sell_low_belief = 1
-                sell_high = max(sell_high, sell_low)
+                sell_high = float(max(sell_high, sell_low))
                 sell_high_belief = min(sell_high_belief, sell_low_belief)
 
             if sell_low <= best_ask:
@@ -480,9 +501,9 @@ class HBLAgent(Agent):
                     interpolate(best_buy, sell_low, best_buy_belief, sell_low_belief)
                 if best_ask <= sell_high:
                     if sell_low != best_ask:
-                        sell_mid = sell_low + self.sell_upper_mid_shade * abs(best_ask - sell_low)
+                        sell_mid = float(sell_low) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_low))
                         sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
-                        sell_half = sell_low + self.sell_half_shade * abs(best_ask - sell_low)
+                        sell_half = float(sell_low) + self.sell_half_shade * abs(float(best_ask) - float(sell_low))
                         sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                         #interpolate sell_low to sell_mid
                         if sell_low != sell_half:
@@ -499,7 +520,7 @@ class HBLAgent(Agent):
                         
                     # interpolate sell_high to upper bound, assumed to be high enough to reach prices with probability 0
                     if sell_high_belief > 0:
-                        upper_bound = sell_high + 2 * (sell_high - best_buy) + 1
+                        upper_bound = float(sell_high) + 2 * (float(sell_high) - float(best_buy)) + 1
                         interpolate(sell_high, upper_bound, sell_high_belief, 0)
                         
                 elif best_ask > sell_high:
@@ -508,7 +529,7 @@ class HBLAgent(Agent):
                         interpolate(sell_low, sell_high, sell_low_belief, sell_high_belief)
 
                     if sell_high != best_ask:
-                        sell_mid = sell_high + self.sell_upper_mid_shade * abs(best_ask - sell_high)
+                        sell_mid = float(sell_high) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_high))
                         sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders)
                         sell_half = sell_high + self.sell_half_shade * abs(best_ask - sell_high)
                         sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders)
