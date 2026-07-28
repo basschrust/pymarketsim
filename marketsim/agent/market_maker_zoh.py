@@ -64,7 +64,7 @@ class MMZOHAgent(Agent):
                 orders.append(
                     Order(
                         price= Price(bt - (k + 1) * self.xi),
-                        quantity=11,#1, # we ćould raise the quantity in each ladder step...
+                        quantity=7, #11,#1, # we ćould raise the quantity in each ladder step...
                         agent_id=self.agent_id,
                         time=current_time,
                         order_type=BUY,
