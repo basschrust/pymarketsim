@@ -2,7 +2,8 @@ import random
 import sys
 import scipy as sp
 import numpy as np
-from sqlalchemy.sql.functions import current_time
+#from sqlalchemy.sql.functions import current_time
+from loguru import logger
 
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
@@ -611,6 +612,7 @@ class HBLAgent(Agent):
                 )
                 return [order]
         except TypeError:
+            logger.exception("TypeError in HBLAgent")
             print("TypeError in HBLAgent catched!")
 
         return []
