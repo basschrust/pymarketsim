@@ -1,7 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
+
+if TYPE_CHECKING:
+    from marketsim.fourheap.order import Order
 
 def validate_price(price: Price) -> None:
     if price <=0:
@@ -47,7 +52,9 @@ class Order:
         self.update_quantity_filled(self.quantity - transact_quantity)
         return new_order
 
-    def __eq__(self, other: 'Order') -> bool:
+    def __eq__(self, other: Order|None) -> bool:
+        if other is None:
+            return False
         return self.order_id == other.order_id
 
     def __gt__(self, other: 'Order') -> bool:

@@ -29,4 +29,15 @@ agent_groups:
       K: 4
       omega: 0.2
       rebalance_period: 10
+  hbl:
+    agent_class: HBLAgent
+    number: 1
+    config:
+      q_max: 10
+      L: 3
+      shade:
+        - 0.1
+        - 0.3
+      arrival_rate: 2
+      pv_var: 5.0e2
 
