@@ -1,6 +1,7 @@
 import random
 from typing import List
 from loguru import logger
+import pandas as pd
 
 from marketsim.loggers import basic
 # from marketsim import Market
@@ -16,6 +17,7 @@ from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import simple_plot
+from marketsim.plot.candle import plot_candlestick
 
 
 class Simulator:
@@ -140,13 +142,24 @@ class Simulator:
         simple_plot(x=range(0,self.current_time), y=self.markets[0].get_midprices().values(), output_file=middle_prices_filename)
         traded_keys = list(self.markets[0].traded_prices) #time when at least one trade occurred
         max_prices_filename = f"marketsim/output/{basic.log_dir}/max_prices.png"
-        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["max"] for k in traded_keys], output_file=max_prices_filename)
+        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["High"] for k in traded_keys], output_file=max_prices_filename)
         min_prices_filename = f"marketsim/output/{basic.log_dir}/min_prices.png"
-        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["min"] for k in traded_keys],
+        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["Low"] for k in traded_keys],
                     output_file=min_prices_filename)
         volume_filename = f"marketsim/output/{basic.log_dir}/volume_and_prices.png"
-        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["volume"] for k in traded_keys],
+        simple_plot(x=traded_keys, y=[self.markets[0].traded_prices[k]["Volume"] for k in traded_keys],
                     output_file=volume_filename)
+        # preparing candlestick:
+        traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()} for t, item in self.markets[0].traded_prices.items()}
+        df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
+            orient="index"
+        )
+        df_candlestick.index.name = "time"
+        df_candlestick.index = pd.to_datetime(df_candlestick.index, unit="s")
+        print(df_candlestick)
+
+        candlestick_filename = f"marketsim/output/{basic.log_dir}/candlestick.png"
+        plot_candlestick(df=df_candlestick, output_file=candlestick_filename)
 
 
     def run(self) -> None:

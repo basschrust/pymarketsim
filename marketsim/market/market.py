@@ -94,18 +94,18 @@ class Market:
     def record_trade(self, current_time: int, price: Price, volume: int) -> None:
         if current_time in self.traded_prices:
             # update data
-            if price > self.traded_prices[current_time]["max"]:
-                self.traded_prices[current_time]["max"] = price
-            elif price < self.traded_prices[current_time]["min"]:
-                self.traded_prices[current_time]["min"] = price
-            old_volume = self.traded_prices[current_time]["volume"]
-            self.traded_prices[current_time]["volume"] = volume + old_volume
-            self.traded_prices[current_time]["close"] = price
+            if price > self.traded_prices[current_time]["High"]:
+                self.traded_prices[current_time]["High"] = price
+            elif price < self.traded_prices[current_time]["Low"]:
+                self.traded_prices[current_time]["Low"] = price
+            old_volume = self.traded_prices[current_time]["Volume"]
+            self.traded_prices[current_time]["Volume"] = volume + old_volume
+            self.traded_prices[current_time]["Close"] = price
         else:
             # enter as first day in this time tick
-            self.traded_prices[current_time] = { "open": price,
-                                                 "min": price,
-                                                 "max": price,
-                                                 "close": price,
-                                                 "volume": volume,}
+            self.traded_prices[current_time] = { "Open": price,
+                                                 "Low": price,
+                                                 "High": price,
+                                                 "Close": price,
+                                                 "Volume": volume,}
 
