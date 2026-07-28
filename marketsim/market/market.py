@@ -17,12 +17,6 @@ class Market:
         self.event_queue = EventQueue()
         self.end_time = time_steps
         self.traded_prices = {}
-        # pd.DataFrame({"time": [],
-        #                                    "open": [],
-        #                                    "high": [],
-        #                                    "low":  [],
-        #                                    "close" : [],
-        #                                    "volume": []})
         self.market_type = market_type # "discrete" or "continuous"
 
 
