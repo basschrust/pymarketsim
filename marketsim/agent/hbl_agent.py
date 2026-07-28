@@ -531,7 +531,7 @@ class HBLAgent(Agent):
                     if sell_high != best_ask:
                         sell_mid = float(sell_high) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_high))
                         sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
-                        sell_half = sell_high + self.sell_half_shade * abs(best_ask - sell_high)
+                        sell_half = float(sell_high) + self.sell_half_shade * abs(float(best_ask) - float(sell_high))
                         sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                         #interpolate sell_high to sell_mid
                         if sell_high != sell_half:
@@ -611,7 +611,6 @@ class HBLAgent(Agent):
                     agent_id=self.get_id(),
                     time=current_time,
                     order_type=side,
-                    #order_id=random.randint(1, 10000000)
                 )
                 return [order]
 
@@ -629,7 +628,6 @@ class HBLAgent(Agent):
                     agent_id=self.get_id(),
                     time=current_time,
                     order_type=side,
-                    #order_id=random.randint(1, 10000000)
                 )
                 return [order]
         except TypeError:
@@ -638,14 +636,10 @@ class HBLAgent(Agent):
 
         return []
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
-
-    def __str__(self):
+    def __str__(self) -> str:
         return f'HBL{self.agent_id}'
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = 0
         self.cash = 0
         self.pv = PrivateValues(self.q_max, self.pv_var)
