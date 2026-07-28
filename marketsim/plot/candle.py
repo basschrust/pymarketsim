@@ -6,6 +6,7 @@ def plot_candlestick(df, output_file: str):
         df,
         type='candle',
         volume=True,
+        style='yahoo',
         returnfig=True,
     )
 
