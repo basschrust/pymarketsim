@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 num_assets: 1
-sim_time: 200
+sim_time: 50
 lam: 0.8
 market_type: continuous
 
@@ -13,7 +13,7 @@ agent_groups:
     number: 0
   zi_agents_not_informed:
     agent_class: ZIAgentNotInformed
-    number: 20
+    number: 5
     config:
       lam: 0.8
       q_max: 10
@@ -31,7 +31,7 @@ agent_groups:
       rebalance_period: 10
   hbl:
     agent_class: HBLAgent
-    number: 3
+    number: 0
     config:
       q_max: 10
       L: 3 # memory length
@@ -42,7 +42,7 @@ agent_groups:
       pv_var: 7.0e2
   hbl2:
     agent_class: HBLAgent
-    number: 3
+    number: 1
     config:
       q_max: 10
       L: 5 # memory length

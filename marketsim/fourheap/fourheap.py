@@ -28,8 +28,9 @@ class FourHeap:
 
 
     def handle_new_order(self, order: Order) -> None:
+        print(f"handle_new_order {order}")
         q_order = order.quantity
-        order_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
+        orders_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
@@ -38,22 +39,23 @@ class FourHeap:
         if to_match is not None:
             to_match_quantity = to_match.quantity
             if to_match_quantity == q_order:
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
                 counter_unmatched.add_order(excess_order)
             elif q_order > to_match_quantity:
                 # There's a better way to do this, but I think it's not worth it
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
                 new_order = order.copy_and_decrease(to_match_quantity)
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
                 self.insert(new_order)
 
     def handle_replace(self, order) -> None:
         #raise # is it ever used in coninuous mode? yes
+        print(f"handle_replace {order}")
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
@@ -64,18 +66,19 @@ class FourHeap:
                 matched.add_order(order, executed_mode='replaced')
                 unmatched.add_order(replaced)
             elif replaced_quantity > q_order:
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced2')
                 matched_s = replaced.copy_and_decrease(q_order)
-                matched.add_order(matched_s, executed_mode='replaced')
+                matched.add_order(matched_s, executed_mode='replaced3')
                 unmatched.add_order(replaced)
             elif replaced_quantity < q_order:
                 new_order = order.copy_and_decrease(replaced_quantity)
-                matched.add_order(order, executed_mode='replaced')
+                matched.add_order(order, executed_mode='replaced4')
                 unmatched.add_order(replaced)
                 self.insert(new_order)
 
     def insert(self, order: Order) -> None:
         # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
+        print(f"fourheap.insert {order}")
         self.agent_id_map[order.agent_id].append(order.order_id)
         if order.order_type == constants.SELL:
             # Cache peek values to avoid redundant heap cleanup operations

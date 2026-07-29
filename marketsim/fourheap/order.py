@@ -24,8 +24,9 @@ class Order:
     executed_price: Price | None = None
     executed_mode: str | None = None # arrived - executed immediately after placing/waited - placed in the LOB and later crossed with an order which arrived later
     parent_id: int | None = None
+    matched_with: int | None = None # order_id of the order that matched with this one
 
-    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None) -> None:
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None, matched_with: int |None=None) -> None:
         validate_price(price)
         self.price = price
         self.order_type = order_type
@@ -34,6 +35,7 @@ class Order:
         self.time = time
         self.order_id = id_generator.next()
         self.parent_id = parent_id # order_id of the original order when this one is created after partial execution
+        self.matched_with = matched_with
 
     def update_quantity_filled(self, transact_quantity: int) -> None:
         self.quantity -= transact_quantity
