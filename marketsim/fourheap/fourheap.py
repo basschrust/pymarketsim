@@ -33,7 +33,7 @@ class FourHeap:
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
-        to_match = counter_unmatched.push_to() # this pops the top order from the queue
+        to_match = counter_unmatched.push_to() # this pops the top order from the queue (TODO: rename this method)
         executed_price = to_match.price #counter_unmatched.peek() # so this took next order limit, which was wrong
         if to_match is not None:
             to_match_quantity = to_match.quantity
@@ -61,16 +61,16 @@ class FourHeap:
         if replaced is not None:
             replaced_quantity = replaced.quantity
             if replaced_quantity == q_order:
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced')
                 unmatched.add_order(replaced)
             elif replaced_quantity > q_order:
                 matched.add_order(order)
                 matched_s = replaced.copy_and_decrease(q_order)
-                matched.add_order(matched_s)
+                matched.add_order(matched_s, executed_mode='replaced')
                 unmatched.add_order(replaced)
             elif replaced_quantity < q_order:
                 new_order = order.copy_and_decrease(replaced_quantity)
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced')
                 unmatched.add_order(replaced)
                 self.insert(new_order)
 
@@ -108,6 +108,7 @@ class FourHeap:
         elif self.sell_unmatched.contains(order_id):
             self.sell_unmatched.remove(order_id)
         elif self.buy_matched.contains(order_id):
+            raise # this should not happen
             order_q = self.buy_matched.order_dict[order_id].quantity
             self.buy_matched.remove(order_id)
             s = self.sell_matched.push_to()
@@ -126,6 +127,7 @@ class FourHeap:
                     s = self.sell_matched.push_to()
                     s_quantity = s.quantity
         elif self.sell_matched.contains(order_id):
+            raise  # this should not happen
             order_q = self.sell_matched.order_dict[order_id].quantity
             self.sell_matched.remove(order_id)
             b = self.buy_matched.push_to()
