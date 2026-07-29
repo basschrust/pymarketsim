@@ -13,6 +13,7 @@ from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.agent.zi_informed import ZIAgentInformed
 from marketsim.agent.zi_not_informed import ZIAgentNotInformed
 from marketsim.agent.market_maker_zoh import MMZOHAgent
+from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
@@ -63,9 +64,15 @@ class Simulator:
                 if agent_group["agent_class"] == "ZIAgentNotInformed":
                     agent = ZIAgentNotInformed(market=self.markets[0], **agent_group["config"])
                     self.add_agents([agent])
+
                 # MMs:
                 if agent_group["agent_class"] == "MMZOHAgent":
                     agent = MMZOHAgent(market=self.markets[0], **agent_group["config"])
+                    self.add_agents([agent])
+
+                # HBL (Heuristic Belief)
+                if agent_group["agent_class"] == "HBLAgent":
+                    agent = HBLAgent(market=self.markets[0], **agent_group["config"])
                     self.add_agents([agent])
 
         return

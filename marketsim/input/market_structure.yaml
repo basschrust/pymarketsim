@@ -29,4 +29,25 @@ agent_groups:
       K: 4
       omega: 0.2
       rebalance_period: 10
-
+  hbl:
+    agent_class: HBLAgent
+    number: 3
+    config:
+      q_max: 10
+      L: 3 # memory length
+      shade:
+        - 0.1
+        - 0.3
+      arrival_rate: 2
+      pv_var: 7.0e2
+  hbl2:
+    agent_class: HBLAgent
+    number: 3
+    config:
+      q_max: 10
+      L: 5 # memory length
+      shade:
+        - 0.05
+        - 0.1
+      arrival_rate: 4
+      pv_var: 7.0e2

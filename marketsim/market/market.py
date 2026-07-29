@@ -1,6 +1,6 @@
 import pandas as pd
 
-from marketsim.market.price import Price
+from marketsim.market.price import Price, D
 from marketsim.event.event_queue import EventQueue
 from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
 from marketsim.fundamental.fundamental_abc import Fundamental
@@ -10,7 +10,7 @@ from marketsim.fourheap import constants
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
                  market_type: str = "discrete"):
-        self.order_book = FourHeap(plus_one=True)
+        self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.fundamental = fundamental
         self.last_traded_price = reference_price
@@ -30,7 +30,7 @@ class Market:
         self.order_book.withdraw_all(agent_id=agent_id)
 
     def clear_market(self, current_time: int) -> list[MatchedOrder]:
-        newly_matched_orders = self.order_book.market_clear(current_time=current_time)
+        newly_matched_orders = self.order_book.market_clear(current_time=current_time, trading_phase="continuous")
         self.matched_orders += newly_matched_orders
         return newly_matched_orders
 
@@ -61,7 +61,7 @@ class Market:
         for order in orders:
             if order.quantity <= 0:
                 continue
-            print(f"Inserting order: {order.order_id}")
+            print(f"Inserting order: {order}")
             self.order_book.insert(order)
             # if we are in continuous mode we should clear the market here, after entering each order
             #let's see what happens ...

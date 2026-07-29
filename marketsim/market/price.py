@@ -1,5 +1,8 @@
 from decimal import Decimal, ROUND_HALF_UP
 
+def D(value):
+    return Decimal(str(value))
+
 class Price(Decimal):
     TICK_SIZE = Decimal("0.01")
 
@@ -12,3 +15,11 @@ class Price(Decimal):
             cls,
             d.quantize(cls.TICK_SIZE, rounding=ROUND_HALF_UP)
         )
+
+    def __mul__(self, other):
+        if isinstance(other, float):
+            other = Decimal(str(other))
+        return Price(super().__mul__(other))
+
+    def __rmul__(self, other):
+        return self.__mul__(other)

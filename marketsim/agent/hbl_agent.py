@@ -2,24 +2,28 @@ import random
 import sys
 import scipy as sp
 import numpy as np
+#from sqlalchemy.sql.functions import current_time
+from loguru import logger
+
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.market import Market, Price, D
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 from fastcubicspline import FCS
+from marketsim.utils.id_generator import id_generator
 
 
 class HBLAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, shade: List, L: int, pv_var: float,
-                 arrival_rate: float, pv = None):
-        self.agent_id = agent_id
+    def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
+                 arrival_rate: float, pv = None, agent_id: int =None):
+        self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market
-        if pv != -1:
+        if pv is not None:
             self.pv = pv
         else:
-            self.pv = PrivateValues(q_max, pv_var)
+            self.pv = PrivateValues(q_max, float(pv_var))
         self.position = 0
         self.shade = shade
         self.cash = 0
@@ -45,17 +49,17 @@ class HBLAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self):
+    def estimate_fundamental(self, current_time: int) -> Price:
         mean, r, T = self.market.get_info()
-        t = self.market.get_time()
-        val = self.market.get_fundamental_value()
-        rho = (1 - r) ** (T - t)
+        #t = self.market.get_time()
+        val = self.market.get_fundamental_value(current_time=current_time)
+        rho = (1 - r) ** (T - current_time)
 
         estimate = (1 - rho) * mean + rho * val
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def find_worst_order(self, side, order_mem, orders: List[Order]):
+    def find_worst_order(self, side, order_mem, orders: List[Order], current_time: int):
         """
         Binary search to find the most competitive order in memory with a belief of 0.
         Args:
@@ -84,7 +88,7 @@ class HBLAgent(Agent):
                     end = mid
             else:
                 return order_mem[mid].price, 0
-        return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders)
+        return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
     def get_last_trade_time_step(self):
         """
@@ -135,7 +139,7 @@ class HBLAgent(Agent):
                         break
             return BG + TAG == 0
 
-    def belief_function(self, p, side, orders):
+    def belief_function(self, p: Price, side: int, orders: list[Order], current_time:int) -> float:
         """
         Calculate belief of order with price p of transacting based on memory
         Args:
@@ -146,7 +150,8 @@ class HBLAgent(Agent):
         Returns:
             float: Probability of order with price p transacting
         """
-        current_time = self.market.get_time()
+        p = Price(p)
+        # current_time = self.market.get_time()
         if side == BUY:
             TBL = 0  # Transact bids less or equal
             AL = 0  # Asks less or equal
@@ -200,7 +205,7 @@ class HBLAgent(Agent):
             RAL = 0  # Reject ask less or equal
 
             for order in orders:
-                if order.price - p >= 0 and order.order_type == BUY:
+                if Price(order.price) - p >= 0 and order.order_type == BUY:
                     BG += order.quantity
 
             for ind, order in enumerate(orders):
@@ -238,7 +243,7 @@ class HBLAgent(Agent):
             else:
                 return (TAG + BG) / (TAG + BG + RAL)
     
-    def get_order_list(self):
+    def get_order_list(self, current_time: int) -> (list, list, list):
         """
         Gets list of orders in memory. 
         
@@ -252,14 +257,14 @@ class HBLAgent(Agent):
         buy_orders_memory = []
         sell_orders_memory = []
         last_L_orders = []
-        for time in range(self.lower_bound_mem, self.market.get_time() + 1):
+        for time in range(self.lower_bound_mem, current_time+1): #self.market.get_time() + 1):
             last_L_orders.extend(self.market.event_queue.scheduled_activities[time])
         buy_orders_memory = [order for order in last_L_orders if order.order_type == BUY]
         sell_orders_memory = [order for order in last_L_orders if order.order_type == SELL]
         return last_L_orders, buy_orders_memory, sell_orders_memory
 
     # @profile
-    def determine_optimal_price(self, side):
+    def determine_optimal_price(self, side, current_time: int) -> Price:
         """
         Determines optimal price for submission.
         Args:
@@ -271,9 +276,9 @@ class HBLAgent(Agent):
             http://spider.sci.brooklyn.cuny.edu/~parsons/courses/840-spring-2005/notes/das.pdf 
         """
 
-        last_L_orders, buy_orders_memory, sell_orders_memory = self.get_order_list()
+        last_L_orders, buy_orders_memory, sell_orders_memory = self.get_order_list(current_time=current_time)
         last_L_orders = np.array(last_L_orders)
-        estimate = self.estimate_fundamental()
+        estimate = self.estimate_fundamental(current_time=current_time)
         buy_orders_memory = sorted(buy_orders_memory, key = lambda order:order.price)
         sell_orders_memory = sorted(sell_orders_memory, key = lambda order:order.price)
         best_ask = float(self.market.order_book.sell_unmatched.peek())
@@ -330,7 +335,7 @@ class HBLAgent(Agent):
                 return max_x.x.item(), -max_x.fun
 
             buy_high = float(buy_orders_memory[-1].price)
-            buy_high_belief = self.belief_function(buy_high, BUY, last_L_orders)
+            buy_high_belief = float(self.belief_function(buy_high, BUY, last_L_orders))
             buy_low, buy_low_belief = self.find_worst_order(BUY, buy_orders_memory, last_L_orders)
             optimal_price = (0,-sys.maxsize)
 
@@ -423,18 +428,29 @@ class HBLAgent(Agent):
         else:
             private_value = self.pv.value_for_exchange(self.position, SELL)
             best_buy_belief = 1
-            best_ask_belief = self.belief_function(best_ask, SELL, last_L_orders)
-            sell_high, sell_high_belief = self.find_worst_order(SELL, sorted(sell_orders_memory, key=lambda order: order.price, reverse=True), last_L_orders)
+            best_ask_belief = self.belief_function(p=Price(best_ask), side=SELL, orders=last_L_orders, current_time=current_time)
+            sell_high, sell_high_belief = self.find_worst_order(SELL, sorted(sell_orders_memory, key=lambda order: order.price, reverse=True), last_L_orders, current_time=current_time)
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
-            sell_low = float(sell_orders_memory[0].price)
-            sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders)
+            #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here
+            sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
+            sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
             def interpolate(bound1, bound2, bound1Belief, bound2Belief):
                 """
                 Sell version of interpolate above. 
                 @TODO: Merge the two
                 """
-                cs = FCS(bound1, bound2, [bound1Belief, bound2Belief])
+                logger.debug(
+                    "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
+                    bound1,
+                    bound2,
+                    bound1Belief,
+                    bound2Belief,
+                )
+
+                assert bound2 > bound1, f"Invalid interval: {bound1} >= {bound2}"
+
+                cs = FCS(float(bound1), float(bound2), [bound1Belief, bound2Belief])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
                 
@@ -454,18 +470,39 @@ class HBLAgent(Agent):
 
                 lb = min(spline_interp_objects[1], key=lambda bound_pair: bound_pair[0])[0]
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
-                test_points = np.linspace(lb, ub, 40)
+                test_points = np.linspace(float(lb), float(ub), 40)
                 vOptimize = np.vectorize(optimize)
-                point_surpluses = vOptimize(test_points)
-                min_index = np.argmin(point_surpluses)
-                min_survey = test_points[min_index]
-                max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[lb, ub]])
+                # AK - fixing for nan values:
+                point_surpluses = np.asarray(vOptimize(test_points), dtype=float)
+
+                valid = np.isfinite(point_surpluses)
+
+                if not np.any(valid):
+                    raise RuntimeError("Objective function is NaN everywhere.")
+
+                valid_points = test_points[valid]
+                valid_surpluses = point_surpluses[valid]
+
+                min_survey = valid_points[np.argmin(valid_surpluses)]
+
+                # point_surpluses = vOptimize(test_points)
+                # min_index = np.argmin(point_surpluses)
+                # min_survey = test_points[min_index]
+                # AK debug
+                # print(test_points)
+                # print(point_surpluses)
+                # print(min_index)
+                # print(vOptimize(min_survey)) # it is None
+                # print(vOptimize([min_survey]))
+                # print(vOptimize(np.array([min_survey])))
+                # AK debug end
+                max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[float(lb), float(ub)]])
                 return max_x.x.item(), -max_x.fun
 
             if best_buy > sell_low:
-                sell_low = best_buy
+                sell_low = float(best_buy)
                 sell_low_belief = 1
-                sell_high = max(sell_high, sell_low)
+                sell_high = float(max(sell_high, sell_low))
                 sell_high_belief = min(sell_high_belief, sell_low_belief)
 
             if sell_low <= best_ask:
@@ -474,10 +511,10 @@ class HBLAgent(Agent):
                     interpolate(best_buy, sell_low, best_buy_belief, sell_low_belief)
                 if best_ask <= sell_high:
                     if sell_low != best_ask:
-                        sell_mid = sell_low + self.sell_upper_mid_shade * abs(best_ask - sell_low)
-                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders)
-                        sell_half = sell_low + self.sell_half_shade * abs(best_ask - sell_low)
-                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders)
+                        sell_mid = float(sell_low) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_low))
+                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
+                        sell_half = float(sell_low) + self.sell_half_shade * abs(float(best_ask) - float(sell_low))
+                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                         #interpolate sell_low to sell_mid
                         if sell_low != sell_half:
                             interpolate(sell_low, sell_half, sell_low_belief, sell_half_belief)
@@ -493,7 +530,7 @@ class HBLAgent(Agent):
                         
                     # interpolate sell_high to upper bound, assumed to be high enough to reach prices with probability 0
                     if sell_high_belief > 0:
-                        upper_bound = sell_high + 2 * (sell_high - best_buy) + 1
+                        upper_bound = float(sell_high) + 2 * (float(sell_high) - float(best_buy)) + 1
                         interpolate(sell_high, upper_bound, sell_high_belief, 0)
                         
                 elif best_ask > sell_high:
@@ -502,10 +539,10 @@ class HBLAgent(Agent):
                         interpolate(sell_low, sell_high, sell_low_belief, sell_high_belief)
 
                     if sell_high != best_ask:
-                        sell_mid = sell_high + self.sell_upper_mid_shade * abs(best_ask - sell_high)
-                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders)
-                        sell_half = sell_high + self.sell_half_shade * abs(best_ask - sell_high)
-                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders)
+                        sell_mid = float(sell_high) + self.sell_upper_mid_shade * abs(float(best_ask) - float(sell_high))
+                        sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
+                        sell_half = float(sell_high) + self.sell_half_shade * abs(float(best_ask) - float(sell_high))
+                        sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                         #interpolate sell_high to sell_mid
                         if sell_high != sell_half:
                             interpolate(sell_high, sell_half, sell_high_belief, sell_half_belief)
@@ -523,9 +560,9 @@ class HBLAgent(Agent):
             elif sell_low > best_ask:
                 if best_buy != best_ask:
                     sell_mid = best_buy + self.sell_upper_mid_shade * abs(best_ask - best_buy)
-                    sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders)
+                    sell_mid_belief = self.belief_function(sell_mid, SELL, last_L_orders, current_time=current_time)
                     sell_half = best_buy + self.sell_half_shade * abs(best_ask - best_buy)
-                    sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders)
+                    sell_half_belief = self.belief_function(sell_half, SELL, last_L_orders, current_time=current_time)
                     #interpolate best_buy to best_ask
                     interpolate(best_buy, sell_half, best_buy_belief, sell_half_belief)
                     interpolate(sell_half, sell_mid, sell_half_belief, sell_mid_belief)
@@ -555,12 +592,13 @@ class HBLAgent(Agent):
             
             return optimal_price[0], optimal_price[1]
 
-    def take_action(self, side, seed = 0):
+    def take_action(self, current_time: int, seed: int = 0) -> list[Order]:
         """
         Submits order to market for HBL.
 
         Params:
-            side: BUY or SELL.
+            side: BUY or SELL.  # AK: why the hell do we need side in this method? It should be generic,
+                                the same signature for every agent!
 
         Returns:
             order [Order]: order to be submitted
@@ -568,49 +606,50 @@ class HBLAgent(Agent):
         Note:
             Behavior reverts to ZI agent if L > total num of trades executed.
         """
-        t = self.market.get_time()
-        random.seed(t + seed)
-        estimate = self.estimate_fundamental()
-        spread = self.shade[1] - self.shade[0]
-        if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
-            opt_price, opt_price_est_surplus = self.determine_optimal_price(side)
+        try:
+            side = random.choice(["BUY", "SELL"])
+            random.seed(current_time + seed)
+            estimate = self.estimate_fundamental(current_time=current_time)
+            spread = self.shade[1] - self.shade[0]
+            price = estimate
+            if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
+                opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
 
-            order = Order(
-                price=opt_price,
-                quantity=1,
-                agent_id=self.get_id(),
-                time=t,
-                order_type=side,
-                order_id=random.randint(1, 10000000)
-            )
-            return [order]
+                order = Order(
+                    price=Price(opt_price),
+                    quantity=1,
+                    agent_id=self.get_id(),
+                    time=current_time,
+                    order_type=1 if side == 'BUY' else -1,
+                )
+                return [order]
 
-        else:
-            # ZI Agent
-            valuation_offset = spread*random.random() + self.shade[0]
-            if side == BUY:
-                price = estimate + self.pv.value_for_exchange(self.position, BUY) - valuation_offset
-            elif side == SELL:
-                price = estimate + self.pv.value_for_exchange(self.position, SELL) + valuation_offset
-          
-            order = Order(
-                price=price,
-                quantity=1,
-                agent_id=self.get_id(),
-                time=t,
-                order_type=side,
-                order_id=random.randint(1, 10000000)
-            )
-            return [order]
+            else:
+                # ZI Agent # AK - of there is not enough trades to fill the L memory then behavior the same as ZI
+                valuation_offset = spread*random.random() + self.shade[0]
+                if side == BUY:
+                    price = estimate + self.pv.value_for_exchange(self.position, BUY) - valuation_offset
+                elif side == SELL:
+                    price = estimate + self.pv.value_for_exchange(self.position, SELL) + valuation_offset
 
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
+                order = Order(
+                    price=Price(price),
+                    quantity=1,
+                    agent_id=self.get_id(),
+                    time=current_time,
+                    order_type=1 if side == 'BUY' else -1,
+                )
+                return [order]
+        except TypeError:
+            logger.exception("TypeError in HBLAgent")
+            print("TypeError in HBLAgent catched!")
 
-    def __str__(self):
+        return []
+
+    def __str__(self) -> str:
         return f'HBL{self.agent_id}'
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = 0
         self.cash = 0
         self.pv = PrivateValues(self.q_max, self.pv_var)

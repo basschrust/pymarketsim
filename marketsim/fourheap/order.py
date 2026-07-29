@@ -1,7 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
+
+if TYPE_CHECKING:
+    from marketsim.fourheap.order import Order
 
 def validate_price(price: Price) -> None:
     if price <=0:
@@ -19,8 +24,9 @@ class Order:
     executed_price: Price | None = None
     executed_mode: str | None = None # arrived - executed immediately after placing/waited - placed in the LOB and later crossed with an order which arrived later
     parent_id: int | None = None
+    matched_with: int | None = None # order_id of the order that matched with this one
 
-    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None) -> None:
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, parent_id: int | None = None, matched_with: int |None=None) -> None:
         validate_price(price)
         self.price = price
         self.order_type = order_type
@@ -29,6 +35,7 @@ class Order:
         self.time = time
         self.order_id = id_generator.next()
         self.parent_id = parent_id # order_id of the original order when this one is created after partial execution
+        self.matched_with = matched_with
 
     def update_quantity_filled(self, transact_quantity: int) -> None:
         self.quantity -= transact_quantity
@@ -47,7 +54,9 @@ class Order:
         self.update_quantity_filled(self.quantity - transact_quantity)
         return new_order
 
-    def __eq__(self, other: 'Order') -> bool:
+    def __eq__(self, other: Order|None) -> bool:
+        if other is None:
+            return False
         return self.order_id == other.order_id
 
     def __gt__(self, other: 'Order') -> bool:

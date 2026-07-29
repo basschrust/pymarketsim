@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 from collections import defaultdict
+import math
+import numpy as np
+from typing import TYPE_CHECKING
+
 from marketsim.fourheap import constants
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.fourheap.order_queue import OrderQueue
 from marketsim.market.price import Price
 
-import math
-import numpy as np
+if TYPE_CHECKING:
+    from marketsim.market.market import Market
+
 
 
 class FourHeap:
@@ -13,7 +20,7 @@ class FourHeap:
     This class reimplements the four-heap data structure described in "Flexible double auctions for electronic commerce:
     theory and implementation" (Wurman, 98)
     """
-    def __init__(self, plus_one=False):
+    def __init__(self, plus_one=False, market: Market|None = None):
         self.plus_one = plus_one # AK - wtf is that? if True gets ask price in clearing, bid otherwise
 
         self.buy_matched = OrderQueue(is_max_heap=False, is_matched=True)
@@ -25,35 +32,41 @@ class FourHeap:
         self.agent_id_map = defaultdict(list)
 
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
+        self.market = market
 
 
     def handle_new_order(self, order: Order) -> None:
+        print(f"handle_new_order {order}")
         q_order = order.quantity
-        order_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
+        orders_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
+        orders_unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
-        to_match = counter_unmatched.push_to() # this pops the top order from the queue
+        to_match = counter_unmatched.push_to() # this pops the top order from the queue (TODO: rename this method)
         executed_price = to_match.price #counter_unmatched.peek() # so this took next order limit, which was wrong
         if to_match is not None:
             to_match_quantity = to_match.quantity
             if to_match_quantity == q_order:
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
             elif to_match_quantity > q_order:
                 excess_order = to_match.copy_and_decrease(q_order)
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
                 counter_unmatched.add_order(excess_order)
             elif q_order > to_match_quantity:
                 # There's a better way to do this, but I think it's not worth it
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited')
+                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
                 new_order = order.copy_and_decrease(to_match_quantity)
-                order_matched.add_order(order, executed_price=executed_price, executed_mode='arrived')
-                self.insert(new_order)
+                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
+                self.insert(new_order) # AK - this is problematic - should be added to the unmatched heap now, not the 4heap
+                #orders_unmatched.add_order(new_order) # AK fix? TODO: but we have to check if this new order doesn't match next
+                    # order on the other side
 
     def handle_replace(self, order) -> None:
-        #raise # is it ever used in coninuous mode? yes
+        raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
+        print(f"handle_replace {order}")
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
@@ -61,46 +74,69 @@ class FourHeap:
         if replaced is not None:
             replaced_quantity = replaced.quantity
             if replaced_quantity == q_order:
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced')
                 unmatched.add_order(replaced)
             elif replaced_quantity > q_order:
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced2')
                 matched_s = replaced.copy_and_decrease(q_order)
-                matched.add_order(matched_s)
+                matched.add_order(matched_s, executed_mode='replaced3')
                 unmatched.add_order(replaced)
             elif replaced_quantity < q_order:
                 new_order = order.copy_and_decrease(replaced_quantity)
-                matched.add_order(order)
+                matched.add_order(order, executed_mode='replaced4')
                 unmatched.add_order(replaced)
                 self.insert(new_order)
 
-    def insert(self, order: Order) -> None:
-        self.agent_id_map[order.agent_id].append(order.order_id)
-        if order.order_type == constants.SELL:
-            # Cache peek values to avoid redundant heap cleanup operations
-            buy_unmatched_peek = self.buy_unmatched.peek()
-            sell_matched_peek = self.sell_matched.peek()
-            if order.price <= buy_unmatched_peek and sell_matched_peek <= buy_unmatched_peek:
-                self.handle_new_order(order)
-            elif order.price <= sell_matched_peek:
-                self.handle_replace(order)
-            else:
-                self.sell_unmatched.add_order(order)
-        elif order.order_type == constants.BUY:
-            # Cache peek values to avoid redundant heap cleanup operations
-            sell_unmatched_peek = self.sell_unmatched.peek()
-            buy_matched_peek = self.buy_matched.peek()
-            if order.price >= sell_unmatched_peek and buy_matched_peek >= sell_unmatched_peek:
-                # AK: crosses with existing orders, transaction will be made
-                self.handle_new_order(order)
-            elif order.price >= buy_matched_peek:
-                # no transaction, but the spread becomes smaller
-                print(f"buy_matched_peek: {buy_matched_peek}")
-                #raise # in continous market should never happen as buy_matched_peek == inf
-                 # but it happened in step 3
-                self.handle_replace(order)
-            else:
-                self.buy_unmatched.add_order(order)
+    def insert(self, order: Order, trading_phase: str = "continuous") -> None:
+        # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
+        print(f"fourheap.insert {order}, trading_phase: {trading_phase}")
+        if trading_phase == "continuous":
+            self.agent_id_map[order.agent_id].append(order.order_id)
+            if order.order_type == constants.SELL:
+                # Cache peek values to avoid redundant heap cleanup operations
+                buy_unmatched_peek = self.buy_unmatched.peek()
+                # sell_matched_peek = self.sell_matched.peek() # does not matter here
+                if order.price <= buy_unmatched_peek:
+                    self.handle_new_order(order)
+                else:
+                    # no matching, at best the spread will get shrunk
+                    self.sell_unmatched.add_order(order)
+            elif order.order_type == constants.BUY:
+                # Cache peek values to avoid redundant heap cleanup operations
+                sell_unmatched_peek = self.sell_unmatched.peek()
+                # buy_matched_peek = self.buy_matched.peek() # does not matter here
+                if order.price >= sell_unmatched_peek:
+                    # AK: crosses with existing orders, transaction will be made
+                    self.handle_new_order(order)
+                else:
+                    # no transaction, but the spread becomes smaller
+                    self.buy_unmatched.add_order(order)
+        else:
+            # opening, closing phases and other fixing phases
+            self.agent_id_map[order.agent_id].append(order.order_id)
+            if order.order_type == constants.SELL:
+                # Cache peek values to avoid redundant heap cleanup operations
+                buy_unmatched_peek = self.buy_unmatched.peek()
+                sell_matched_peek = self.sell_matched.peek()
+                if order.price <= buy_unmatched_peek and sell_matched_peek <= buy_unmatched_peek:
+                    self.handle_new_order(order)
+                elif order.price <= sell_matched_peek:
+                    self.handle_replace(order)
+                else:
+                    self.sell_unmatched.add_order(order)
+            elif order.order_type == constants.BUY:
+                # Cache peek values to avoid redundant heap cleanup operations
+                sell_unmatched_peek = self.sell_unmatched.peek()
+                buy_matched_peek = self.buy_matched.peek()
+                if order.price >= sell_unmatched_peek and buy_matched_peek >= sell_unmatched_peek:
+                    # AK: crosses with existing orders, transaction will be made
+                    self.handle_new_order(order)
+                elif order.price >= buy_matched_peek:
+                    # no transaction, but the spread becomes smaller
+                    print(f"buy_matched_peek before handle_replace: {buy_matched_peek}")
+                    self.handle_replace(order)
+                else:
+                    self.buy_unmatched.add_order(order)
 
     def remove(self, order_id: int) -> None:
         if self.buy_unmatched.contains(order_id):
@@ -108,6 +144,7 @@ class FourHeap:
         elif self.sell_unmatched.contains(order_id):
             self.sell_unmatched.remove(order_id)
         elif self.buy_matched.contains(order_id):
+            raise # this should not happen - order already executed
             order_q = self.buy_matched.order_dict[order_id].quantity
             self.buy_matched.remove(order_id)
             s = self.sell_matched.push_to()
@@ -126,6 +163,7 @@ class FourHeap:
                     s = self.sell_matched.push_to()
                     s_quantity = s.quantity
         elif self.sell_matched.contains(order_id):
+            raise  # this should not happen
             order_q = self.sell_matched.order_dict[order_id].quantity
             self.sell_matched.remove(order_id)
             b = self.buy_matched.push_to()
@@ -151,27 +189,29 @@ class FourHeap:
                 self.remove(order_id)
             self.agent_id_map[agent_id] = []
 
-    def market_clear(self, current_time: int, mode:str = "opening") -> list[MatchedOrder]:
-        if mode == "opening":
-            price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
-            # TODO: this is original, works strangely, let's make it a strategy so that we can compute continuous prices
-            # based on the order book
-
-            buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
-            sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
-
-            matched_orders = buy_matched + sell_matched
-            return matched_orders
-
-        elif mode == "continuous":
-            raise
+    def market_clear(self, current_time: int, trading_phase: str = "continuous") -> list[MatchedOrder]:
+        # AK TODO: rename to "match_orders"?
+        if trading_phase == "continuous":
             # in this mode the orders arrive one by one and are cleared. So when handling this queue of matched orders
             # they are treated as placed in sequential time points (later we will work out with the fractal time structure)
             # let's check if it is gonna even work properly - will the set of matched orders be exactly the same as in the
             # opening (standard) mode?
             # let's assume that this method is called after each new order placed
-            #price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
-            price = self.market.last_traded_price
+            #price = self.market.last_traded_price
+            #price = self.market.traded_prices[current_time]["Close"]
+
+            # well, those will create matched orders with not always proper price?
+            # buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+            # sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
+            buy_matched = self.buy_matched.market_clear(current_time=current_time)
+            sell_matched = self.sell_matched.market_clear(current_time=current_time)
+
+            matched_orders = buy_matched + sell_matched
+            return matched_orders
+
+        elif trading_phase == "fixed":
+            raise
+            price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
 
             buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
             sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
@@ -179,7 +219,7 @@ class FourHeap:
             matched_orders = buy_matched + sell_matched
             return matched_orders
         else:
-            raise ValueError(f"Invalid mode: {mode}")
+            raise ValueError(f"Invalid phase: {trading_phase}")
 
     def get_bid_quote(self) -> Price:
         return max(self.buy_unmatched.peek(), self.sell_matched.peek())

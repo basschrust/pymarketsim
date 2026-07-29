@@ -1,6 +1,5 @@
 import heapq
 import math
-from typing import Optional
 
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
@@ -15,7 +14,8 @@ class OrderQueue:
         self.order_dict = {}
         self.deleted_ids = set()
 
-    def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None) -> None:
+    def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None, matched_with: int | None=None) -> None:
+        print(f"order_queue.add_order {order} with executed_price: {executed_price}, executed_mode: {executed_mode}, matched_with: {matched_with}")
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):
@@ -32,6 +32,7 @@ class OrderQueue:
                 order.executed_price = executed_price # hmm, the price from the other side peek which is not
                                 # available here... so we pass it here :)
                 order.executed_mode = executed_mode
+                order.matched_with = matched_with
         self.size += order.quantity
 
 
@@ -89,12 +90,14 @@ class OrderQueue:
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, price: Price, current_time: int) -> list[MatchedOrder]:
+    def market_clear(self, *, current_time: int, price: Price | None=None) -> list[MatchedOrder]:
+        # AK TODO: rename to match_orders ?
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
                 if order_id not in self.deleted_ids:
                     order = self.order_dict[order_id]
+                    price = price if price is not None else order.executed_price
                     matched_orders.append(MatchedOrder(price, current_time, order))
             self.clear()
             return matched_orders
@@ -128,7 +131,7 @@ class OrderQueue:
     def contains(self, order_id: int) -> bool:
         return order_id in self.order_dict
 
-    def push_to(self) -> Optional['Order']:
+    def push_to(self) -> Order|None:
         while self.heap:
             price, order_id = heapq.heappop(self.heap)
             if order_id not in self.deleted_ids:
