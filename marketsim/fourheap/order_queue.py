@@ -1,6 +1,5 @@
 import heapq
 import math
-from typing import Optional
 
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
@@ -91,12 +90,14 @@ class OrderQueue:
         self.deleted_ids = set()
         self.size = 0
 
-    def market_clear(self, price: Price, current_time: int) -> list[MatchedOrder]:
+    def market_clear(self, *, current_time: int, price: Price | None=None) -> list[MatchedOrder]:
+        # AK TODO: rename to match_orders ?
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
                 if order_id not in self.deleted_ids:
                     order = self.order_dict[order_id]
+                    price = price if price is not None else order.executed_price
                     matched_orders.append(MatchedOrder(price, current_time, order))
             self.clear()
             return matched_orders

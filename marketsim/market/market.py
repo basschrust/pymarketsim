@@ -30,7 +30,7 @@ class Market:
         self.order_book.withdraw_all(agent_id=agent_id)
 
     def clear_market(self, current_time: int) -> list[MatchedOrder]:
-        newly_matched_orders = self.order_book.market_clear(current_time=current_time)
+        newly_matched_orders = self.order_book.market_clear(current_time=current_time, trading_phase="continuous")
         self.matched_orders += newly_matched_orders
         return newly_matched_orders
 

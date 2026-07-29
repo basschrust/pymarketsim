@@ -190,23 +190,27 @@ class FourHeap:
             self.agent_id_map[agent_id] = []
 
     def market_clear(self, current_time: int, trading_phase: str = "continuous") -> list[MatchedOrder]:
+        # AK TODO: rename to "match_orders"?
         if trading_phase == "continuous":
             # in this mode the orders arrive one by one and are cleared. So when handling this queue of matched orders
             # they are treated as placed in sequential time points (later we will work out with the fractal time structure)
             # let's check if it is gonna even work properly - will the set of matched orders be exactly the same as in the
             # opening (standard) mode?
             # let's assume that this method is called after each new order placed
-            price = self.market.last_traded_price
+            #price = self.market.last_traded_price
+            #price = self.market.traded_prices[current_time]["Close"]
 
             # well, those will create matched orders with not always proper price?
-            buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
-            sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
+            # buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
+            # sell_matched = self.sell_matched.market_clear(price=price, current_time=current_time)
+            buy_matched = self.buy_matched.market_clear(current_time=current_time)
+            sell_matched = self.sell_matched.market_clear(current_time=current_time)
 
             matched_orders = buy_matched + sell_matched
             return matched_orders
 
         elif trading_phase == "fixed":
-
+            raise
             price = self.get_ask_quote() if self.plus_one else self.get_bid_quote() # AK - ohoh why not midprice?
 
             buy_matched = self.buy_matched.market_clear(price=price, current_time=current_time)
@@ -215,7 +219,7 @@ class FourHeap:
             matched_orders = buy_matched + sell_matched
             return matched_orders
         else:
-            raise ValueError(f"Invalid mode: {mode}")
+            raise ValueError(f"Invalid phase: {trading_phase}")
 
     def get_bid_quote(self) -> Price:
         return max(self.buy_unmatched.peek(), self.sell_matched.peek())
