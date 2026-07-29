@@ -75,6 +75,7 @@ class FourHeap:
                 self.insert(new_order)
 
     def insert(self, order: Order) -> None:
+        # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
         self.agent_id_map[order.agent_id].append(order.order_id)
         if order.order_type == constants.SELL:
             # Cache peek values to avoid redundant heap cleanup operations

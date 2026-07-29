@@ -61,7 +61,7 @@ class Market:
         for order in orders:
             if order.quantity <= 0:
                 continue
-            print(f"Inserting order: {order.order_id}")
+            print(f"Inserting order: {order}")
             self.order_book.insert(order)
             # if we are in continuous mode we should clear the market here, after entering each order
             #let's see what happens ...

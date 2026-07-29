@@ -433,7 +433,7 @@ class HBLAgent(Agent):
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
             #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here
-            sell_low = sell_orders_memory[0].price
+            sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
             def interpolate(bound1, bound2, bound1Belief, bound2Belief):
                 """
@@ -606,16 +606,16 @@ class HBLAgent(Agent):
                 opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
 
                 order = Order(
-                    price=opt_price,
+                    price=Price(opt_price),
                     quantity=1,
                     agent_id=self.get_id(),
                     time=current_time,
-                    order_type=side,
+                    order_type=1 if side == 'BUY' else -1,
                 )
                 return [order]
 
             else:
-                # ZI Agent # AK ?
+                # ZI Agent # AK - of there is not enough trades to fill the L memory then behavior the same as ZI
                 valuation_offset = spread*random.random() + self.shade[0]
                 if side == BUY:
                     price = estimate + self.pv.value_for_exchange(self.position, BUY) - valuation_offset
@@ -623,11 +623,11 @@ class HBLAgent(Agent):
                     price = estimate + self.pv.value_for_exchange(self.position, SELL) + valuation_offset
 
                 order = Order(
-                    price=price,
+                    price=Price(price),
                     quantity=1,
                     agent_id=self.get_id(),
                     time=current_time,
-                    order_type=side,
+                    order_type=1 if side == 'BUY' else -1,
                 )
                 return [order]
         except TypeError:
