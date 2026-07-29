@@ -440,6 +440,16 @@ class HBLAgent(Agent):
                 Sell version of interpolate above. 
                 @TODO: Merge the two
                 """
+                logger.debug(
+                    "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
+                    bound1,
+                    bound2,
+                    bound1Belief,
+                    bound2Belief,
+                )
+
+                assert bound2 > bound1, f"Invalid interval: {bound1} >= {bound2}"
+
                 cs = FCS(float(bound1), float(bound2), [bound1Belief, bound2Belief])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
