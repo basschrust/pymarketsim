@@ -31,6 +31,7 @@ class FourHeap:
         print(f"handle_new_order {order}")
         q_order = order.quantity
         orders_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
+        orders_unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
@@ -51,10 +52,11 @@ class FourHeap:
                 counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
                 new_order = order.copy_and_decrease(to_match_quantity)
                 orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
-                self.insert(new_order)
+                #self.insert(new_order) # AK - this is problematic - should be added to the unmatched heap now, not the 4heap
+                orders_unmatched.add_order(new_order)
 
     def handle_replace(self, order) -> None:
-        #raise # is it ever used in coninuous mode? yes
+        raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
         print(f"handle_replace {order}")
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
