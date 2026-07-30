@@ -79,6 +79,7 @@ class ZIAgentNotInformed(Agent):
                     agent_id=self.agent_id,
                     time=current_time,
                     order_type=side,
+                    asset_id=self.market.asset_id,
                 )
                 orders.append(order)
             else:

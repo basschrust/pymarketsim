@@ -18,7 +18,7 @@ class MMZOHAgent(Agent):
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5):
 
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
-        self.market = market
+        self.market = market # could agent serve multiple markets?
 
         self.position = 0
         self.cash = 0
@@ -68,6 +68,7 @@ class MMZOHAgent(Agent):
                         agent_id=self.agent_id,
                         time=current_time,
                         order_type=BUY,
+                        asset_id=self.market.asset_id,
                     )
                 )
                 orders.append(
@@ -77,6 +78,7 @@ class MMZOHAgent(Agent):
                         agent_id=self.agent_id,
                         time=current_time,
                         order_type=SELL,
+                        asset_id=self.market.asset_id,
                     )
                 )
 

@@ -621,6 +621,7 @@ class HBLAgent(Agent):
                     agent_id=self.get_id(),
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
+                    asset_id=self.market.asset_id,
                 )
                 return [order]
 
@@ -638,6 +639,7 @@ class HBLAgent(Agent):
                     agent_id=self.get_id(),
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
+                    asset_id=self.market.asset_id,
                 )
                 return [order]
         except TypeError:
