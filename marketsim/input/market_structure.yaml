@@ -65,7 +65,7 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 5
+        number: 8
         config:
           lam: 0.8
           q_max: 10
@@ -86,7 +86,7 @@ markets:
         number: 3
         config:
           q_max: 20
-          L: 3 # memory length
+          L: 9 # memory length
           shade:
             - 0.1
             - 0.3
@@ -97,7 +97,7 @@ markets:
         number: 3
         config:
           q_max: 20
-          L: 5 # memory length
+          L: 15 # memory length
           shade:
             - 0.05
             - 0.1
