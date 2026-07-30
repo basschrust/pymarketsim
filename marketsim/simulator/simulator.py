@@ -172,7 +172,7 @@ class Simulator:
                 orient="index"
             )
             df_candlestick.index.name = "time"
-            df_candlestick.index = pd.to_datetime(df_candlestick.index, unit="s")
+            #df_candlestick.index = pd.to_datetime(df_candlestick.index, unit="s")
             print(df_candlestick.head())
 
             candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
