@@ -1,53 +1,105 @@
 # market structure configuration file
 
 # generic simulation parameters
-num_assets: 1
-sim_time: 100
+num_assets: 2 # used, but has to be also specified for each agent
+sim_time: 30
 lam: 0.8
 market_type: continuous
 
 markets:
-  number: 1
-agent_groups:
-  zi_agents_informed:
-    number: 0
-  zi_agents_not_informed:
-    agent_class: ZIAgentNotInformed
-    number: 20
-    config:
-      lam: 0.8
-      q_max: 10
-      shade:
-        - 0.1
-        - 0.3
-      pv_var: 5.0e2
-  mmzoh:
-    agent_class: MMZOHAgent
-    number: 1
-    config:
-      xi: 0.2
-      K: 4
-      omega: 0.2
-      rebalance_period: 10
-  hbl:
-    agent_class: HBLAgent
-    number: 3
-    config:
-      q_max: 10
-      L: 3 # memory length
-      shade:
-        - 0.1
-        - 0.3
-      arrival_rate: 2
-      pv_var: 7.0e2
-  hbl2:
-    agent_class: HBLAgent
-    number: 3
-    config:
-      q_max: 10
-      L: 5 # memory length
-      shade:
-        - 0.05
-        - 0.1
-      arrival_rate: 4
-      pv_var: 7.0e2
+  security_1:
+    name: "First security"
+    ticker: "AAA"
+    market_type: continuous
+    lam: 0.8
+    agent_groups:
+      zi_agents_informed:
+        number: 0
+      zi_agents_not_informed:
+        agent_class: ZIAgentNotInformed
+        number: 5
+        config:
+          lam: 0.8
+          q_max: 10
+          shade:
+            - 0.1
+            - 0.3
+          pv_var: 5.0e2
+      mmzoh:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.2
+          K: 4
+          omega: 0.2
+          rebalance_period: 10
+      hbl:
+        agent_class: HBLAgent
+        number: 3
+        config:
+          q_max: 10
+          L: 3 # memory length
+          shade:
+            - 0.1
+            - 0.3
+          arrival_rate: 2
+          pv_var: 7.0e2
+      hbl2:
+        agent_class: HBLAgent
+        number: 3
+        config:
+          q_max: 10
+          L: 5 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 4
+          pv_var: 7.0e2
+  security_2:
+    name: "Second security"
+    ticker: "BBB"
+    market_type: continuous
+    lam: 0.6
+    agent_groups:
+      zi_agents_informed:
+        number: 0
+      zi_agents_not_informed:
+        agent_class: ZIAgentNotInformed
+        number: 5
+        config:
+          lam: 0.8
+          q_max: 10
+          shade:
+            - 0.1
+            - 0.3
+          pv_var: 5.2e2
+      mmzoh:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.2
+          K: 3
+          omega: 0.2
+          rebalance_period: 8
+      hbl:
+        agent_class: HBLAgent
+        number: 3
+        config:
+          q_max: 20
+          L: 3 # memory length
+          shade:
+            - 0.1
+            - 0.3
+          arrival_rate: 3
+          pv_var: 7.0e2
+      hbl2:
+        agent_class: HBLAgent
+        number: 3
+        config:
+          q_max: 20
+          L: 5 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 7
+          pv_var: 7.0e2

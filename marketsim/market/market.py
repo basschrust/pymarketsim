@@ -5,12 +5,15 @@ from marketsim.event.event_queue import EventQueue
 from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.fourheap import constants
+from marketsim.utils.id_generator import id_generator
+from marketsim.agent.agent import Agent
 
 
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
                  market_type: str = "discrete"):
         self.order_book = FourHeap(plus_one=True, market=self)
+        self.asset_id = id_generator.next()
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.fundamental = fundamental
         self.last_traded_price = reference_price
@@ -18,6 +21,12 @@ class Market:
         self.end_time = time_steps
         self.traded_prices = {}
         self.market_type = market_type # "discrete" or "continuous"
+        self.agents = {}
+
+    def add_agents(self, agents: list[Agent] | None) -> None:
+        for agent in agents:
+            print(f"Adding agent {str(agent)} to market {str(self)}")
+            self.agents[agent.get_id()] = agent
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -102,4 +111,6 @@ class Market:
                                                  "High": price,
                                                  "Close": price,
                                                  "Volume": volume,}
+    def __str__(self) -> str:
+        return f"Market_{self.asset_id}"
 
