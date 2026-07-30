@@ -18,6 +18,7 @@ from marketsim.utils.id_generator import id_generator
 class HBLAgent(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None, agent_id: int =None):
+        super().__init__()
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market
         if pv is not None:

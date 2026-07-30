@@ -14,6 +14,7 @@ from marketsim.market.price import Price
 class ZIAgentNotInformed(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
+        super().__init__()
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max

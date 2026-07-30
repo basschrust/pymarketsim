@@ -117,6 +117,9 @@ class Simulator:
                 market.record_trade(current_time=self.current_time, price=matched_order.price, volume=abs(quantity))
             print(f'After clearing the market the last traded price is: {market.last_traded_price}')
             print(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
+            # update value of each agent in each market:
+            for k, agent in market.agents.items():
+                agent.record_valuation(current_time=self.current_time, price=market.last_traded_price)
         self.current_time += 1
 
 
@@ -152,6 +155,17 @@ class Simulator:
             print(f"Midprices: {market.get_midprices()}")
             print(f"Traded prices {market.traded_prices}")
 
+            # valuations by agent:
+            for agent_key, agent in market.agents.items():
+                history = agent.position_value_history
+                print(f"\nAgent {str(agent_key)} value history\n: {history}")
+
+                # plot it
+                agent_file = f"{config.output_dir}/agent_{str(agent_key)}.png"
+                simple_plot(x=[i for i in history], y=[j for i, j in history.items()], output_file=agent_file)
+
+
+            # plot the security values history:
             traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
                                    for t, item in market.traded_prices.items()}
             df_candlestick = pd.DataFrame.from_dict(traded_prices_float,

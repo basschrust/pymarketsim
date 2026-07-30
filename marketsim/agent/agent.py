@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 import math
 from typing import List
+from dataclasses import dataclass, field
+
 from marketsim.fourheap.order import Order
+from marketsim.market.price import Price
 
 
 def validate_update(quantity: int, cash: float) -> None:
@@ -16,12 +19,16 @@ def validate_update(quantity: int, cash: float) -> None:
         if cash > 0:
             raise ValueError("Cash cannot be positive if quantity is positive!")
 
+
 class Agent(ABC):
     position = 0
     cash = 0
-    trade_history = {}
-    position_value_history = {}
+    trade_history = {} # dict of lists {day: [trades over that day]}
+    # position_value_history = {0:0} # fill after every clearing
+    # position_value_history: dict[int, Price] = field(default_factory=dict) # works in dataclasses only
 
+    def __init__(self):
+        self.position_value_history = {}
 
     @abstractmethod
     def get_id(self) -> int:
@@ -46,3 +53,6 @@ class Agent(ABC):
 
     def is_market_maker(self) -> bool:
         return False
+
+    def record_valuation(self, current_time: int, price: Price) -> None:
+        self.position_value_history[current_time] = self.cash + self.position*price
