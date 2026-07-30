@@ -4,7 +4,6 @@ from loguru import logger
 import pandas as pd
 
 from marketsim.loggers import basic
-# from marketsim import Market
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
@@ -19,6 +18,7 @@ from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import simple_plot
 from marketsim.plot.candle import plot_candlestick
+from marketsim.input import config
 
 
 class Simulator:
@@ -161,15 +161,11 @@ class Simulator:
             df_candlestick.index = pd.to_datetime(df_candlestick.index, unit="s")
             print(df_candlestick.head())
 
-            candlestick_filename = f"marketsim/output/{basic.log_dir}/candlestick_{str(market)}.png"
+            candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
             plot_candlestick(df=df_candlestick, output_file=candlestick_filename)
 
 
     def run(self) -> None:
-        # print(f"Agents ({len(self.agents)}):")
-        # for agent_id in range(len(self.agents)):
-        #     print(f"{agent_id}: {str(self.agents[agent_id])}")
-        # the core - running simulation steps:
         for t in range(self.sim_time):
             print(f"Step: {t}.", end='')
             self.step()
