@@ -94,6 +94,11 @@ class Simulator:
     def step(self) -> None:
         print(f'\nIt is time step {self.current_time}')
         for market in self.markets:
+            cash_sum = 0
+            for agent_id, agent in market.agents.items():
+                cash_sum += agent.cash
+            print(f"Asserting initial cash sum: {cash_sum}")
+            assert cash_sum == 0
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
                 if not agent.is_market_maker():
@@ -107,15 +112,15 @@ class Simulator:
                   f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
             print(f"Starting to clear out orders.")
+
             for matched_order in new_orders_matched:
                 print(f"Matched order {str(matched_order)}")
-                agent_id = matched_order.order.agent_id
-                quantity = matched_order.order.order_type * matched_order.order.quantity
-                cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
-                market.last_traded_price = matched_order.price
-                market.agents[agent_id].update_position(quantity=quantity, cash=cash)
-                market.agents[agent_id].record_trade(matched_order=matched_order) # TODO: merge with the above func
-                market.record_trade(current_time=self.current_time, price=matched_order.price, volume=abs(quantity))
+                market.record_trade(matched_order=matched_order)
+            cash_sum = 0
+            for agent_id, agent in market.agents.items():
+                cash_sum += agent.cash
+            print(f"Asserting cash sum: {cash_sum}")
+            assert cash_sum == 0
             print(f'After clearing the market the last traded price is: {market.last_traded_price}')
             print(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
             # update value of each agent in each market:

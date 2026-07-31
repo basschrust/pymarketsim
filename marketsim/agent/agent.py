@@ -7,7 +7,7 @@ from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
 
 
-def validate_update(quantity: int, cash: float) -> None:
+def validate_update(quantity: int, cash: Price) -> None:
     if not math.isfinite(cash):
         raise ValueError(f"cash must be finite (not NaN or ±inf) as here: {cash}")
 
@@ -42,7 +42,7 @@ class Agent(ABC):
     def get_pos_value(self) -> float:
         pass
 
-    def update_position(self, quantity: int, cash: float) -> None:
+    def update_position(self, quantity: int, cash: Price) -> None:
         validate_update(quantity=quantity, cash=cash)
         self.position += quantity
         self.cash += cash
@@ -58,6 +58,11 @@ class Agent(ABC):
         self.position_value_history[current_time] = self.cash + self.position*price
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
+        quantity = matched_order.order.order_type * matched_order.order.quantity
+        cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
+        print(f"Updating cash: {cash}")
+        self.update_position(quantity=quantity, cash=cash)
+
         if matched_order.time in self.trade_history:
             # just add info
             old = self.trade_history.get(matched_order.time, {})
