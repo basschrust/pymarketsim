@@ -60,7 +60,7 @@ class HBLAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def find_worst_order(self, side, order_mem, orders: List[Order], current_time: int):
+    def find_worst_order(self, side: int, order_mem :list[Order], orders: List[Order], current_time: int) -> (Price, float):
         """
         Binary search to find the most competitive order in memory with a belief of 0.
         Args:
@@ -91,7 +91,7 @@ class HBLAgent(Agent):
                 return order_mem[mid].price, 0
         return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
-    def get_last_trade_time_step(self):
+    def get_last_trade_time_step(self) -> Order:
         """
         Gets memory boundary time step based on L (how many matched orders considered in memory).
 
@@ -104,7 +104,7 @@ class HBLAgent(Agent):
                              key=lambda matched_order: matched_order.order.time).order.time
         return earliest_order
 
-    def fast_belief_function(self, p, side, orders):
+    def fast_belief_function(self, p: float, side: int, orders: list[Order]) -> bool:
         """
         To check if belief of order with price p is 0. Used for slightly faster queries in find_worst_order()
         Args:
@@ -152,7 +152,6 @@ class HBLAgent(Agent):
             float: Probability of order with price p transacting
         """
         p = Price(p)
-        # current_time = self.market.get_time()
         if side == BUY:
             TBL = 0  # Transact bids less or equal
             AL = 0  # Asks less or equal
@@ -253,19 +252,19 @@ class HBLAgent(Agent):
             buy_orders_memory: filtered of last_L_orders with just BUY orders
             sell_orders_memory: filtered of last_L_orders with just SELL orders
         """
-        self.lower_bound_mem = self.get_last_trade_time_step()
+        self.lower_bound_mem = self.get_last_trade_time_step() # TODO: gives order, should give int(or time tick)?
 
         buy_orders_memory = []
         sell_orders_memory = []
         last_L_orders = []
-        for time in range(self.lower_bound_mem, current_time+1): #self.market.get_time() + 1):
+        for time in range(self.lower_bound_mem, current_time+1):
             last_L_orders.extend(self.market.event_queue.scheduled_activities[time])
         buy_orders_memory = [order for order in last_L_orders if order.order_type == BUY]
         sell_orders_memory = [order for order in last_L_orders if order.order_type == SELL]
         return last_L_orders, buy_orders_memory, sell_orders_memory
 
     # @profile
-    def determine_optimal_price(self, side, current_time: int) -> Price:
+    def determine_optimal_price(self, side: int, current_time: int) -> (Price, Price):
         """
         Determines optimal price for submission.
         Args:
