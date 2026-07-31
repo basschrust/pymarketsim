@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import math
 from typing import List
 from dataclasses import dataclass, field
+import traceback
 
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
@@ -21,10 +22,7 @@ def validate_update(quantity: int, cash: Price) -> None:
 
 
 class Agent(ABC):
-    # position = 0
-    # cash = 0
-    # position_value_history = {0:0} # fill after every clearing
-    # position_value_history: dict[int, Price] = field(default_factory=dict) # works in dataclasses only
+    # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self):
         self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
@@ -38,10 +36,8 @@ class Agent(ABC):
 
     @cash.setter
     def cash(self, value):
-        import traceback
-
         print(f"Agent {id(self)} cash: {self._cash} -> {value}")
-        traceback.print_stack(limit=5)
+        traceback.print_stack(limit=2)
 
         self._cash = value
 

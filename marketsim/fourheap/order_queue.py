@@ -92,13 +92,17 @@ class OrderQueue:
 
     def market_clear(self, *, current_time: int, price: Price | None=None) -> list[MatchedOrder]:
         # AK TODO: rename to match_orders ?
+        if price is not None:
+            raise # to ensure we never pass the price from external var
         if self.is_matched:
             matched_orders = []
             for _, order_id in self.heap:
                 if order_id not in self.deleted_ids:
                     order = self.order_dict[order_id]
                     price = price if price is not None else order.executed_price
-                    matched_orders.append(MatchedOrder(price, current_time, order))
+                    volume = order.quantity
+                    cash = volume * price
+                    matched_orders.append(MatchedOrder(price=price, cash=cash, volume=volume, time=current_time, order=order))
             self.clear()
             return matched_orders
         return []
