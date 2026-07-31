@@ -1,10 +1,14 @@
 from abc import ABC, abstractmethod
 import math
 from typing import List
-from marketsim.fourheap.order import Order
+from dataclasses import dataclass, field
+import traceback
+
+from marketsim.fourheap.order import Order, MatchedOrder
+from marketsim.market.price import Price
 
 
-def validate_update(quantity: int, cash: float) -> None:
+def validate_update(quantity: int, cash: Price) -> None:
     if not math.isfinite(cash):
         raise ValueError(f"cash must be finite (not NaN or ±inf) as here: {cash}")
 
@@ -16,12 +20,26 @@ def validate_update(quantity: int, cash: float) -> None:
         if cash > 0:
             raise ValueError("Cash cannot be positive if quantity is positive!")
 
-class Agent(ABC):
-    position = 0
-    cash = 0
-    trade_history = {}
-    position_value_history = {}
 
+class Agent(ABC):
+    # An agent is an investor operating on single market (investing in single security against their cash)
+
+    def __init__(self):
+        self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
+        self.position_value_history = {}
+        self.position = 0
+        self._cash = Price(0)
+
+    @property
+    def cash(self):
+        return self._cash
+
+    @cash.setter
+    def cash(self, value):
+        print(f"Agent {id(self)} cash: {self._cash} -> {value}")
+        # traceback.print_stack(limit=2)
+
+        self._cash = value
 
     @abstractmethod
     def get_id(self) -> int:
@@ -35,7 +53,7 @@ class Agent(ABC):
     def get_pos_value(self) -> float:
         pass
 
-    def update_position(self, quantity: int, cash: float) -> None:
+    def update_position(self, quantity: int, cash: Price) -> None:
         validate_update(quantity=quantity, cash=cash)
         self.position += quantity
         self.cash += cash
@@ -46,3 +64,23 @@ class Agent(ABC):
 
     def is_market_maker(self) -> bool:
         return False
+
+    def record_valuation(self, current_time: int, price: Price) -> None:
+        self.position_value_history[current_time] = self.cash + self.position*price
+
+    def record_trade(self, matched_order: MatchedOrder) -> None:
+        quantity = matched_order.order.order_type * matched_order.order.quantity
+        cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
+        print(f"Updating cash: {cash}")
+        self.update_position(quantity=quantity, cash=cash)
+
+        if matched_order.time in self.trade_history:
+            # just add info
+            old = self.trade_history.get(matched_order.time, {})
+            self.trade_history[matched_order.time] = {"trades": old["trades"]+1,
+                                                               "volume": old["volume"] + abs(matched_order.order.quantity),}
+        else:
+            # first trade this day
+            self.trade_history[matched_order.time] = {"trades": 1, "volume": abs(matched_order.order.quantity),
+                                                    } # side, volume bought/sold, ...
+

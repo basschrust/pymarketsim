@@ -16,7 +16,7 @@ class MMZOHAgent(Agent):
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5):
-
+        super().__init__()
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market # could agent serve multiple markets?
 

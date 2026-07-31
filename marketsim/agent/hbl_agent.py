@@ -18,6 +18,7 @@ from marketsim.utils.id_generator import id_generator
 class HBLAgent(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None, agent_id: int =None):
+        super().__init__()
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market
         if pv is not None:
@@ -59,7 +60,7 @@ class HBLAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def find_worst_order(self, side, order_mem, orders: List[Order], current_time: int):
+    def find_worst_order(self, side: int, order_mem :list[Order], orders: List[Order], current_time: int) -> (Price, float):
         """
         Binary search to find the most competitive order in memory with a belief of 0.
         Args:
@@ -90,20 +91,20 @@ class HBLAgent(Agent):
                 return order_mem[mid].price, 0
         return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
-    def get_last_trade_time_step(self):
+    def get_last_trade_time_step(self) -> int:
         """
         Gets memory boundary time step based on L (how many matched orders considered in memory).
 
         Returns:
             timestep of earliest contributing order (i.e. the boundary timestep for memory).
         """
-        # Assumes that matched_orders is ordered by timestep of trades
+        # Assumes that matched_orders is ordered by timestep of trades - well, that is risky...
         last_matched_order_ind = len(self.market.matched_orders) - self.L * 2
-        earliest_order = min(self.market.matched_orders[last_matched_order_ind:],
+        earliest_order_time = min(self.market.matched_orders[last_matched_order_ind:],
                              key=lambda matched_order: matched_order.order.time).order.time
-        return earliest_order
+        return earliest_order_time
 
-    def fast_belief_function(self, p, side, orders):
+    def fast_belief_function(self, p: Price, side: int, orders: list[Order]) -> bool:
         """
         To check if belief of order with price p is 0. Used for slightly faster queries in find_worst_order()
         Args:
@@ -151,7 +152,6 @@ class HBLAgent(Agent):
             float: Probability of order with price p transacting
         """
         p = Price(p)
-        # current_time = self.market.get_time()
         if side == BUY:
             TBL = 0  # Transact bids less or equal
             AL = 0  # Asks less or equal
@@ -252,19 +252,21 @@ class HBLAgent(Agent):
             buy_orders_memory: filtered of last_L_orders with just BUY orders
             sell_orders_memory: filtered of last_L_orders with just SELL orders
         """
-        self.lower_bound_mem = self.get_last_trade_time_step()
+        #raise # AK - this probably is never called? it is! by determine_optimal_price(...)
+        self.lower_bound_mem = self.get_last_trade_time_step() # TODO: gives order, should give int(or time tick)?
 
         buy_orders_memory = []
         sell_orders_memory = []
         last_L_orders = []
-        for time in range(self.lower_bound_mem, current_time+1): #self.market.get_time() + 1):
+        for time in range(self.lower_bound_mem, current_time+1):
             last_L_orders.extend(self.market.event_queue.scheduled_activities[time])
+            # TODO: AK - this is anti-causal - checking also orders which yet didn't reach the LOB!
         buy_orders_memory = [order for order in last_L_orders if order.order_type == BUY]
         sell_orders_memory = [order for order in last_L_orders if order.order_type == SELL]
         return last_L_orders, buy_orders_memory, sell_orders_memory
 
     # @profile
-    def determine_optimal_price(self, side, current_time: int) -> Price:
+    def determine_optimal_price(self, side: int, current_time: int) -> (Price, Price):
         """
         Determines optimal price for submission.
         Args:
@@ -278,7 +280,7 @@ class HBLAgent(Agent):
 
         last_L_orders, buy_orders_memory, sell_orders_memory = self.get_order_list(current_time=current_time)
         last_L_orders = np.array(last_L_orders)
-        estimate = self.estimate_fundamental(current_time=current_time)
+        estimate = self.estimate_fundamental(current_time=current_time) # TODO: AK - maybe last traded?
         buy_orders_memory = sorted(buy_orders_memory, key = lambda order:order.price)
         sell_orders_memory = sorted(sell_orders_memory, key = lambda order:order.price)
         best_ask = float(self.market.order_book.sell_unmatched.peek())
@@ -287,10 +289,10 @@ class HBLAgent(Agent):
         spline_interp_objects = [[], []]
         if side == BUY: 
             private_value = self.pv.value_for_exchange(self.position, BUY)
-            best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders)
+            best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
             def interpolate(bound1, bound2, bound1Belief, bound2Belief):
-                cs = FCS(bound1, bound2, [bound1Belief, bound2Belief])
+                cs = FCS(bound1, bound2, [bound1Belief, float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
 
@@ -317,6 +319,8 @@ class HBLAgent(Agent):
                         # (I.e. function is piecewise continuous)
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
                             return -((estimate + private_value - price) * spline_interp_objects[0][i](price))
+
+                    raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
                 lb = min(spline_interp_objects[1], key=lambda bound_pair: bound_pair[0])[0]
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
@@ -432,10 +436,10 @@ class HBLAgent(Agent):
             sell_high, sell_high_belief = self.find_worst_order(SELL, sorted(sell_orders_memory, key=lambda order: order.price, reverse=True), last_L_orders, current_time=current_time)
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
-            #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here
+            #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
             sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
-            def interpolate(bound1, bound2, bound1Belief, bound2Belief):
+            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float) -> None:
                 """
                 Sell version of interpolate above. 
                 @TODO: Merge the two
@@ -450,9 +454,9 @@ class HBLAgent(Agent):
 
                 assert bound2 > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                cs = FCS(float(bound1), float(bound2), [bound1Belief, bound2Belief])
+                cs = FCS(float(bound1), float(bound2), [bound1Belief, float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
-                spline_interp_objects[1].append((bound1, bound2))
+                spline_interp_objects[1].append((float(bound1), float(bound2)))
                 
             def expected_surplus_max():
                 """
@@ -467,6 +471,8 @@ class HBLAgent(Agent):
                     for i in range(len(spline_interp_objects[0])):
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
                             return -((price - (estimate + private_value)) * spline_interp_objects[0][i](price))
+
+                    raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
                 lb = min(spline_interp_objects[1], key=lambda bound_pair: bound_pair[0])[0]
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
@@ -594,7 +600,7 @@ class HBLAgent(Agent):
 
     def take_action(self, current_time: int, seed: int = 0) -> list[Order]:
         """
-        Submits order to market for HBL.
+        Submits orders to market for HBL.
 
         Params:
             side: BUY or SELL.  # AK: why the hell do we need side in this method? It should be generic,
@@ -604,21 +610,24 @@ class HBLAgent(Agent):
             order [Order]: order to be submitted
 
         Note:
-            Behavior reverts to ZI agent if L > total num of trades executed.
+            Behavior reverts to ZI agent if L > total num of trades executed. AK: executed or at least added to LOB?
+                or time ticks passed?
         """
         try:
+            random.seed(current_time + seed) # AK why not save it somehow to recreate specific scenarios?
             side = random.choice(["BUY", "SELL"])
-            random.seed(current_time + seed)
-            estimate = self.estimate_fundamental(current_time=current_time)
+            #estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
+            estimate = self.market.last_traded_price
             spread = self.shade[1] - self.shade[0]
             price = estimate
             if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
+                # the HBL behavior
                 opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
 
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1,
-                    agent_id=self.get_id(),
+                    quantity=1, #AK well, let's make it bigger to make some profits (Poisson?)
+                    agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
                     asset_id=self.market.asset_id,
@@ -626,7 +635,8 @@ class HBLAgent(Agent):
                 return [order]
 
             else:
-                # ZI Agent # AK - of there is not enough trades to fill the L memory then behavior the same as ZI
+                # ZI Agent # AK - if there is not enough trades to fill the L memory then behavior the same as ZI
+                # AK - but we have changed their behavior already - so let's reuse, and rely on last traded price
                 valuation_offset = spread*random.random() + self.shade[0]
                 if side == BUY:
                     price = estimate + self.pv.value_for_exchange(self.position, BUY) - valuation_offset
@@ -636,7 +646,7 @@ class HBLAgent(Agent):
                 order = Order(
                     price=Price(price),
                     quantity=1,
-                    agent_id=self.get_id(),
+                    agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
                     asset_id=self.market.asset_id,

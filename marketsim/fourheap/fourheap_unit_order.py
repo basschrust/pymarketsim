@@ -59,6 +59,7 @@ class FourHeap:
             self.remove(order_id)
 
     def market_clear(self, plus_one=False):
+        raise # AK so we are sure it is not called anywhere
         matched_count = self.buy_matched.count()
         b_i = 0
         s_i = 0

@@ -14,6 +14,7 @@ from marketsim.market.price import Price
 class ZIAgentNotInformed(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
+        super().__init__()
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
@@ -43,7 +44,7 @@ class ZIAgentNotInformed(Agent):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
-            quantity = 3 if side == BUY else 5 # just for tests
+            quantity = 3 if side == BUY else 5 # just for tests - use prime numbers to check splittings properly
 
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))

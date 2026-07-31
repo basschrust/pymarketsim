@@ -78,4 +78,6 @@ class MatchedOrder:
     price: Price
     time: int
     order: Order
+    volume: int
+    cash: Price
     phase: str | None = None

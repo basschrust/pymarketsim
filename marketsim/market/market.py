@@ -94,7 +94,13 @@ class Market:
                             # it may make sense for the ZI agents group, but probably should be kept out of here
                             # and belong to the groups
 
-    def record_trade(self, current_time: int, price: Price, volume: int) -> None:
+    def record_trade(self, matched_order: MatchedOrder) -> None:
+        self.last_traded_price = matched_order.price
+
+        # record for plots and summary:
+        current_time = matched_order.time
+        price = matched_order.price
+        volume = matched_order.order.quantity
         if current_time in self.traded_prices:
             # update data
             if price > self.traded_prices[current_time]["High"]:
@@ -111,6 +117,10 @@ class Market:
                                                  "High": price,
                                                  "Close": price,
                                                  "Volume": volume,}
+        # record for each agent:
+        agent_id = matched_order.order.agent_id
+        self.agents[agent_id].record_trade(matched_order=matched_order) # TODO: merge with the above func
+
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
