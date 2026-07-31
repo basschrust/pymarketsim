@@ -91,18 +91,18 @@ class HBLAgent(Agent):
                 return order_mem[mid].price, 0
         return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
-    def get_last_trade_time_step(self) -> Order:
+    def get_last_trade_time_step(self) -> int:
         """
         Gets memory boundary time step based on L (how many matched orders considered in memory).
 
         Returns:
             timestep of earliest contributing order (i.e. the boundary timestep for memory).
         """
-        # Assumes that matched_orders is ordered by timestep of trades
+        # Assumes that matched_orders is ordered by timestep of trades - well, that is risky...
         last_matched_order_ind = len(self.market.matched_orders) - self.L * 2
-        earliest_order = min(self.market.matched_orders[last_matched_order_ind:],
+        earliest_order_time = min(self.market.matched_orders[last_matched_order_ind:],
                              key=lambda matched_order: matched_order.order.time).order.time
-        return earliest_order
+        return earliest_order_time
 
     def fast_belief_function(self, p: Price, side: int, orders: list[Order]) -> bool:
         """
@@ -260,6 +260,7 @@ class HBLAgent(Agent):
         last_L_orders = []
         for time in range(self.lower_bound_mem, current_time+1):
             last_L_orders.extend(self.market.event_queue.scheduled_activities[time])
+            # TODO: AK - this is anti-causal - checking also orders which yet didn't reach the LOB!
         buy_orders_memory = [order for order in last_L_orders if order.order_type == BUY]
         sell_orders_memory = [order for order in last_L_orders if order.order_type == SELL]
         return last_L_orders, buy_orders_memory, sell_orders_memory
@@ -279,7 +280,7 @@ class HBLAgent(Agent):
 
         last_L_orders, buy_orders_memory, sell_orders_memory = self.get_order_list(current_time=current_time)
         last_L_orders = np.array(last_L_orders)
-        estimate = self.estimate_fundamental(current_time=current_time)
+        estimate = self.estimate_fundamental(current_time=current_time) # TODO: AK - maybe last traded?
         buy_orders_memory = sorted(buy_orders_memory, key = lambda order:order.price)
         sell_orders_memory = sorted(sell_orders_memory, key = lambda order:order.price)
         best_ask = float(self.market.order_book.sell_unmatched.peek())
@@ -438,7 +439,7 @@ class HBLAgent(Agent):
             #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
             sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
-            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float):
+            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float) -> None:
                 """
                 Sell version of interpolate above. 
                 @TODO: Merge the two
@@ -599,7 +600,7 @@ class HBLAgent(Agent):
 
     def take_action(self, current_time: int, seed: int = 0) -> list[Order]:
         """
-        Submits order to market for HBL.
+        Submits orders to market for HBL.
 
         Params:
             side: BUY or SELL.  # AK: why the hell do we need side in this method? It should be generic,
@@ -609,21 +610,23 @@ class HBLAgent(Agent):
             order [Order]: order to be submitted
 
         Note:
-            Behavior reverts to ZI agent if L > total num of trades executed.
+            Behavior reverts to ZI agent if L > total num of trades executed. AK: executed or at least added to LOB?
+                or time ticks passed?
         """
         try:
+            random.seed(current_time + seed) # AK why not save it somehow to recreate specific scenarios?
             side = random.choice(["BUY", "SELL"])
-            random.seed(current_time + seed)
-            estimate = self.estimate_fundamental(current_time=current_time)
+            estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
             spread = self.shade[1] - self.shade[0]
             price = estimate
             if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
+                # the HBL behavior
                 opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
 
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1,
-                    agent_id=self.get_id(),
+                    quantity=1, #AK well, let's make it bigger to make some profits
+                    agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
                     asset_id=self.market.asset_id,
@@ -631,7 +634,8 @@ class HBLAgent(Agent):
                 return [order]
 
             else:
-                # ZI Agent # AK - of there is not enough trades to fill the L memory then behavior the same as ZI
+                # ZI Agent # AK - if there is not enough trades to fill the L memory then behavior the same as ZI
+                # AK - but we have changed their behavior already - so let's reuse, and rely on last traded price
                 valuation_offset = spread*random.random() + self.shade[0]
                 if side == BUY:
                     price = estimate + self.pv.value_for_exchange(self.position, BUY) - valuation_offset
@@ -641,7 +645,7 @@ class HBLAgent(Agent):
                 order = Order(
                     price=Price(price),
                     quantity=1,
-                    agent_id=self.get_id(),
+                    agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,
                     asset_id=self.market.asset_id,
