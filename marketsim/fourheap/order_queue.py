@@ -37,6 +37,7 @@ class OrderQueue:
 
 
     def peek(self) -> Price|float:
+        # float is only because of +/- math.inf  Price type covers all finite values
         c = -1 if self.is_max_heap else 1
         # Return infinity if empty
         if self.is_empty() or len(self.heap) == 0:
@@ -99,10 +100,10 @@ class OrderQueue:
             for _, order_id in self.heap:
                 if order_id not in self.deleted_ids:
                     order = self.order_dict[order_id]
-                    price = price if price is not None else order.executed_price
+                    price = price if price is not None else order.executed_price # somehow it didn't work properly before?
                     volume = order.quantity
-                    cash = volume * price
-                    matched_orders.append(MatchedOrder(price=price, cash=cash, volume=volume, time=current_time, order=order))
+                    cash = volume * price * order.order_type
+                    matched_orders.append(MatchedOrder(price=order.executed_price, cash=cash, volume=volume, time=current_time, order=order))
             self.clear()
             return matched_orders
         return []

@@ -37,7 +37,7 @@ class Agent(ABC):
     @cash.setter
     def cash(self, value):
         print(f"Agent {id(self)} cash: {self._cash} -> {value}")
-        traceback.print_stack(limit=2)
+        # traceback.print_stack(limit=2)
 
         self._cash = value
 
