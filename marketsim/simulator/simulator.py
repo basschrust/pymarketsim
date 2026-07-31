@@ -114,6 +114,7 @@ class Simulator:
                 cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
                 market.last_traded_price = matched_order.price
                 market.agents[agent_id].update_position(quantity=quantity, cash=cash)
+                market.agents[agent_id].record_trade(matched_order=matched_order) # TODO: merge with the above func
                 market.record_trade(current_time=self.current_time, price=matched_order.price, volume=abs(quantity))
             print(f'After clearing the market the last traded price is: {market.last_traded_price}')
             print(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')

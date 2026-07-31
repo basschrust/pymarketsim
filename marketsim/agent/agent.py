@@ -3,7 +3,7 @@ import math
 from typing import List
 from dataclasses import dataclass, field
 
-from marketsim.fourheap.order import Order
+from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
 
 
@@ -23,11 +23,11 @@ def validate_update(quantity: int, cash: float) -> None:
 class Agent(ABC):
     position = 0
     cash = 0
-    trade_history = {} # dict of lists {day: [trades over that day]}
     # position_value_history = {0:0} # fill after every clearing
     # position_value_history: dict[int, Price] = field(default_factory=dict) # works in dataclasses only
 
     def __init__(self):
+        self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {}
 
     @abstractmethod
@@ -56,3 +56,15 @@ class Agent(ABC):
 
     def record_valuation(self, current_time: int, price: Price) -> None:
         self.position_value_history[current_time] = self.cash + self.position*price
+
+    def record_trade(self, matched_order: MatchedOrder) -> None:
+        if matched_order.time in self.trade_history:
+            # just add info
+            old = self.trade_history.get(matched_order.time, {})
+            self.trade_history[matched_order.time] = {"trades": old["trades"]+1,
+                                                               "volume": old["volume"] + abs(matched_order.order.quantity),}
+        else:
+            # first trade this day
+            self.trade_history[matched_order.time] = {"trades": 1, "volume": abs(matched_order.order.quantity),
+                                                    } # side, volume bought/sold, ...
+

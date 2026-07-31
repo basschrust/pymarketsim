@@ -104,7 +104,7 @@ class HBLAgent(Agent):
                              key=lambda matched_order: matched_order.order.time).order.time
         return earliest_order
 
-    def fast_belief_function(self, p: float, side: int, orders: list[Order]) -> bool:
+    def fast_belief_function(self, p: Price, side: int, orders: list[Order]) -> bool:
         """
         To check if belief of order with price p is 0. Used for slightly faster queries in find_worst_order()
         Args:
@@ -252,6 +252,7 @@ class HBLAgent(Agent):
             buy_orders_memory: filtered of last_L_orders with just BUY orders
             sell_orders_memory: filtered of last_L_orders with just SELL orders
         """
+        #raise # AK - this probably is never called? it is! by determine_optimal_price(...)
         self.lower_bound_mem = self.get_last_trade_time_step() # TODO: gives order, should give int(or time tick)?
 
         buy_orders_memory = []
@@ -287,10 +288,10 @@ class HBLAgent(Agent):
         spline_interp_objects = [[], []]
         if side == BUY: 
             private_value = self.pv.value_for_exchange(self.position, BUY)
-            best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders)
+            best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
             def interpolate(bound1, bound2, bound1Belief, bound2Belief):
-                cs = FCS(bound1, bound2, [bound1Belief, bound2Belief])
+                cs = FCS(bound1, bound2, [bound1Belief, float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
 
@@ -317,6 +318,8 @@ class HBLAgent(Agent):
                         # (I.e. function is piecewise continuous)
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
                             return -((estimate + private_value - price) * spline_interp_objects[0][i](price))
+
+                    raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
                 lb = min(spline_interp_objects[1], key=lambda bound_pair: bound_pair[0])[0]
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
@@ -432,10 +435,10 @@ class HBLAgent(Agent):
             sell_high, sell_high_belief = self.find_worst_order(SELL, sorted(sell_orders_memory, key=lambda order: order.price, reverse=True), last_L_orders, current_time=current_time)
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
-            #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here
+            #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
             sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
-            def interpolate(bound1, bound2, bound1Belief, bound2Belief):
+            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float):
                 """
                 Sell version of interpolate above. 
                 @TODO: Merge the two
@@ -450,9 +453,9 @@ class HBLAgent(Agent):
 
                 assert bound2 > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                cs = FCS(float(bound1), float(bound2), [bound1Belief, bound2Belief])
+                cs = FCS(float(bound1), float(bound2), [bound1Belief, float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
-                spline_interp_objects[1].append((bound1, bound2))
+                spline_interp_objects[1].append((float(bound1), float(bound2)))
                 
             def expected_surplus_max():
                 """
@@ -467,6 +470,8 @@ class HBLAgent(Agent):
                     for i in range(len(spline_interp_objects[0])):
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
                             return -((price - (estimate + private_value)) * spline_interp_objects[0][i](price))
+
+                    raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
                 lb = min(spline_interp_objects[1], key=lambda bound_pair: bound_pair[0])[0]
                 ub = max(spline_interp_objects[1], key=lambda bound_pair: bound_pair[1])[1]
