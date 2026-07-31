@@ -21,14 +21,29 @@ def validate_update(quantity: int, cash: Price) -> None:
 
 
 class Agent(ABC):
-    position = 0
-    cash = 0
+    # position = 0
+    # cash = 0
     # position_value_history = {0:0} # fill after every clearing
     # position_value_history: dict[int, Price] = field(default_factory=dict) # works in dataclasses only
 
     def __init__(self):
         self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {}
+        self.position = 0
+        self._cash = Price(0)
+
+    @property
+    def cash(self):
+        return self._cash
+
+    @cash.setter
+    def cash(self, value):
+        import traceback
+
+        print(f"Agent {id(self)} cash: {self._cash} -> {value}")
+        traceback.print_stack(limit=5)
+
+        self._cash = value
 
     @abstractmethod
     def get_id(self) -> int:
