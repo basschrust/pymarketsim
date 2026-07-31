@@ -616,7 +616,8 @@ class HBLAgent(Agent):
         try:
             random.seed(current_time + seed) # AK why not save it somehow to recreate specific scenarios?
             side = random.choice(["BUY", "SELL"])
-            estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
+            #estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
+            estimate = self.market.last_traded_price
             spread = self.shade[1] - self.shade[0]
             price = estimate
             if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
@@ -625,7 +626,7 @@ class HBLAgent(Agent):
 
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1, #AK well, let's make it bigger to make some profits
+                    quantity=1, #AK well, let's make it bigger to make some profits (Poisson?)
                     agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,

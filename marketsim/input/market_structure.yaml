@@ -17,10 +17,10 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 5
+        number: 10
         config:
           lam: 0.8
-          q_max: 10
+          q_max: 20
           shade:
             - 0.1
             - 0.3
@@ -32,7 +32,7 @@ markets:
           xi: 0.2
           K: 4
           omega: 0.2
-          rebalance_period: 10
+          rebalance_period: 5
       hbl:
         agent_class: HBLAgent
         number: 2
@@ -65,12 +65,12 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 10
+        number: 20
         config:
           lam: 0.8
-          q_max: 10
+          q_max: 20
           shade:
-            - 0.1
+            - 0.05
             - 0.3
           pv_var: 5.2e2
       mmzoh:
