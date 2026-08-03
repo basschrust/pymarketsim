@@ -55,6 +55,37 @@ markets:
             - 0.1
           arrival_rate: 4
           pv_var: 7.0e2
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 10
+          manipulation_boundaries:
+            manipulation_type: PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 30
+              end: 50
+            lam: 0.9
+            spread: 0.2
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 10
+          manipulation_boundaries:
+            manipulation_type: PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 30
+              end: 50
+            lam: 0.9
+            spread: 0.2
+
+
   security_2:
     name: "Second security"
     ticker: "BBB"

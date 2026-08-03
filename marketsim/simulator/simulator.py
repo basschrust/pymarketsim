@@ -3,6 +3,7 @@ from typing import List
 from loguru import logger
 import pandas as pd
 
+from marketsim.agent import WashTradingAgent
 from marketsim.loggers import basic
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -62,24 +63,30 @@ class Simulator:
 
             for group_name, agent_group in m_conf["agent_groups"].items():
                 for i in range(agent_group["number"]):
-                    # let's make it in case/ series of ifs to avoid security breach (if used the class name as code direcltly)
+                    # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
                     # ZI agents:
                     if agent_group["agent_class"] == "ZIAgentNotInformed":
                             agent = ZIAgentNotInformed(market=market, **agent_group["config"])
-                            #self.add_agents([agent])
                             market.add_agents([agent])
-
 
                     # MMs:
                     if agent_group["agent_class"] == "MMZOHAgent":
                         agent = MMZOHAgent(market=market, **agent_group["config"])
-                        # self.add_agents([agent])
                         market.add_agents([agent])
 
                     # HBL (Heuristic Belief)
                     if agent_group["agent_class"] == "HBLAgent":
                         agent = HBLAgent(market=market, **agent_group["config"])
-                        # self.add_agents([agent])
+                        market.add_agents([agent])
+
+                    # spoofers: (to trick HBL Agents)
+                    if agent_group["agent_class"] == "SpoofingAgent":
+                        agent = SpoofingAgent(market=market, **agent_group["config"])
+                        market.add_agents([agent])
+
+                    # washtrading agents (tricking MMs)
+                    if agent_group["agent_class"] == "WashTradingAgent":
+                        agent = WashTradingAgent(market=market, **agent_group["config"])
                         market.add_agents([agent])
 
         return

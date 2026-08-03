@@ -1,4 +1,4 @@
-from marketsim.agent.washtrading_pool import WashTradingAgent
+from marketsim.agent.washtrading import WashTradingAgent
 from marketsim.simulator.simulator import Simulator
 from marketsim.market.market import Price
 

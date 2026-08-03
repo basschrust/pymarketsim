@@ -8,7 +8,7 @@ from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.agent.zero_intelligence_agent import ZIAgent
 from marketsim.agent.hbl_agent import HBLAgent
-from marketsim.agent.spoofer import SpoofingAgent
+from marketsim.agent.spoofing import SpoofingAgent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.wrappers.metrics import volume_imbalance, queue_imbalance, realized_volatility, relative_strength_index, midprice_move
 import torch.distributions as dist
