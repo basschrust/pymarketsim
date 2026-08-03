@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymarketsim"
+version = "0.1.0"
+description = "A Python framework for agent-based financial market simulation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+authors = [
+    { name = "Andrzej Kuropatwinski" }
+]
+
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.13",
+    "matplotlib>=3.8",
+    "pandas>=2.2",
+    "PyYAML>=6.0",
+    "loguru>=0.7",
+    "fastcubicspline>=1.1.5",
+    "torch>=2.2",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["marketsim*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
