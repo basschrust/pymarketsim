@@ -33,6 +33,8 @@ cd pymarketsim
 python -m venv .venv
 .\.venv\Scripts\activate
 
+python -m pip install --upgrade pip
+
 pip install -e .
 
 python -m examples.simulation_main
