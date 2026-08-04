@@ -18,7 +18,6 @@ dependencies = [
     "numpy>=1.26",
     "scipy>=1.13",
     "matplotlib>=3.8",
-    "mplfinance>=0.12",
     "pandas>=2.2",
     "PyYAML>=6.0",
     "loguru>=0.7",
@@ -27,6 +26,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+plot = [
+    "mplfinance==0.12.10b0",
+]
+
 dev = [
     "black",
     "pytest",
