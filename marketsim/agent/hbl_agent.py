@@ -291,8 +291,8 @@ class HBLAgent(Agent):
             private_value = self.pv.value_for_exchange(self.position, BUY)
             best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
-            def interpolate(bound1, bound2, bound1Belief, bound2Belief):
-                cs = FCS(bound1, bound2, [bound1Belief, float(bound2Belief)])
+            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001):
+                cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
 
@@ -439,7 +439,7 @@ class HBLAgent(Agent):
             #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
             sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
-            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float) -> None:
+            def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001) -> None:
                 """
                 Sell version of interpolate above. 
                 @TODO: Merge the two
@@ -447,14 +447,14 @@ class HBLAgent(Agent):
                 logger.debug(
                     "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
                     bound1,
-                    bound2,
+                    bound2+epsilon,
                     bound1Belief,
                     bound2Belief,
                 )
 
-                assert bound2 > bound1, f"Invalid interval: {bound1} >= {bound2}"
+                assert bound2+ epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                cs = FCS(float(bound1), float(bound2), [bound1Belief, float(bound2Belief)])
+                cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((float(bound1), float(bound2)))
                 

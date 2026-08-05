@@ -174,7 +174,7 @@ class Simulator:
                 print(f"\nAgent {str(agent_key)} value history\n: {history}")
 
                 # plot it
-                agent_file = f"{config.output_dir}/agent_{str(agent_key)}_{str(agent)}.png"
+                agent_file = f"{config.output_dir}/by_agents/agent_{str(agent_key)}_{str(agent)}.png"
                 simple_plot(x=[i for i in history], y=[j for i, j in history.items()], output_file=agent_file)
 
 
