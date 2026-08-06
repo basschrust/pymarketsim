@@ -84,10 +84,4 @@ markets:
               end: 50
             lam: 0.9
             spread: 0.2
-      momentum_1:
-        agent_class: MomentumAgent
-        number: 3
-        config:
-          lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 100
-          period: 7
+ 

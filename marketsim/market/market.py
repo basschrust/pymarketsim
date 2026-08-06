@@ -56,6 +56,15 @@ class Market:
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
+        # rolling the traded_prices first:
+        if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
+            yesterday = self.traded_prices[current_time-1]
+            self.traded_prices[current_time] = {"Open": yesterday["Close"],
+                                                "Low": yesterday["Close"],
+                                                "High": yesterday["Close"],
+                                                "Close": yesterday["Close"],
+                                                "Volume": 0, }
+
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []

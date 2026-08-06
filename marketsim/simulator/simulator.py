@@ -1,9 +1,11 @@
 import random
 from typing import List
+
+from fontTools.merge.util import current_time
 from loguru import logger
 import pandas as pd
 
-from marketsim.agent import WashTradingAgent
+from marketsim.agent import WashTradingAgent, MomentumAgent
 from marketsim.loggers import basic
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -89,6 +91,11 @@ class Simulator:
                         agent = WashTradingAgent(market=market, **agent_group["config"])
                         market.add_agents([agent])
 
+                    # momentum
+                    if agent_group["agent_class"] == "MomentumAgent":
+                        agent = MomentumAgent(market=market, **agent_group["config"])
+                        market.add_agents([agent])
+
         return
 
 
@@ -119,6 +126,7 @@ class Simulator:
                   f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
             print(f"Starting to clear out orders.")
+            # initiate market prices instance for the case of no trades: - moved to market.step
 
             for matched_order in new_orders_matched:
                 print(f"Matched order {str(matched_order)}")
