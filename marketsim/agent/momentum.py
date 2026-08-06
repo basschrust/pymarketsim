@@ -41,7 +41,7 @@ class MomentumAgent(Agent):
         if current_time >= self.period:
             previous_price = self.market.traded_prices[current_time-self.period]["Close"]
             limit = Price(float(self.market.last_traded_price) * (0.9 + 0.2*random.uniform(0, 1)))
-            if self.market.last_traded_price > previous_price * (1+self.threshold):
+            if self.market.last_traded_price > float(previous_price) * (1+self.threshold):
                 orders.append(
                     Order(
                         price=limit,
@@ -52,7 +52,7 @@ class MomentumAgent(Agent):
                         asset_id=self.market.asset_id,
                     )
                 )
-            elif self.market.last_traded_price < previous_price * (1-self.threshold):
+            elif self.market.last_traded_price < float(previous_price) * (1-self.threshold):
                 orders.append(
                     Order(
                         price=limit,
