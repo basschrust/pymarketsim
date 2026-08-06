@@ -447,12 +447,12 @@ class HBLAgent(Agent):
                 logger.debug(
                     "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
                     bound1,
-                    bound2+epsilon,
+                    float(bound2)+epsilon,
                     bound1Belief,
                     bound2Belief,
                 )
 
-                assert bound2+ epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
+                assert float(bound2) + epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
                 cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
                 spline_interp_objects[0].append(cs)
