@@ -4,6 +4,7 @@ from typing import List
 from fontTools.merge.util import current_time
 from loguru import logger
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from marketsim.agent import WashTradingAgent, MomentumAgent
 from marketsim.loggers import basic
@@ -178,12 +179,32 @@ class Simulator:
 
             # valuations by agent:
             for agent_key, agent in market.agents.items():
-                history = agent.position_value_history
-                print(f"\nAgent {str(agent_key)} value history\n: {history}")
+                value_history = agent.position_value_history
+                position_history = agent.position_history
+                print(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+                print(f"\nAgent {str(agent_key)} position history\n: {position_history}")
 
                 # plot it
                 agent_file = f"{config.output_dir}/by_agents/agent_{str(agent_key)}_{str(agent)}.png"
-                simple_plot(x=[i for i in history], y=[j for i, j in history.items()], output_file=agent_file)
+                fig, ax = plt.subplots(figsize=(10, 5))
+
+                simple_plot(
+                    x=list(position_history.keys()),
+                    y=list(position_history.values()),
+                    output_file=agent_file,
+                    ax=ax,
+                    label="Position",
+                    ylabel="Position",
+                )
+
+                simple_plot(
+                    x=list(value_history.keys()),
+                    y=list(value_history.values()),
+                    output_file=agent_file,
+                    ax=ax,
+                    label="Portfolio value",
+                    ylabel="Value",
+                )
 
 
             # plot the security values history:

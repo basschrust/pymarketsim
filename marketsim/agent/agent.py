@@ -29,6 +29,7 @@ class Agent(ABC):
         self.position_value_history = {}
         self.position = 0
         self._cash = Price(0)
+        self.position_history = {}
 
     @property
     def cash(self):
@@ -36,7 +37,7 @@ class Agent(ABC):
 
     @cash.setter
     def cash(self, value):
-        print(f"Agent {id(self)} cash: {self._cash} -> {value}")
+        # print(f"Agent {id(self)} cash: {self._cash} -> {value}")
         # traceback.print_stack(limit=2)
 
         self._cash = value
@@ -71,8 +72,9 @@ class Agent(ABC):
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity
         cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
-        print(f"Updating cash: {cash}")
+        # print(f"Updating cash: {cash}")
         self.update_position(quantity=quantity, cash=cash)
+        self.position_history[matched_order.time] = self.position_history.get(matched_order.time, 0) + quantity
 
         if matched_order.time in self.trade_history:
             # just add info

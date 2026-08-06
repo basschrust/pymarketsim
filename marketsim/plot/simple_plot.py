@@ -7,14 +7,28 @@ def simple_plot_old(x: list, y: list, output_file: str) -> None:
     plt.plot(x, y)
     plt.savefig(output_file)
 
-def simple_plot(x: list, y: list, output_file: str) -> None:
-    fig, ax = plt.subplots(figsize=(10, 5))
+def simple_plot(
+    x: list,
+    y: list,
+    output_file: str,
+    ax=None,
+    label: str = None,
+    ylabel: str = "Portfolio value",
+) -> None:
 
-    ax.plot(x, y)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 5))
+    else:
+        fig = ax.figure
+
+    ax.plot(x, y, label=label)
 
     ax.set_xlabel("Simulation time")
-    ax.set_ylabel("Portfolio value")
+    ax.set_ylabel(ylabel)
     ax.grid(True)
+
+    if label is not None:
+        ax.legend()
 
     fig.tight_layout()
 
