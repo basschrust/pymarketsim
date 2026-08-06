@@ -25,14 +25,22 @@ markets:
             - 0.1
             - 0.3
           pv_var: 5.0e2
-      mmzoh:
+      mmzoh_1:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 20
+          K: 25
           omega: 0.2
           rebalance_period: 5
+      mmzoh_2:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.15
+          K: 25
+          omega: 0.1
+          rebalance_period: 7
       hbl:
         agent_class: HBLAgent
         number: 2

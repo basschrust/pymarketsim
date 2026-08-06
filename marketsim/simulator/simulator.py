@@ -20,7 +20,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -186,24 +186,11 @@ class Simulator:
 
                 # plot it
                 agent_file = f"{config.output_dir}/by_agents/agent_{str(agent_key)}_{str(agent)}.png"
-                fig, ax = plt.subplots(figsize=(10, 5))
 
-                simple_plot(
-                    x=list(position_history.keys()),
-                    y=list(position_history.values()),
+                plot_agent_history(
+                    position_history=position_history,
+                    value_history=value_history,
                     output_file=agent_file,
-                    ax=ax,
-                    label="Position",
-                    ylabel="Position",
-                )
-
-                simple_plot(
-                    x=list(value_history.keys()),
-                    y=list(value_history.values()),
-                    output_file=agent_file,
-                    ax=ax,
-                    label="Portfolio value",
-                    ylabel="Value",
                 )
 
 

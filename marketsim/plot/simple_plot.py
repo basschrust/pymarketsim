@@ -36,6 +36,43 @@ def simple_plot(
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
 
+def plot_agent_history(
+    position_history: dict,
+    value_history: dict,
+    output_file: str,
+) -> None:
+
+    fig, (ax1, ax2) = plt.subplots(
+        2,
+        1,
+        figsize=(10, 8),
+        sharex=True,
+    )
+
+    # Position subplot
+    ax1.plot(
+        list(position_history.keys()),
+        list(position_history.values()),
+    )
+    ax1.set_ylabel("Position")
+    ax1.grid(True)
+
+    # Portfolio value subplot
+    ax2.plot(
+        list(value_history.keys()),
+        list(value_history.values()),
+    )
+    ax2.set_xlabel("Simulation time")
+    ax2.set_ylabel("Portfolio value")
+    ax2.grid(True)
+
+    fig.tight_layout()
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
+
 class Plotter:
     def line(self, x: list, y: list, output_file: str) -> None:
         plt.plot(x, y)
