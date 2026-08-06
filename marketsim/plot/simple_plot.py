@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import mplfinance as mpf
+from pathlib import Path
 
 def simple_plot_old(x: list, y: list, output_file: str) -> None:
     plt.plot(x, y)
@@ -16,6 +17,8 @@ def simple_plot(x: list, y: list, output_file: str) -> None:
     ax.grid(True)
 
     fig.tight_layout()
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
 
