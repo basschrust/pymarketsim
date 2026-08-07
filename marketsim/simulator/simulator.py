@@ -34,9 +34,7 @@ class Simulator:
                  r: float = .6,
                  shock_var=10,
                  markets: dict = {},
-                 q_max: int = 10,
-                 pv_var: float = 5e6,
-                 zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
+                 lob_plot_interval: int = 10,
                  ):
         print("Initializing simulation with following parameters...")
 
@@ -51,6 +49,7 @@ class Simulator:
         self.markets = [] # each market serves single security
 
         self.agents = {} # but agents are now moved to markets
+        self.lob_plot_interval = lob_plot_interval
 
         for m_key, m_conf in markets.items():
             # TODO: take parameters from market conf
@@ -120,6 +119,10 @@ class Simulator:
                             # in different markets, solved: agents are defined inside a single market
                 print(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
                 market.add_orders(orders)
+            # plot the LOB
+            if self.current_time > 0 and self.current_time % self.lob_plot_interval == 0:
+                market.plot_lob(self.current_time)
+
             print(f"Starting orders execution, matched queues should be empty here: {len(market.order_book.buy_matched.heap)}"
                   f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
@@ -139,6 +142,7 @@ class Simulator:
             # update value of each agent in each market:
             for k, agent in market.agents.items():
                 agent.record_valuation(current_time=self.current_time, price=market.last_traded_price)
+
         self.current_time += 1
 
 
@@ -209,3 +213,4 @@ class Simulator:
             print(f"Step: {t}.", end='')
             self.step()
         self.end_sim()
+

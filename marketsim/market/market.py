@@ -1,4 +1,6 @@
 import pandas as pd
+from collections import defaultdict
+from itertools import accumulate
 
 from marketsim.market.price import Price, D
 from marketsim.event.event_queue import EventQueue
@@ -7,6 +9,8 @@ from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.fourheap import constants
 from marketsim.utils.id_generator import id_generator
 from marketsim.agent.agent import Agent
+from marketsim.plot.simple_plot import plot_order_book
+from marketsim.input import config
 
 
 class Market:
@@ -136,3 +140,30 @@ class Market:
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
+    @staticmethod
+    def aggregate_order_queue(order_queue, reverse=False, cumulative=False):
+        aggregated = defaultdict(int)
+
+        for price, quantity in order_queue:
+            aggregated[abs(price)] += quantity
+
+        items = sorted(aggregated.items(), reverse=reverse)
+
+        if cumulative:
+            volumes = list(accumulate(volume for _, volume in items))
+            items = [(price, volume) for (price, _), volume in zip(items, volumes)]
+
+        return dict(items)
+
+    def plot_lob(self, current_time:int):
+        bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
+        asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
+
+        print(f"Bids: {bids}")
+        print(f"Asks: {asks}")
+
+        plot_order_book(
+            bids=bids,
+            asks=asks,
+            output_file=f"{config.output_dir}/LOB_{self.asset_id}_{current_time}.png",
+        )

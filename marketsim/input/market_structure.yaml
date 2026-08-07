@@ -2,8 +2,8 @@
 
 # generic simulation parameters
 num_assets: 2 # used, but has to be also specified for each agent
-sim_time: 180
-lam: 0.8
+sim_time: 25
+#lam: 0.8
 #market_type: continuous
 
 markets:
@@ -71,7 +71,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 30
           manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 40
@@ -85,7 +85,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 30
           manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 40

@@ -73,6 +73,68 @@ def plot_agent_history(
     plt.close(fig)
 
 
+def plot_order_book(
+    bids: dict,
+    asks: dict,
+    output_file: str,
+    cumulative: bool = True,
+) -> None:
+    """
+    bids and asks should be dictionaries:
+        {price: volume}
+
+    If cumulative=True, the values are first converted to cumulative depth.
+    """
+
+    def make_depth(book, reverse):
+        items = sorted(book.items(), reverse=reverse)
+
+        if cumulative:
+            total = 0
+            depth = []
+            for price, volume in items:
+                total += volume
+                depth.append((float(price), total))
+            return depth
+
+        return [(float(price), volume) for price, volume in items]
+
+    bid_depth = make_depth(bids, reverse=True)
+    ask_depth = make_depth(asks, reverse=False)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    if bid_depth:
+        ax.bar(
+            [p for p, _ in bid_depth],
+            [v for _, v in bid_depth],
+            width=0.01,
+            color="royalblue",
+            label="Bids",
+        )
+
+    if ask_depth:
+        ax.bar(
+            [p for p, _ in ask_depth],
+            [v for _, v in ask_depth],
+            width=0.01,
+            color="darkred",
+            label="Asks",
+        )
+
+    ax.set_xlabel("Price")
+    ax.set_ylabel("Cumulative volume" if cumulative else "Volume")
+    ax.set_title("Order Book")
+    ax.grid(axis="y")
+    ax.legend()
+
+    fig.tight_layout()
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
+
 class Plotter:
     def line(self, x: list, y: list, output_file: str) -> None:
         plt.plot(x, y)
