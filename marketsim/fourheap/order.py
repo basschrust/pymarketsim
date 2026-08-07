@@ -38,8 +38,8 @@ class Order:
         self.parent_id = parent_id # order_id of the original order when this one is created after partial execution
         self.matched_with = matched_with
 
-    def update_quantity_filled(self, transact_quantity: int) -> None:
-        self.quantity -= transact_quantity
+    def update_quantity_filled(self, quantity: int) -> None:
+        self.quantity -= quantity
 
     def merge_order(self, q_additional: int) -> None:
         self.quantity += q_additional

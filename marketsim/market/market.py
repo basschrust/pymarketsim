@@ -75,6 +75,9 @@ class Market:
         print(
             f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
             f", sell: {self.order_book.sell_unmatched.peek_order()}")
+        # plot the order book state here - first just print it:
+        print(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
+        print(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
 
         for order in orders:
             if order.quantity <= 0:

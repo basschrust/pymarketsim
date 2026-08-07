@@ -2,9 +2,9 @@
 
 # generic simulation parameters
 num_assets: 2 # used, but has to be also specified for each agent
-sim_time: 100
+sim_time: 180
 lam: 0.8
-market_type: continuous
+#market_type: continuous
 
 markets:
   security_1:
@@ -17,10 +17,10 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 20
+        number: 30
         config:
-          lam: 0.8
-          q_max: 50
+          lam: 0.4
+          q_max: 80
           shade:
             - 0.1
             - 0.3
@@ -66,35 +66,35 @@ markets:
       # manipulators:
       poolA:
         agent_class: WashTradingAgent
-        number: 1
+        number: 10
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 10
+          q_max: 30
           manipulation_boundaries:
-            manipulation_type: PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 30
-              end: 50
-            lam: 0.9
-            spread: 0.2
+              start: 40
+              end: 80
+            lam: 0.98
+            spread: 0.15
       poolB:
         agent_class: WashTradingAgent
-        number: 1
+        number: 10
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 10
+          q_max: 30
           manipulation_boundaries:
-            manipulation_type: PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 30
-              end: 50
-            lam: 0.9
-            spread: 0.2
+              start: 40
+              end: 80
+            lam: 0.98
+            spread: 0.15
       spoofers:
         agent_class: SpoofingAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           pv_var: 0.01
@@ -107,23 +107,23 @@ markets:
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
-        number: 3
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 25
+          q_max: 15
           period: 5
       momentum_2:
         agent_class: MomentumAgent
-        number: 3
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 25
+          q_max: 15
           period: 10
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 3
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 25
+          q_max: 15
           period: 15
