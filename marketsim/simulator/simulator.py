@@ -6,7 +6,7 @@ from loguru import logger
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from marketsim.agent import WashTradingAgent, MomentumAgent
+from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent
 from marketsim.loggers import basic
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -33,13 +33,10 @@ class Simulator:
                  mean: float = 100.0,
                  r: float = .6,
                  shock_var=10,
-                 #agent_groups: dict = {},
                  markets: dict = {},
                  q_max: int = 10,
                  pv_var: float = 5e6,
                  zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
-                 #num_mm_agents: int = 1,
-                 #market_type:str = "discrete",  #discrete or continuous
                  ):
         print("Initializing simulation with following parameters...")
 

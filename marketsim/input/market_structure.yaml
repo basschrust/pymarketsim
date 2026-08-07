@@ -17,10 +17,10 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 10
+        number: 20
         config:
           lam: 0.8
-          q_max: 20
+          q_max: 50
           shade:
             - 0.1
             - 0.3
@@ -32,7 +32,7 @@ markets:
           xi: 0.1
           K: 25
           omega: 0.2
-          rebalance_period: 5
+          rebalance_period: 10
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -40,7 +40,7 @@ markets:
           xi: 0.15
           K: 25
           omega: 0.1
-          rebalance_period: 7
+          rebalance_period: 14
       hbl:
         agent_class: HBLAgent
         number: 2
@@ -92,6 +92,19 @@ markets:
               end: 50
             lam: 0.9
             spread: 0.2
+      spoofers:
+        agent_class: SpoofingAgent
+        number: 1
+        config:
+          q_max: 10
+          pv_var: 0.01
+          order_size: 3
+          spoofing_size: 100
+          normalizers:
+            fundamental: 1.0
+
+
+      # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
         number: 3
@@ -106,6 +119,7 @@ markets:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 25
           period: 10
+          threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
         number: 3

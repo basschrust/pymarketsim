@@ -40,7 +40,7 @@ class MomentumAgent(Agent):
         # amounts? and lambda? yet ignore, take into account in next iteration, price limit?
         if current_time >= self.period:
             previous_price = self.market.traded_prices[current_time-self.period]["Close"]
-            limit = Price(float(self.market.last_traded_price) * (0.9 + 0.2*random.uniform(0, 1)))
+            limit = Price(float(self.market.last_traded_price) * (0.95 + 0.1*random.uniform(0, 1)))
             if self.market.last_traded_price > float(previous_price) * (1+self.threshold):
                 orders.append(
                     Order(

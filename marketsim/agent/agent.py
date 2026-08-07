@@ -25,11 +25,11 @@ class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self):
-        self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
-        self.position_value_history = {}
+        self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
+        self.position_value_history = {} # {time: position_value}
+        self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick
         self.position = 0
         self._cash = Price(0)
-        self.position_history = {}
 
     @property
     def cash(self):
@@ -39,7 +39,6 @@ class Agent(ABC):
     def cash(self, value):
         # print(f"Agent {id(self)} cash: {self._cash} -> {value}")
         # traceback.print_stack(limit=2)
-
         self._cash = value
 
     @abstractmethod
@@ -67,6 +66,7 @@ class Agent(ABC):
         return False
 
     def record_valuation(self, current_time: int, price: Price) -> None:
+        self.position_history[current_time] = self.position
         self.position_value_history[current_time] = self.cash + self.position*price
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
