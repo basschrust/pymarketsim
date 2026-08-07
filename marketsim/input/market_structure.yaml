@@ -2,9 +2,8 @@
 
 # generic simulation parameters
 num_assets: 2 # used, but has to be also specified for each agent
-sim_time: 25
-#lam: 0.8
-#market_type: continuous
+sim_time: 250
+lob_plot_interval: 25
 
 markets:
   security_1:
