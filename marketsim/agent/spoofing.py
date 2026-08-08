@@ -1,14 +1,16 @@
 import random
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
+from marketsim.utils.id_generator import id_generator
 
 
 class SpoofingAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, pv_var: float, order_size:int, spoofing_size: int, normalizers: dict):
-        self.agent_id = agent_id
+    def __init__(self, market: Market, q_max: int, pv_var: float, order_size:int, spoofing_size: int, normalizers: dict):
+        super().__init__()
+        self.agent_id = id_generator.next()
         self.market = market
         self.pv = PrivateValues(q_max, pv_var)
         self.position = 0
@@ -17,6 +19,8 @@ class SpoofingAgent(Agent):
         self.cash = 0
         self.last_value = 0 # value at last time step (liquidate all inventory)
         self.normalizers = normalizers # A dictionary {"fundamental": float, "invt": float, "cash": float}
+        self.spoofing_size = spoofing_size
+        self.regular_order_size = order_size
 
         self.q_max = q_max
         self.pv_var = pv_var
@@ -35,38 +39,35 @@ class SpoofingAgent(Agent):
         # print(f'It is time {t} with final time {T} and I observed {val} and my estimate is {rho, estimate}')
         return estimate
 
-    def take_action(self, action):
-        t = self.market.get_time()
-        regular_order_price, spoofing_order_price = action
+    def take_action(self, current_time:int):
+        # TODO - calculate them
+        regular_order_price = self.market.last_traded_price + Price(0.4)
+        spoofing_order_price = self.market.last_traded_price - Price(0.01)
 
         orders = []
         # Regular order.
         regular_order = Order(
-            price=regular_order_price * self.normalizers["fundamental"],
+            price=Price(float(regular_order_price) * self.normalizers["fundamental"]),
             quantity=self.order_size,
             agent_id=self.get_id(),
-            time=t,
+            time=current_time,
             order_type=SELL,
-            order_id=random.randint(1, 10000000)
+            asset_id=self.market.asset_id,
         )
         orders.append(regular_order)
 
         # Spoofing Order
         spoofing_order = Order(
-            price=spoofing_order_price * self.normalizers["fundamental"],
+            price=Price(float(spoofing_order_price) * self.normalizers["fundamental"]),
             quantity=self.spoofing_size,
             agent_id=self.get_id(),
-            time=t,
+            time=current_time,
             order_type=BUY,
-            order_id=random.randint(1, 10000000)
+            asset_id=self.market.asset_id,
         )
         orders.append(spoofing_order)
 
         return orders
-
-    def update_position(self, q, p):
-        self.position += q
-        self.cash += p
 
     def __str__(self):
         return f'SP{self.agent_id}'
@@ -79,5 +80,6 @@ class SpoofingAgent(Agent):
         self.position = 0
         self.cash = 0
         self.last_value = 0
+
 
 

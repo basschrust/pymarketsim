@@ -1,0 +1,87 @@
+# market structure configuration file
+
+# generic simulation parameters
+num_assets: 2 # used, but has to be also specified for each agent
+sim_time: 100
+lam: 0.8
+market_type: continuous
+
+markets:
+  security_1:
+    name: "First security"
+    ticker: "AAA"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      zi_agents_informed:
+        number: 0
+      zi_agents_not_informed:
+        agent_class: ZIAgentNotInformed
+        number: 10
+        config:
+          lam: 0.8
+          q_max: 20
+          shade:
+            - 0.1
+            - 0.3
+          pv_var: 5.0e2
+      mmzoh:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.2
+          K: 4
+          omega: 0.2
+          rebalance_period: 5
+      hbl:
+        agent_class: HBLAgent
+        number: 2
+        config:
+          q_max: 10
+          L: 3 # memory length
+          shade:
+            - 0.1
+            - 0.3
+          arrival_rate: 2
+          pv_var: 3.0e2
+      hbl2:
+        agent_class: HBLAgent
+        number: 0
+        config:
+          q_max: 10
+          L: 5 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 4
+          pv_var: 7.0e2
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 10
+          manipulation_boundaries:
+            manipulation_type: PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 30
+              end: 50
+            lam: 0.9
+            spread: 0.2
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 10
+          manipulation_boundaries:
+            manipulation_type: PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 30
+              end: 50
+            lam: 0.9
+            spread: 0.2
+ 
