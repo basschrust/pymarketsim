@@ -74,9 +74,9 @@ markets:
             manipulation_side: BUY
             manipulation_period:
               start: 60
-              end: 100
-            lam: 0.9
-            spread: 0.8
+              end: 150
+            lam: 0.5
+            spread: 2.8
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -88,9 +88,9 @@ markets:
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
-              end: 100
-            lam: 0.9
-            spread: 0.8
+              end: 150
+            lam: 0.5
+            spread: 2.8
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -109,14 +109,14 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15 # yet this is used as transaction volume instead of max engagement
+          q_max: 30 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 30
           period: 10
           threshold: 0.005
       momentum_3:
@@ -124,7 +124,7 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 30
           period: 15
 
   security_2: # the same market but without WashTRaders:
@@ -230,14 +230,14 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15 # yet this is used as transaction volume instead of max engagement
+          q_max: 30 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 30
           period: 10
           threshold: 0.005
       momentum_3:
@@ -245,5 +245,5 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 30
           period: 15
