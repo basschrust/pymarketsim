@@ -53,7 +53,7 @@ class WashTradingAgent(Agent):
                 orders.append(order)
 
         else:
-            # be a normal ZI agent :)  (sometimes smoothly align position using PVs)
+            # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
             pass
         return orders
 
