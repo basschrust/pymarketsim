@@ -137,8 +137,6 @@ class Market:
             old_volume = self.traded_prices[current_time]["Volume"]
             self.traded_prices[current_time]["Volume"] = volume + old_volume
             self.traded_prices[current_time]["Close"] = price
-            # and by group: # TODO: add special class for that?
-            #self.traded_prices_by_type[current_time][matched_order.order.ag]
         else:
             # enter as first day in this time tick
             self.traded_prices[current_time] = { "Open": price,
@@ -148,7 +146,16 @@ class Market:
                                                  "Volume": volume,}
         # record for each agent:
         agent_id = matched_order.order.agent_id
-        self.agents[agent_id].record_trade(matched_order=matched_order) # TODO: merge with the above func
+        self.agents[agent_id].record_trade(matched_order=matched_order)
+        # record it by type:
+        if matched_order.order.order_type == 1:
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_buy"] += matched_order.order.quantity
+        elif matched_order.order.order_type == -1:
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_sell"] += matched_order.order.quantity
+        else:
+            raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"

@@ -135,9 +135,10 @@ def plot_order_book(
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
 
-def plot_orders_by_type(
+def plot_by_type(
     orders_by_type: dict,
     output_file: str,
+    title: str,
 ) -> None:
     """
     Plot order statistics by agent/type.
@@ -207,8 +208,8 @@ def plot_orders_by_type(
         color="darkred",
     )
 
-    ax_count.set_ylabel("Number of orders")
-    ax_count.set_title("Orders by type")
+    ax_count.set_ylabel("Count")
+    ax_count.set_title(title)
     ax_count.grid(axis="y")
     ax_count.legend()
 
@@ -230,7 +231,7 @@ def plot_orders_by_type(
     )
 
     ax_volume.set_ylabel("Volume")
-    ax_volume.set_xlabel("Order type")
+    ax_volume.set_xlabel("Type")
     ax_volume.grid(axis="y")
     ax_volume.legend()
 

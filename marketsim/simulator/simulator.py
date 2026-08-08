@@ -20,7 +20,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_orders_by_type
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -200,8 +200,11 @@ class Simulator:
             candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
             plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=market.name)
 
-            # TODO:
-            plot_orders_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png")
+            # plotting by type:
+            plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
+            plot_by_type(market.trades_by_agent_type,
+                                output_file=f"{config.output_dir}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
+
 
 
     def run(self) -> None:
