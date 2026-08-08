@@ -10,6 +10,7 @@ from marketsim.utils.id_generator import id_generator
 class SpoofingAgent(Agent):
     def __init__(self, market: Market, q_max: int, pv_var: float, order_size:int, spoofing_size: int, normalizers: dict):
         super().__init__()
+        self.group = "SP"
         self.agent_id = id_generator.next()
         self.market = market
         self.pv = PrivateValues(q_max, pv_var)

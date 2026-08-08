@@ -13,6 +13,7 @@ from marketsim.utils.id_generator import id_generator
 class WashTradingAgent(Agent):
     def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None):
         super().__init__()
+        self.group = "WASH_TRADING"
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max

@@ -7,7 +7,7 @@ lob_plot_interval: 25
 
 markets:
   security_1:
-    name: "First security"
+    name: "WashTraders pulling down 60-150"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though

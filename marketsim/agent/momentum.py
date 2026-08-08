@@ -13,6 +13,7 @@ class MomentumAgent(Agent):
     ###
     def __init__(self, *, market: Market, agent_id: int | None=None, period: int=7, lam: float= 0.5, q_max: int=100, threshold: float=0.01):
         super().__init__()
+        self.group = "MOMENTUM"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market # could agent serve multiple markets?
         self.period = period # the period for trend analyzing

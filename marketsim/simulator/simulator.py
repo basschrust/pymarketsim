@@ -20,7 +20,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_orders_by_type
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -56,7 +56,7 @@ class Simulator:
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r,
                                                 shock_var=self.shock_var)
 
-            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"])
+            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"], name=m_conf.get("name"))
 
             self.markets.append(market)
 
@@ -198,7 +198,10 @@ class Simulator:
             print(df_candlestick.head())
 
             candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
-            plot_candlestick(df=df_candlestick, output_file=candlestick_filename)
+            plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=market.name)
+
+            # TODO:
+            plot_orders_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png")
 
 
     def run(self) -> None:
