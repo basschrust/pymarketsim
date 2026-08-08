@@ -34,30 +34,32 @@ class WashTradingAgent(Agent):
     def take_action(self, current_time: int, estimate: Price =None):
         price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
+        orders = []
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
-            if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                price = price + Price(self.manipulation_boundaries["spread"])
-            elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
-                price = price - Price(self.manipulation_boundaries["spread"])
-            else:
-                raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
+            if self.manipulation_boundaries["lam"] > random.random():
+                if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
+                    price = price + Price(self.manipulation_boundaries["spread"])
+                elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
+                    price = price - Price(self.manipulation_boundaries["spread"])
+                else:
+                    raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
-            order = Order(
-                price=price,
-                quantity=7,
-                agent_id=self.agent_id,
-                asset_id=self.market.asset_id,
-                time=current_time,
-                order_type=1 if self.manipulation_boundaries["manipulation_side"]=='BUY' else -1,
-            )
-            return [order]
+                order = Order(
+                    price=price,
+                    quantity=7,
+                    agent_id=self.agent_id,
+                    asset_id=self.market.asset_id,
+                    time=current_time,
+                    order_type=1 if self.manipulation_boundaries["manipulation_side"]=='BUY' else -1,
+                )
+                orders.append(order)
 
         else:
             # be a normal ZI agent :)  (sometimes smoothly align position using PVs)
             pass
-            return []
+        return orders
 
 
 
