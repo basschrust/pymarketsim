@@ -88,9 +88,9 @@ markets:
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
-              end: 160
+              end: 100
             lam: 0.9
-            spread: 0.7
+            spread: 0.5
       spoofers:
         agent_class: SpoofingAgent
         number: 0

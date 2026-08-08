@@ -44,7 +44,7 @@ class ZIAgentNotInformed(Agent):
         if random.random() < self.lam:
             side = random.choice([BUY, SELL])
             quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
-            quantity = 3 if side == BUY else 5 # just for tests - use prime numbers to check splittings properly
+            # quantity = 3 if side == BUY else 5 # just for tests - use prime numbers to check splittings properly
 
             if estimate is None:
                 estimate = Price(self.estimate_fundamental(current_time=current_time))

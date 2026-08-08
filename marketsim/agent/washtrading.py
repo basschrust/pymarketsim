@@ -12,8 +12,6 @@ from marketsim.utils.id_generator import id_generator
 
 class WashTradingAgent(Agent):
     def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None):
-                 #    manipulation_type: str = 'PULL_UP', # or 'PUSH_DOWN'
-                 # manipulation_side: str = 'BUY'):
         super().__init__()
         self.agent_id = id_generator.next()
         self.market = market
@@ -22,16 +20,14 @@ class WashTradingAgent(Agent):
         self.position = 0
         self.cash = 0
         self.pool_id = pool_id
-        # self.manipulation_type = manipulation_type # 'PULL_UP' or 'PUSH_DOWN'
-        # self.manipulation_side = manipulation_side #'BUY' # or SELL
-        self.manipulation_boundaries = manipulation_boundaries
+        self.manipulation_boundaries = manipulation_boundaries # what if several such periods? maybe list of dicts?
 
 
     def get_id(self) -> int:
         return self.agent_id
 
 
-    def take_action(self, current_time: int, estimate: Price =None):
+    def take_action(self, current_time: int, estimate: Price|None=None):
         price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
         orders = []

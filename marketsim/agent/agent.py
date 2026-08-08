@@ -25,8 +25,9 @@ class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self):
-        self.trade_history = {}  # dict of lists/dicts {day: [trades over that day, volume bought, volume sold]}
-        self.position_value_history = {}
+        self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
+        self.position_value_history = {} # {time: position_value}
+        self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick
         self.position = 0
         self._cash = Price(0)
 
@@ -36,9 +37,8 @@ class Agent(ABC):
 
     @cash.setter
     def cash(self, value):
-        print(f"Agent {id(self)} cash: {self._cash} -> {value}")
+        # print(f"Agent {id(self)} cash: {self._cash} -> {value}")
         # traceback.print_stack(limit=2)
-
         self._cash = value
 
     @abstractmethod
@@ -66,13 +66,15 @@ class Agent(ABC):
         return False
 
     def record_valuation(self, current_time: int, price: Price) -> None:
+        self.position_history[current_time] = self.position
         self.position_value_history[current_time] = self.cash + self.position*price
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity
         cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
-        print(f"Updating cash: {cash}")
+        # print(f"Updating cash: {cash}")
         self.update_position(quantity=quantity, cash=cash)
+        self.position_history[matched_order.time] = self.position_history.get(matched_order.time, 0) + quantity
 
         if matched_order.time in self.trade_history:
             # just add info

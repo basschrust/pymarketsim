@@ -1,9 +1,12 @@
 import random
 from typing import List
+
+from fontTools.merge.util import current_time
 from loguru import logger
 import pandas as pd
+import matplotlib.pyplot as plt
 
-from marketsim.agent import WashTradingAgent
+from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent
 from marketsim.loggers import basic
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -17,7 +20,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -30,13 +33,8 @@ class Simulator:
                  mean: float = 100.0,
                  r: float = .6,
                  shock_var=10,
-                 #agent_groups: dict = {},
                  markets: dict = {},
-                 q_max: int = 10,
-                 pv_var: float = 5e6,
-                 zi_shade: List = [Price(0.01), Price(0.02)], #AK [10, 30],
-                 #num_mm_agents: int = 1,
-                 #market_type:str = "discrete",  #discrete or continuous
+                 lob_plot_interval: int = 10,
                  ):
         print("Initializing simulation with following parameters...")
 
@@ -51,6 +49,7 @@ class Simulator:
         self.markets = [] # each market serves single security
 
         self.agents = {} # but agents are now moved to markets
+        self.lob_plot_interval = lob_plot_interval
 
         for m_key, m_conf in markets.items():
             # TODO: take parameters from market conf
@@ -89,6 +88,11 @@ class Simulator:
                         agent = WashTradingAgent(market=market, **agent_group["config"])
                         market.add_agents([agent])
 
+                    # momentum
+                    if agent_group["agent_class"] == "MomentumAgent":
+                        agent = MomentumAgent(market=market, **agent_group["config"])
+                        market.add_agents([agent])
+
         return
 
 
@@ -115,10 +119,15 @@ class Simulator:
                             # in different markets, solved: agents are defined inside a single market
                 print(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
                 market.add_orders(orders)
+            # plot the LOB
+            if self.current_time > 0 and self.current_time % self.lob_plot_interval == 0:
+                market.plot_lob(self.current_time)
+
             print(f"Starting orders execution, matched queues should be empty here: {len(market.order_book.buy_matched.heap)}"
                   f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
             print(f"Starting to clear out orders.")
+            # initiate market prices instance for the case of no trades: - moved to market.step
 
             for matched_order in new_orders_matched:
                 print(f"Matched order {str(matched_order)}")
@@ -133,6 +142,7 @@ class Simulator:
             # update value of each agent in each market:
             for k, agent in market.agents.items():
                 agent.record_valuation(current_time=self.current_time, price=market.last_traded_price)
+
         self.current_time += 1
 
 
@@ -170,12 +180,19 @@ class Simulator:
 
             # valuations by agent:
             for agent_key, agent in market.agents.items():
-                history = agent.position_value_history
-                print(f"\nAgent {str(agent_key)} value history\n: {history}")
+                value_history = agent.position_value_history
+                position_history = agent.position_history
+                print(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+                print(f"\nAgent {str(agent_key)} position history\n: {position_history}")
 
                 # plot it
                 agent_file = f"{config.output_dir}/by_agents/agent_{str(agent_key)}_{str(agent)}.png"
-                simple_plot(x=[i for i in history], y=[j for i, j in history.items()], output_file=agent_file)
+
+                plot_agent_history(
+                    position_history=position_history,
+                    value_history=value_history,
+                    output_file=agent_file,
+                )
 
 
             # plot the security values history:
@@ -196,3 +213,4 @@ class Simulator:
             print(f"Step: {t}.", end='')
             self.step()
         self.end_sim()
+

@@ -1,4 +1,6 @@
 import pandas as pd
+from collections import defaultdict
+from itertools import accumulate
 
 from marketsim.market.price import Price, D
 from marketsim.event.event_queue import EventQueue
@@ -7,6 +9,8 @@ from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.fourheap import constants
 from marketsim.utils.id_generator import id_generator
 from marketsim.agent.agent import Agent
+from marketsim.plot.simple_plot import plot_order_book
+from marketsim.input import config
 
 
 class Market:
@@ -56,6 +60,15 @@ class Market:
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
+        # rolling the traded_prices first:
+        if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
+            yesterday = self.traded_prices[current_time-1]
+            self.traded_prices[current_time] = {"Open": yesterday["Close"],
+                                                "Low": yesterday["Close"],
+                                                "High": yesterday["Close"],
+                                                "Close": yesterday["Close"],
+                                                "Volume": 0, }
+
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
@@ -66,6 +79,9 @@ class Market:
         print(
             f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
             f", sell: {self.order_book.sell_unmatched.peek_order()}")
+        # plot the order book state here - first just print it:
+        print(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
+        print(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
 
         for order in orders:
             if order.quantity <= 0:
@@ -124,3 +140,30 @@ class Market:
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
+    @staticmethod
+    def aggregate_order_queue(order_queue, reverse=False, cumulative=False):
+        aggregated = defaultdict(int)
+
+        for price, quantity in order_queue:
+            aggregated[abs(price)] += quantity
+
+        items = sorted(aggregated.items(), reverse=reverse)
+
+        if cumulative:
+            volumes = list(accumulate(volume for _, volume in items))
+            items = [(price, volume) for (price, _), volume in zip(items, volumes)]
+
+        return dict(items)
+
+    def plot_lob(self, current_time:int):
+        bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
+        asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
+
+        print(f"Bids: {bids}")
+        print(f"Asks: {asks}")
+
+        plot_order_book(
+            bids=bids,
+            asks=asks,
+            output_file=f"{config.output_dir}/LOB_{self.asset_id}_{current_time}.png",
+        )

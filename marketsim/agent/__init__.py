@@ -5,6 +5,7 @@ from .zi_informed import ZIAgentInformed
 from .hbl_agent import HBLAgent
 from .spoofing import SpoofingAgent
 from .washtrading import WashTradingAgent
+from .momentum import MomentumAgent
 
 __all__ = [
     "Agent",
@@ -14,4 +15,5 @@ __all__ = [
     "ZIAgentInformed",
     "SpoofingAgent",
     "WashTradingAgent",
+    "MomentumAgent",
 ]
