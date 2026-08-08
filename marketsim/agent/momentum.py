@@ -41,28 +41,31 @@ class MomentumAgent(Agent):
         if current_time >= self.period:
             previous_price = self.market.traded_prices[current_time-self.period]["Close"]
             limit = Price(float(self.market.last_traded_price) * (0.95 + 0.1*random.uniform(0, 1)))
+            quantity = int(self.q_max /10 + random.uniform(0, 1))
             if self.market.last_traded_price > float(previous_price) * (1+self.threshold):
-                orders.append(
-                    Order(
-                        price=limit,
-                        quantity=self.q_max,
-                        agent_id=self.agent_id,
-                        time=current_time,
-                        order_type=BUY,
-                        asset_id=self.market.asset_id,
+                if self.position < self.q_max:
+                    orders.append(
+                        Order(
+                            price=limit,
+                            quantity=quantity,
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=BUY,
+                            asset_id=self.market.asset_id,
+                        )
                     )
-                )
             elif self.market.last_traded_price < float(previous_price) * (1-self.threshold):
-                orders.append(
-                    Order(
-                        price=limit,
-                        quantity=self.q_max,
-                        agent_id=self.agent_id,
-                        time=current_time,
-                        order_type=SELL,
-                        asset_id=self.market.asset_id,
+                if self.position > - self.q_max:
+                    orders.append(
+                        Order(
+                            price=limit,
+                            quantity=quantity,
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=SELL,
+                            asset_id=self.market.asset_id,
+                        )
                     )
-                )
 
         return orders
 

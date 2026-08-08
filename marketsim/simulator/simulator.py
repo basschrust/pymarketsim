@@ -28,7 +28,7 @@ from marketsim.input import config
 class Simulator:
     def __init__(self,
                  sim_time: int,
-                 num_assets: int = 1,
+                 # num_assets: int = 1,
                  lam: float = 0.1,
                  mean: float = 100.0,
                  r: float = .6,
@@ -38,7 +38,7 @@ class Simulator:
                  ):
         print("Initializing simulation with following parameters...")
 
-        self.num_assets = num_assets
+        # self.num_assets = num_assets
         self.sim_time = sim_time
         self.lam = lam # lambda (activity factor)
         self.mean = mean
@@ -94,13 +94,6 @@ class Simulator:
                         market.add_agents([agent])
 
         return
-
-
-    def add_agents(self, agents: list[Agent] | None) -> None:
-        raise # moved to market
-        for agent in agents:
-            print(f"Adding agent {str(agent)}")
-            self.agents[agent.get_id()] = agent
 
     def step(self) -> None:
         print(f'\nIt is time step {self.current_time}')
