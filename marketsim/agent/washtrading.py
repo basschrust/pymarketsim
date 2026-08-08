@@ -30,6 +30,7 @@ class WashTradingAgent(Agent):
     def take_action(self, current_time: int, estimate: Price|None=None):
         price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
+        quantity = int(self.q_max / 10)
         orders = []
 
         if period["start"] <= current_time <= period["end"]:
@@ -44,7 +45,7 @@ class WashTradingAgent(Agent):
 
                 order = Order(
                     price=price,
-                    quantity=7,
+                    quantity=quantity,
                     agent_id=self.agent_id,
                     asset_id=self.market.asset_id,
                     time=current_time,
