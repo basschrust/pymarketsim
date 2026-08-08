@@ -13,6 +13,7 @@ from marketsim.utils.id_generator import id_generator
 class WashTradingAgent(Agent):
     def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None):
         super().__init__()
+        self.group = "WASH_TRADING"
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max
@@ -30,6 +31,7 @@ class WashTradingAgent(Agent):
     def take_action(self, current_time: int, estimate: Price|None=None):
         price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
+        quantity = int(self.q_max / 10)
         orders = []
 
         if period["start"] <= current_time <= period["end"]:
@@ -44,7 +46,7 @@ class WashTradingAgent(Agent):
 
                 order = Order(
                     price=price,
-                    quantity=7,
+                    quantity=quantity,
                     agent_id=self.agent_id,
                     asset_id=self.market.asset_id,
                     time=current_time,
@@ -53,7 +55,7 @@ class WashTradingAgent(Agent):
                 orders.append(order)
 
         else:
-            # be a normal ZI agent :)  (sometimes smoothly align position using PVs)
+            # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
             pass
         return orders
 

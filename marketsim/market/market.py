@@ -14,23 +14,28 @@ from marketsim.input import config
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100),
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100), name: str|None=None,
                  market_type: str = "discrete"):
         self.order_book = FourHeap(plus_one=True, market=self)
         self.asset_id = id_generator.next()
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
+        self.traded_prices = {}
+        self.trades_by_agent_type = {}
+        self.orders_by_agent_type = {}
         self.fundamental = fundamental
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
-        self.traded_prices = {}
         self.market_type = market_type # "discrete" or "continuous"
         self.agents = {}
+        self.name = name
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
             print(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
+            self.trades_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
+            self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -50,6 +55,12 @@ class Market:
     def add_orders(self, orders: list[Order]) -> None:
         for order in orders:
             self.event_queue.schedule_activity(order)
+            if order.order_type == 1:
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["Count_buy"] += 1
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["Volume_buy"] += order.quantity
+            elif order.order_type == -1:
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["Count_sell"] += 1
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["Volume_sell"] += order.quantity
 
     def get_time(self):
         raise # to make sure it is not used
@@ -135,7 +146,16 @@ class Market:
                                                  "Volume": volume,}
         # record for each agent:
         agent_id = matched_order.order.agent_id
-        self.agents[agent_id].record_trade(matched_order=matched_order) # TODO: merge with the above func
+        self.agents[agent_id].record_trade(matched_order=matched_order)
+        # record it by type:
+        if matched_order.order.order_type == 1:
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_buy"] += matched_order.order.quantity
+        elif matched_order.order.order_type == -1:
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_sell"] += matched_order.order.quantity
+        else:
+            raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
@@ -165,5 +185,6 @@ class Market:
         plot_order_book(
             bids=bids,
             asks=asks,
-            output_file=f"{config.output_dir}/LOB_{self.asset_id}_{current_time}.png",
+            output_file=f"{config.output_dir}/LOB/LOB_{self.asset_id}_{current_time}.png",
+            title=f"Order book at {current_time}"
         )
