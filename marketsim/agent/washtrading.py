@@ -31,7 +31,8 @@ class WashTradingAgent(Agent):
     def take_action(self, current_time: int, estimate: Price|None=None):
         price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
-        quantity = int(self.q_max / 10)
+        length = period["end"] - period["start"]
+        quantity = int((self.q_max - abs(self.position)) / (length * self.lam))
         orders = []
 
         if period["start"] <= current_time <= period["end"]:
@@ -76,6 +77,7 @@ class WashTradingAgent(Agent):
 
 class WashTradingPool:
     def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):
+        raise # as yet it's not used
         self.market = market
         self.id = pool_id
         self.type = manipulation_type # 'PULL_UP' or 'PUSH_DOWN'

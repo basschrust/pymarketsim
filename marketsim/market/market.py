@@ -19,7 +19,11 @@ class Market:
         self.order_book = FourHeap(plus_one=True, market=self)
         self.asset_id = id_generator.next()
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
-        self.traded_prices = {}
+        self.traded_prices = {0:{"Open": reference_price,
+                                                "Low": reference_price,
+                                                "High": reference_price,
+                                                "Close": reference_price,
+                                                "Volume": 0, }}
         self.trades_by_agent_type = {}
         self.orders_by_agent_type = {}
         self.fundamental = fundamental
