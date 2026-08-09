@@ -29,17 +29,17 @@ markets:
         number: 1
         config:
           xi: 0.2
-          K: 15
-          omega: 0.2
-          rebalance_period: 20
+          K: 5
+          omega: 0.36
+          rebalance_period: 10
       mmzoh_2:
         agent_class: MMZOHAgent
-        number: 0
+        number: 1
         config:
           xi: 0.21
           K: 10
-          omega: 0.15
-          rebalance_period: 28
+          omega: 0.22
+          rebalance_period: 14
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -68,29 +68,29 @@ markets:
         number: 1
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 300
+          q_max: 500
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 60
               end: 150
-            lam: 0.5
-            spread: 1.3
+            lam: 0.95
+            spread: 0.3
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 300
+          q_max: 500
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
               end: 150
-            lam: 0.5
-            spread: 1.3
+            lam: 0.95
+            spread: 0.3
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -109,14 +109,14 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30 # yet this is used as transaction volume instead of max engagement
+          q_max: 20 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 20
           period: 10
           threshold: 0.005
       momentum_3:
@@ -124,7 +124,7 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 20
           period: 15
 
   security_2: # the same market but without WashTRaders:
@@ -150,17 +150,17 @@ markets:
         number: 1
         config:
           xi: 0.2
-          K: 15
-          omega: 0.2
-          rebalance_period: 20
+          K: 5
+          omega: 0.36
+          rebalance_period: 10
       mmzoh_2:
         agent_class: MMZOHAgent
-        number: 0
+        number: 1
         config:
           xi: 0.21
           K: 10
-          omega: 0.15
-          rebalance_period: 28
+          omega: 0.22
+          rebalance_period: 14
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -195,8 +195,8 @@ markets:
             manipulation_side: BUY
             manipulation_period:
               start: 60
-              end: 100
-            lam: 0.9
+              end: 150
+            lam: 0.98
             spread: 0.5
       poolB:
         agent_class: WashTradingAgent
@@ -209,8 +209,8 @@ markets:
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
-              end: 100
-            lam: 0.9
+              end: 150
+            lam: 0.98
             spread: 0.5
       spoofers:
         agent_class: SpoofingAgent
@@ -230,14 +230,14 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30 # yet this is used as transaction volume instead of max engagement
+          q_max: 20 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 20
           period: 10
           threshold: 0.005
       momentum_3:
@@ -245,5 +245,5 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 20
           period: 15

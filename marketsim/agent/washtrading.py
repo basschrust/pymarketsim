@@ -29,19 +29,24 @@ class WashTradingAgent(Agent):
 
 
     def take_action(self, current_time: int, estimate: Price|None=None):
-        price = estimate if estimate is not None else self.market.last_traded_price
         period = self.manipulation_boundaries["manipulation_period"]
-        length = period["end"] - period["start"]
-        quantity = int((self.q_max - abs(self.position)) / (length * self.lam))
         orders = []
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
+            price = estimate if estimate is not None else self.market.last_traded_price
+            length = period["end"] - current_time + 1  # how many days left in the manipulation period
+            # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
+            quantity = int((self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"])) + 1
+            # if q_max almost reached we could try to push more with spread?
             if self.manipulation_boundaries["lam"] > random.random():
+                #withdraw his old orders if yet not exercised
+                self.market.withdraw_all(self.agent_id)
+                # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                    price = price + Price(self.manipulation_boundaries["spread"])
+                    price = price + Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
                 elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
-                    price = price - Price(self.manipulation_boundaries["spread"])
+                    price = price - Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 

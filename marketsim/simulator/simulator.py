@@ -28,7 +28,6 @@ from marketsim.input import config
 class Simulator:
     def __init__(self,
                  sim_time: int,
-                 # num_assets: int = 1,
                  lam: float = 0.1,
                  mean: float = 100.0,
                  r: float = .6,
