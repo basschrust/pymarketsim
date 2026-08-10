@@ -24,8 +24,9 @@ class Market:
                                                 "High": reference_price,
                                                 "Close": reference_price,
                                                 "Volume": 0, }}
-        self.trades_by_agent_type = {}
         self.orders_by_agent_type = {}
+        self.trades_by_agent_type = {}
+        self.trades_by_agent_type_ext = {}
         self.fundamental = fundamental
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
@@ -38,8 +39,12 @@ class Market:
         for agent in agents:
             print(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
-            self.trades_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
             self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
+            self.trades_by_agent_type.setdefault(agent.group,
+                                                 {"Count_buy": 0, "Volume_buy": 0, "Count_sell": 0, "Volume_sell": 0})
+            self.trades_by_agent_type_ext.setdefault(agent.group,
+                                                 {"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
+                                                     , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -155,9 +160,14 @@ class Market:
         if matched_order.order.order_type == 1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_buy"] += matched_order.order.quantity
+            # and the ext version - filling the waited/arrived value - why not use a pandas DF?
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_buy"][matched_order.order.executed_mode] += 1
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
         elif matched_order.order.order_type == -1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_sell"] += matched_order.order.quantity
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_sell"][matched_order.order.executed_mode] += 1
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_sell"][matched_order.order.executed_mode] += matched_order.order.quantity
         else:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 

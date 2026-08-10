@@ -243,6 +243,7 @@ class HBLAgent(Agent):
             if TAG + BG == 0:
                 return 0
             else:
+                # TODO: sometimes the denominator is equal 0
                 return (TAG + BG) / (TAG + BG + RAL)
     
     def get_order_list(self, current_time: int) -> (list, list, list):

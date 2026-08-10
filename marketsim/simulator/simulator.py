@@ -203,8 +203,9 @@ class Simulator:
             plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
             plot_by_type(market.trades_by_agent_type,
                                 output_file=f"{config.output_dir}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
-
-
+            plot_by_type(market.trades_by_agent_type_ext,
+                         output_file=f"{config.output_dir}/trades_by_type_ext_{str(market)}.png",
+                         title=f"Trades by extended type in {market.name}", mode="extended")
 
     def run(self) -> None:
         for t in range(self.sim_time):
