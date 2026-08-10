@@ -16,7 +16,7 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 20
+        number: 40
         config:
           lam: 0.2
           q_max: 80
@@ -29,17 +29,17 @@ markets:
         number: 1
         config:
           xi: 0.2
-          K: 5
-          omega: 0.36
-          rebalance_period: 10
+          K: 2
+          omega: 0.16
+          rebalance_period: 5
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.21
-          K: 10
+          K: 2
           omega: 0.22
-          rebalance_period: 14
+          rebalance_period: 7
       hbl:
         agent_class: HBLAgent
         number: 0
@@ -106,14 +106,14 @@ markets:
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
@@ -121,7 +121,7 @@ markets:
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
@@ -137,7 +137,7 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 20
+        number: 40
         config:
           lam: 0.2
           q_max: 80
@@ -150,17 +150,17 @@ markets:
         number: 1
         config:
           xi: 0.2
-          K: 5
-          omega: 0.36
-          rebalance_period: 10
+          K: 2
+          omega: 0.16
+          rebalance_period: 5
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.21
-          K: 10
+          K: 2
           omega: 0.22
-          rebalance_period: 14
+          rebalance_period: 7
       hbl:
         agent_class: HBLAgent
         number: 0
@@ -227,14 +227,14 @@ markets:
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20 # yet this is used as transaction volume instead of max engagement
           period: 5
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
@@ -242,7 +242,7 @@ markets:
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20

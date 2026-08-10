@@ -161,19 +161,19 @@ def plot_by_type(
             "group1": {
                 "Count_buy": {
                     "arrived": 60,
-                    "waiting": 40,
+                    "waited": 40,
                 },
                 "Volume_buy": {
                     "arrived": 20,
-                    "waiting": 0,
+                    "waited": 0,
                 },
                 "Count_sell": {
                     "arrived": 10,
-                    "waiting": 20,
+                    "waited": 20,
                 },
                 "Volume_sell": {
                     "arrived": 20,
-                    "waiting": 20,
+                    "waited": 20,
                 },
             },
             ...
@@ -257,7 +257,7 @@ def plot_by_type(
             orders_by_type[order_type]["Count_buy"]["arrived"]
             for order_type in order_types
         ]
-        buy_count_waiting = [
+        buy_count_waited = [
             orders_by_type[order_type]["Count_buy"]["waited"]
             for order_type in order_types
         ]
@@ -266,7 +266,7 @@ def plot_by_type(
             orders_by_type[order_type]["Count_sell"]["arrived"]
             for order_type in order_types
         ]
-        sell_count_waiting = [
+        sell_count_waited = [
             orders_by_type[order_type]["Count_sell"]["waited"]
             for order_type in order_types
         ]
@@ -275,7 +275,7 @@ def plot_by_type(
             orders_by_type[order_type]["Volume_buy"]["arrived"]
             for order_type in order_types
         ]
-        buy_volume_waiting = [
+        buy_volume_waited = [
             orders_by_type[order_type]["Volume_buy"]["waited"]
             for order_type in order_types
         ]
@@ -284,7 +284,7 @@ def plot_by_type(
             orders_by_type[order_type]["Volume_sell"]["arrived"]
             for order_type in order_types
         ]
-        sell_volume_waiting = [
+        sell_volume_waited = [
             orders_by_type[order_type]["Volume_sell"]["waited"]
             for order_type in order_types
         ]
@@ -300,10 +300,10 @@ def plot_by_type(
 
         ax_count.bar(
             [i - width / 2 for i in x],
-            buy_count_waiting,
+            buy_count_waited,
             width=width,
             bottom=buy_count_arrived,
-            label="Buy waiting",
+            label="Buy waited",
             color="lightblue",
         )
 
@@ -318,10 +318,10 @@ def plot_by_type(
 
         ax_count.bar(
             [i + width / 2 for i in x],
-            sell_count_waiting,
+            sell_count_waited,
             width=width,
             bottom=sell_count_arrived,
-            label="Sell waiting",
+            label="Sell waited",
             color="lightcoral",
         )
 
@@ -336,10 +336,10 @@ def plot_by_type(
 
         ax_volume.bar(
             [i - width / 2 for i in x],
-            buy_volume_waiting,
+            buy_volume_waited,
             width=width,
             bottom=buy_volume_arrived,
-            label="Buy waiting",
+            label="Buy waited",
             color="lightblue",
         )
 
@@ -354,10 +354,10 @@ def plot_by_type(
 
         ax_volume.bar(
             [i + width / 2 for i in x],
-            sell_volume_waiting,
+            sell_volume_waited,
             width=width,
             bottom=sell_volume_arrived,
-            label="Sell waiting",
+            label="Sell waited",
             color="lightcoral",
         )
 
