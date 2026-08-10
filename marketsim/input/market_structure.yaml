@@ -7,7 +7,7 @@ lob_plot_interval: 25
 
 markets:
   security_1:
-    name: "WashTraders pulling down 60-150"
+    name: "WashTraders pulling up 60-150"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -70,7 +70,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 500
           manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 60
@@ -84,7 +84,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 500
           manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
@@ -191,7 +191,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 1200
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 60
@@ -205,7 +205,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 1200
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60

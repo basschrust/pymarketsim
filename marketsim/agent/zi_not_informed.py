@@ -27,8 +27,6 @@ class ZIAgentNotInformed(Agent):
         # print(f"shade: {self.shade}")
         self.cash = 0
         self.eta = eta
-        #self._order_counter = 0  # Counter for unique order IDs (faster than random.randint)
-            # not used any more, but maybe we want to count the orders placed by each agent
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
 
@@ -37,7 +35,7 @@ class ZIAgentNotInformed(Agent):
 
     def estimate_fundamental(self, current_time: int) -> Price:
         estimate = self.market.last_traded_price
-        print(f'It is time {current_time} with final I observed last traded price {estimate}, so my estimate is {estimate}')
+        print(f'ZINI - It is time {current_time} with final I observed last traded price {estimate}, so my estimate is {estimate}')
         return estimate
 
     def take_action(self, current_time: int, estimate: Price = None):

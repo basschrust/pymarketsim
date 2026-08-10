@@ -1,6 +1,7 @@
 import random
 from typing import List
 import numpy as np
+from decimal import Decimal
 
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
@@ -11,7 +12,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class WashTradingAgent(Agent):
-    def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None):
+    def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None, mean_volume: float = 5.0):
         super().__init__()
         self.group = "WASH_TRADING"
         self.agent_id = id_generator.next()
@@ -22,6 +23,7 @@ class WashTradingAgent(Agent):
         self.cash = 0
         self.pool_id = pool_id
         self.manipulation_boundaries = manipulation_boundaries # what if several such periods? maybe list of dicts?
+        self.mean_volume = mean_volume
 
 
     def get_id(self) -> int:
@@ -62,7 +64,21 @@ class WashTradingAgent(Agent):
 
         else:
             # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
-            pass
+            if random.random() < self.lam:
+                side = random.choice([BUY, SELL])
+                quantity = np.random.poisson(lam=self.mean_volume)
+                spread = 0.2 #  Decimal(self.shade[1] - self.shade[0])
+                price = self.market.last_traded_price + Price(spread * random.random() + spread/2)
+
+                order = Order(
+                    price=price,
+                    quantity=quantity,
+                    agent_id=self.agent_id,
+                    asset_id=self.market.asset_id,
+                    time=current_time,
+                    order_type=1 if side == 'BUY' else -1,
+                )
+                orders.append(order)
         return orders
 
 
