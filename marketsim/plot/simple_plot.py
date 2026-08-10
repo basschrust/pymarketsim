@@ -258,7 +258,7 @@ def plot_by_type(
             for order_type in order_types
         ]
         buy_count_waiting = [
-            orders_by_type[order_type]["Count_buy"]["waiting"]
+            orders_by_type[order_type]["Count_buy"]["waited"]
             for order_type in order_types
         ]
 
@@ -267,7 +267,7 @@ def plot_by_type(
             for order_type in order_types
         ]
         sell_count_waiting = [
-            orders_by_type[order_type]["Count_sell"]["waiting"]
+            orders_by_type[order_type]["Count_sell"]["waited"]
             for order_type in order_types
         ]
 
@@ -276,7 +276,7 @@ def plot_by_type(
             for order_type in order_types
         ]
         buy_volume_waiting = [
-            orders_by_type[order_type]["Volume_buy"]["waiting"]
+            orders_by_type[order_type]["Volume_buy"]["waited"]
             for order_type in order_types
         ]
 
@@ -285,7 +285,7 @@ def plot_by_type(
             for order_type in order_types
         ]
         sell_volume_waiting = [
-            orders_by_type[order_type]["Volume_sell"]["waiting"]
+            orders_by_type[order_type]["Volume_sell"]["waited"]
             for order_type in order_types
         ]
 
