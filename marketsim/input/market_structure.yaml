@@ -2,12 +2,12 @@
 
 # generic simulation parameters
 #num_assets: 2 # used, no, not used, but has to be also specified for each agent
-sim_time: 250
+sim_time: 500
 lob_plot_interval: 25
 
 markets:
   security_1:
-    name: "WashTraders pulling up 60-150"
+    name: "WashTraders pushing down 150-300"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -16,7 +16,7 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 40
+        number: 45
         config:
           lam: 0.2
           q_max: 80
@@ -70,11 +70,11 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 500
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 60
-              end: 150
+              start: 150
+              end: 300
             lam: 0.95
             spread: 0.3
       poolB:
@@ -84,7 +84,7 @@ markets:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
           q_max: 500
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
@@ -137,7 +137,7 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 40
+        number: 45
         config:
           lam: 0.2
           q_max: 80

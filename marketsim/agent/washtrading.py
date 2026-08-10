@@ -68,8 +68,14 @@ class WashTradingAgent(Agent):
         else:
             # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
             if random.random() < self.lam:
-                side = random.choice([BUY, SELL])
-                quantity = np.random.poisson(lam=self.mean_volume)
+                # but if we are after washtrading then let's try to rebalance as much as we can
+                # so let only one side of the orders
+                if current_time < period["start"]:
+                    side = random.choice([BUY, SELL])
+                else:
+                    side = self.manipulation_boundaries["manipulation_side"]
+                    # but how not to exceed the q_max?
+                quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
                 spread = 0.2 #  Decimal(self.shade[1] - self.shade[0])
                 price = self.market.last_traded_price + Price(spread * random.random() + spread/2)
 
