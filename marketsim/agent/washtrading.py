@@ -51,7 +51,8 @@ class WashTradingAgent(Agent):
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     price = price + Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
                 elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
-                    price = price - Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
+                    # prevent price from falling below 0:
+                    price = max(price - Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random())), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 

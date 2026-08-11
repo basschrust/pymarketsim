@@ -62,26 +62,28 @@ class MMZOHAgent(Agent):
 
 
             for k in range(self.K):
-                orders.append(
-                    Order(
-                        price= Price(bt - (k + 1) * self.xi),
-                        quantity=7,#1, # we ćould raise the quantity in each ladder step...
-                        agent_id=self.agent_id,
-                        time=current_time,
-                        order_type=BUY,
-                        asset_id=self.market.asset_id,
+                price_bid = Price(bt - (k + 1) * self.xi)
+                if price_bid > 0:
+                    orders.append(
+                        Order(
+                            price=price_bid,
+                            quantity=7,#1, # we ćould raise the quantity in each ladder step...
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=BUY,
+                            asset_id=self.market.asset_id,
+                        )
                     )
-                )
-                orders.append(
-                    Order(
-                        price= Price(st + (k + 1)*self.xi),
-                        quantity=7,#1,
-                        agent_id=self.agent_id,
-                        time=current_time,
-                        order_type=SELL,
-                        asset_id=self.market.asset_id,
+                    orders.append(
+                        Order(
+                            price= Price(st + (k + 1)*self.xi),
+                            quantity=7,#1,
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=SELL,
+                            asset_id=self.market.asset_id,
+                        )
                     )
-                )
 
         return orders
 
