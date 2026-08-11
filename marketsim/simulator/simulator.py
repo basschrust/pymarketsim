@@ -20,7 +20,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -28,7 +28,6 @@ from marketsim.input import config
 class Simulator:
     def __init__(self,
                  sim_time: int,
-                 num_assets: int = 1,
                  lam: float = 0.1,
                  mean: float = 100.0,
                  r: float = .6,
@@ -38,7 +37,7 @@ class Simulator:
                  ):
         print("Initializing simulation with following parameters...")
 
-        self.num_assets = num_assets
+        # self.num_assets = num_assets
         self.sim_time = sim_time
         self.lam = lam # lambda (activity factor)
         self.mean = mean
@@ -56,7 +55,7 @@ class Simulator:
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r,
                                                 shock_var=self.shock_var)
 
-            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"])
+            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"], name=m_conf.get("name"))
 
             self.markets.append(market)
 
@@ -94,13 +93,6 @@ class Simulator:
                         market.add_agents([agent])
 
         return
-
-
-    def add_agents(self, agents: list[Agent] | None) -> None:
-        raise # moved to market
-        for agent in agents:
-            print(f"Adding agent {str(agent)}")
-            self.agents[agent.get_id()] = agent
 
     def step(self) -> None:
         print(f'\nIt is time step {self.current_time}')
@@ -205,8 +197,15 @@ class Simulator:
             print(df_candlestick.head())
 
             candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
-            plot_candlestick(df=df_candlestick, output_file=candlestick_filename)
+            plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=market.name)
 
+            # plotting by type:
+            plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
+            plot_by_type(market.trades_by_agent_type,
+                                output_file=f"{config.output_dir}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
+            plot_by_type(market.trades_by_agent_type_ext,
+                         output_file=f"{config.output_dir}/trades_by_type_ext_{str(market)}.png",
+                         title=f"Trades by extended type in {market.name}", mode="extended")
 
     def run(self) -> None:
         for t in range(self.sim_time):

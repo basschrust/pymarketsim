@@ -78,6 +78,7 @@ def plot_order_book(
     asks: dict,
     output_file: str,
     cumulative: bool = True,
+    title: str = "Order Book",
 ) -> None:
     """
     bids and asks should be dictionaries:
@@ -122,9 +123,9 @@ def plot_order_book(
             label="Asks",
         )
 
-    ax.set_xlabel("Price")
+    ax.set_xlabel("Price limit")
     ax.set_ylabel("Cumulative volume" if cumulative else "Volume")
-    ax.set_title("Order Book")
+    ax.set_title(title)
     ax.grid(axis="y")
     ax.legend()
 
@@ -133,6 +134,253 @@ def plot_order_book(
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
+
+
+def plot_by_type(
+    orders_by_type: dict,
+    output_file: str,
+    title: str,
+    mode: str = "simple",  # or extended
+) -> None:
+    """
+    Plot order statistics by agent/type.
+
+    Simple input:
+        {
+            "MM": {
+                "Count_buy": 6,
+                "Volume_buy": 67,
+                "Count_sell": 7,
+                "Volume_sell": 89,
+            },
+            ...
+        }
+
+    Extended input:
+        {
+            "group1": {
+                "Count_buy": {
+                    "arrived": 60,
+                    "waited": 40,
+                },
+                "Volume_buy": {
+                    "arrived": 20,
+                    "waited": 0,
+                },
+                "Count_sell": {
+                    "arrived": 10,
+                    "waited": 20,
+                },
+                "Volume_sell": {
+                    "arrived": 20,
+                    "waited": 20,
+                },
+            },
+            ...
+        }
+    """
+
+    if mode not in ("simple", "extended"):
+        raise ValueError(
+            f"Unknown mode '{mode}'. Expected 'simple' or 'extended'."
+        )
+
+    order_types = list(orders_by_type.keys())
+
+    fig, (ax_count, ax_volume) = plt.subplots(
+        2,
+        1,
+        figsize=(10, 8),
+        sharex=True,
+    )
+
+    x = list(range(len(order_types)))
+    width = 0.35
+
+    if mode == "simple":
+
+        buy_counts = [
+            orders_by_type[order_type]["Count_buy"]
+            for order_type in order_types
+        ]
+        sell_counts = [
+            orders_by_type[order_type]["Count_sell"]
+            for order_type in order_types
+        ]
+
+        buy_volumes = [
+            orders_by_type[order_type]["Volume_buy"]
+            for order_type in order_types
+        ]
+        sell_volumes = [
+            orders_by_type[order_type]["Volume_sell"]
+            for order_type in order_types
+        ]
+
+        # Order count
+        ax_count.bar(
+            [i - width / 2 for i in x],
+            buy_counts,
+            width=width,
+            label="Buy",
+            color="blue",
+        )
+
+        ax_count.bar(
+            [i + width / 2 for i in x],
+            sell_counts,
+            width=width,
+            label="Sell",
+            color="darkred",
+        )
+
+        # Order volume
+        ax_volume.bar(
+            [i - width / 2 for i in x],
+            buy_volumes,
+            width=width,
+            label="Buy",
+            color="blue",
+        )
+
+        ax_volume.bar(
+            [i + width / 2 for i in x],
+            sell_volumes,
+            width=width,
+            label="Sell",
+            color="darkred",
+        )
+
+    else:
+        # Extract extended data
+        buy_count_arrived = [
+            orders_by_type[order_type]["Count_buy"]["arrived"]
+            for order_type in order_types
+        ]
+        buy_count_waited = [
+            orders_by_type[order_type]["Count_buy"]["waited"]
+            for order_type in order_types
+        ]
+
+        sell_count_arrived = [
+            orders_by_type[order_type]["Count_sell"]["arrived"]
+            for order_type in order_types
+        ]
+        sell_count_waited = [
+            orders_by_type[order_type]["Count_sell"]["waited"]
+            for order_type in order_types
+        ]
+
+        buy_volume_arrived = [
+            orders_by_type[order_type]["Volume_buy"]["arrived"]
+            for order_type in order_types
+        ]
+        buy_volume_waited = [
+            orders_by_type[order_type]["Volume_buy"]["waited"]
+            for order_type in order_types
+        ]
+
+        sell_volume_arrived = [
+            orders_by_type[order_type]["Volume_sell"]["arrived"]
+            for order_type in order_types
+        ]
+        sell_volume_waited = [
+            orders_by_type[order_type]["Volume_sell"]["waited"]
+            for order_type in order_types
+        ]
+
+        # Order count - Buy
+        ax_count.bar(
+            [i - width / 2 for i in x],
+            buy_count_arrived,
+            width=width,
+            label="Buy arrived",
+            color="blue",
+        )
+
+        ax_count.bar(
+            [i - width / 2 for i in x],
+            buy_count_waited,
+            width=width,
+            bottom=buy_count_arrived,
+            label="Buy waited",
+            color="lightblue",
+        )
+
+        # Order count - Sell
+        ax_count.bar(
+            [i + width / 2 for i in x],
+            sell_count_arrived,
+            width=width,
+            label="Sell arrived",
+            color="darkred",
+        )
+
+        ax_count.bar(
+            [i + width / 2 for i in x],
+            sell_count_waited,
+            width=width,
+            bottom=sell_count_arrived,
+            label="Sell waited",
+            color="lightcoral",
+        )
+
+        # Order volume - Buy
+        ax_volume.bar(
+            [i - width / 2 for i in x],
+            buy_volume_arrived,
+            width=width,
+            label="Buy arrived",
+            color="blue",
+        )
+
+        ax_volume.bar(
+            [i - width / 2 for i in x],
+            buy_volume_waited,
+            width=width,
+            bottom=buy_volume_arrived,
+            label="Buy waited",
+            color="lightblue",
+        )
+
+        # Order volume - Sell
+        ax_volume.bar(
+            [i + width / 2 for i in x],
+            sell_volume_arrived,
+            width=width,
+            label="Sell arrived",
+            color="darkred",
+        )
+
+        ax_volume.bar(
+            [i + width / 2 for i in x],
+            sell_volume_waited,
+            width=width,
+            bottom=sell_volume_arrived,
+            label="Sell waited",
+            color="lightcoral",
+        )
+
+    # Common formatting
+    ax_count.set_ylabel("Count")
+    ax_count.set_title(title)
+    ax_count.grid(axis="y")
+    ax_count.legend()
+
+    ax_volume.set_ylabel("Volume")
+    ax_volume.set_xlabel("Type")
+    ax_volume.grid(axis="y")
+    ax_volume.legend()
+
+    ax_volume.set_xticks(x)
+    ax_volume.set_xticklabels(order_types)
+
+    fig.tight_layout()
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
 
 
 class Plotter:

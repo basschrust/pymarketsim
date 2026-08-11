@@ -1,13 +1,13 @@
 # market structure configuration file
 
 # generic simulation parameters
-num_assets: 2 # used, but has to be also specified for each agent
-sim_time: 250
+sim_time: 500
 lob_plot_interval: 25
 
+# definitions of the securities
 markets:
   security_1:
-    name: "First security"
+    name: "WashTraders pulling up 150-300"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -16,9 +16,9 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 30
+        number: 45
         config:
-          lam: 0.4
+          lam: 0.2
           q_max: 80
           shade:
             - 0.1
@@ -28,23 +28,23 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.1
-          K: 25
-          omega: 0.2
-          rebalance_period: 10
+          xi: 0.2
+          K: 2
+          omega: 0.16
+          rebalance_period: 5
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.15
-          K: 25
-          omega: 0.1
-          rebalance_period: 14
+          xi: 0.21
+          K: 2
+          omega: 0.22
+          rebalance_period: 7
       hbl:
         agent_class: HBLAgent
-        number: 2
+        number: 0
         config:
-          q_max: 10
+          q_max: 20
           L: 3 # memory length
           shade:
             - 0.1
@@ -62,35 +62,36 @@ markets:
             - 0.1
           arrival_rate: 4
           pv_var: 7.0e2
+
       # manipulators:
       poolA:
         agent_class: WashTradingAgent
         number: 1
         config:
-          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 300
+          lam: 0.5 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 500
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 60
-              end: 100
+              start: 150
+              end: 300
             lam: 0.9
-            spread: 0.5
+            spread: 0.2
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
-          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 300
+          lam: 0.5 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 500
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 60
-              end: 100
+              start: 150
+              end: 300
             lam: 0.9
-            spread: 0.5
+            spread: 0.2
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -106,25 +107,25 @@ markets:
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15 # yet this is used as transaction volume instead of max engagement
-          period: 5
+          q_max: 5 # yet this is used as transaction volume instead of max engagement
+          period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
-          period: 10
+          q_max: 55
+          period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 5
           period: 15
 
   security_2: # the same market but without WashTRaders:
@@ -137,9 +138,9 @@ markets:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 30
+        number: 45
         config:
-          lam: 0.4
+          lam: 0.2
           q_max: 80
           shade:
             - 0.1
@@ -149,23 +150,23 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.1
-          K: 25
-          omega: 0.2
-          rebalance_period: 10
+          xi: 0.2
+          K: 2
+          omega: 0.16
+          rebalance_period: 5
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.15
-          K: 25
-          omega: 0.1
-          rebalance_period: 14
+          xi: 0.21
+          K: 2
+          omega: 0.22
+          rebalance_period: 7
       hbl:
         agent_class: HBLAgent
-        number: 2
+        number: 0
         config:
-          q_max: 10
+          q_max: 20
           L: 3 # memory length
           shade:
             - 0.1
@@ -189,28 +190,28 @@ markets:
         number: 0
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 1200
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 60
-              end: 100
-            lam: 0.9
+              end: 150
+            lam: 0.98
             spread: 0.5
       poolB:
         agent_class: WashTradingAgent
         number: 0
         config:
           lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 30
+          q_max: 1200
           manipulation_boundaries:
-            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 60
-              end: 100
-            lam: 0.9
+              end: 150
+            lam: 0.98
             spread: 0.5
       spoofers:
         agent_class: SpoofingAgent
@@ -227,23 +228,23 @@ markets:
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15 # yet this is used as transaction volume instead of max engagement
-          period: 5
+          q_max: 5 # yet this is used as transaction volume instead of max engagement
+          period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
-          period: 10
+          q_max: 55
+          period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 15
+          q_max: 5
           period: 15

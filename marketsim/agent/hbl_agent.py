@@ -19,6 +19,7 @@ class HBLAgent(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None, agent_id: int =None):
         super().__init__()
+        self.group = "HBL"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market
         if pv is not None:
@@ -51,6 +52,7 @@ class HBLAgent(Agent):
         return self.agent_id
 
     def estimate_fundamental(self, current_time: int) -> Price:
+        #raise # TODO: AK - not used any more as only last trade decides? still used...
         mean, r, T = self.market.get_info()
         #t = self.market.get_time()
         val = self.market.get_fundamental_value(current_time=current_time)
@@ -241,6 +243,7 @@ class HBLAgent(Agent):
             if TAG + BG == 0:
                 return 0
             else:
+                # TODO: sometimes the denominator is equal 0
                 return (TAG + BG) / (TAG + BG + RAL)
     
     def get_order_list(self, current_time: int) -> (list, list, list):
@@ -603,8 +606,7 @@ class HBLAgent(Agent):
         Submits orders to market for HBL.
 
         Params:
-            side: BUY or SELL.  # AK: why the hell do we need side in this method? It should be generic,
-                                the same signature for every agent!
+            current_time: current clock tick
 
         Returns:
             order [Order]: order to be submitted
