@@ -6,6 +6,7 @@ from .hbl_agent import HBLAgent
 from .spoofing import SpoofingAgent
 from .washtrading import WashTradingAgent
 from .momentum import MomentumAgent
+from .noise_agent import NoiseAgent
 
 __all__ = [
     "Agent",
@@ -16,4 +17,5 @@ __all__ = [
     "SpoofingAgent",
     "WashTradingAgent",
     "MomentumAgent",
+    "NoiseAgent",
 ]

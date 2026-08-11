@@ -1,11 +1,8 @@
-import random
 from decimal import Decimal
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
-from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
-from typing import List
 from marketsim.utils.id_generator import id_generator
 
 
@@ -15,7 +12,7 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5):
+                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7):
         super().__init__()
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
@@ -28,6 +25,7 @@ class MMZOHAgent(Agent):
         self.K = K # number of orders in the ladder
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
+        self.volume = volume
 
     def get_id(self) -> int:
         return self.agent_id
@@ -39,7 +37,6 @@ class MMZOHAgent(Agent):
 
     def take_action(self, current_time: int):
         orders = []
-        #t = self.market.get_time()
         # add orders only in rebalance periods:
         if current_time % self.rebalance_period == 0:
             # AK - clear previous orders (should we?)
@@ -67,7 +64,7 @@ class MMZOHAgent(Agent):
                     orders.append(
                         Order(
                             price=price_bid,
-                            quantity=7,#1, # we ćould raise the quantity in each ladder step...
+                            quantity=self.volume, #7,#1, # we ćould raise the quantity in each ladder step...
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=BUY,
@@ -77,7 +74,7 @@ class MMZOHAgent(Agent):
                     orders.append(
                         Order(
                             price= Price(st + (k + 1)*self.xi),
-                            quantity=7,#1,
+                            quantity=self.volume, # 7,#1,
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=SELL,

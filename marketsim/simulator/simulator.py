@@ -6,7 +6,7 @@ from loguru import logger
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent
+from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.loggers import basic
 from marketsim.market.price import Price
 from marketsim.fourheap.constants import BUY, SELL
@@ -66,6 +66,11 @@ class Simulator:
                     if agent_group["agent_class"] == "ZIAgentNotInformed":
                             agent = ZIAgentNotInformed(market=market, **agent_group["config"])
                             market.add_agents([agent])
+
+                    # Noise agents:
+                    if agent_group["agent_class"] == "NoiseAgent":
+                        agent = NoiseAgent(market=market, **agent_group["config"])
+                        market.add_agents([agent])
 
                     # MMs:
                     if agent_group["agent_class"] == "MMZOHAgent":
