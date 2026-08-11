@@ -12,11 +12,19 @@ markets:
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.3
+          q_max: 80
+          mean_volume: 2
+          mean_spread: 0.3
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 45
+        number: 0
         config:
           lam: 0.2
           q_max: 80
@@ -28,18 +36,20 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.2
-          K: 2
-          omega: 0.16
+          xi: 0.05
+          K: 3
+          omega: 0.02
           rebalance_period: 5
+          volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.21
-          K: 2
-          omega: 0.22
+          xi: 0.1
+          K: 3
+          omega: 0.05
           rebalance_period: 7
+          volume: 5
       hbl:
         agent_class: HBLAgent
         number: 0
@@ -134,11 +144,19 @@ markets:
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.3
+          q_max: 80
+          mean_volume: 2
+          mean_spread: 0.3
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
         agent_class: ZIAgentNotInformed
-        number: 45
+        number: 0
         config:
           lam: 0.2
           q_max: 80
@@ -150,18 +168,20 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.2
-          K: 2
-          omega: 0.16
+          xi: 0.05
+          K: 3
+          omega: 0.02
           rebalance_period: 5
+          volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.21
-          K: 2
-          omega: 0.22
+          xi: 0.1
+          K: 3
+          omega: 0.05
           rebalance_period: 7
+          volume: 5
       hbl:
         agent_class: HBLAgent
         number: 0

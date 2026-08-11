@@ -27,10 +27,10 @@ This registers the `marketsim` package locally so you can import it from noteboo
 The snippet below runs a short background-agent simulation with a mean-reverting fundamental process. It demonstrates how to instantiate the core components and iterate the simulator.
 
 ```python
-git clone ...
+git clone https://github.com/basschrust/pymarketsim.git
 cd pymarketsim
 
-python -m venv .venv
+py -3.10 -m venv .venv
 .\.venv\Scripts\activate
 
 python -m pip install --upgrade pip
