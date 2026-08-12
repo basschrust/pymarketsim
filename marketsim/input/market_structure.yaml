@@ -34,11 +34,11 @@ markets:
           pv_var: 5.0e2
       mmzoh_1:
         agent_class: MMZOHAgent
-        number: 0
+        number: 1
         config:
-          xi: 0.05
+          xi: 0.07
           K: 3
-          omega: 0.02
+          omega: 0.08
           rebalance_period: 5
           volume: 7
       mmzoh_2:
@@ -47,7 +47,7 @@ markets:
         config:
           xi: 0.1
           K: 3
-          omega: 0.05
+          omega: 0.12
           rebalance_period: 7
           volume: 5
       hbl:
@@ -166,11 +166,11 @@ markets:
           pv_var: 5.0e2
       mmzoh_1:
         agent_class: MMZOHAgent
-        number: 0
+        number: 1
         config:
-          xi: 0.05
+          xi: 0.07
           K: 3
-          omega: 0.02
+          omega: 0.08
           rebalance_period: 5
           volume: 7
       mmzoh_2:
@@ -179,7 +179,7 @@ markets:
         config:
           xi: 0.1
           K: 3
-          omega: 0.05
+          omega: 0.12
           rebalance_period: 7
           volume: 5
       hbl:

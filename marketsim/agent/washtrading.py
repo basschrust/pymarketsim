@@ -80,7 +80,7 @@ class WashTradingAgent(Agent):
                     side = self.manipulation_boundaries["manipulation_side"]
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
                         # till the end of the simulation
-                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 10)
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 20)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                 price = self.market.last_traded_price + Price(spread * (random.random() - 0.5))
