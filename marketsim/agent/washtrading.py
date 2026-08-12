@@ -50,10 +50,10 @@ class WashTradingAgent(Agent):
                 self.market.withdraw_all(self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                    price = price + Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
-                elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
+                    price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
-                    price = max(price - Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random())), Price(0.01))
+                    price = max(price - Price(self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
@@ -76,13 +76,14 @@ class WashTradingAgent(Agent):
                     side = random.choice([BUY, SELL])
                     quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
                 else:
+                    # so we are after the manipulation period - let's just rebalance here
                     side = self.manipulation_boundaries["manipulation_side"]
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
                         # till the end of the simulation
-                    quantity = int((self.q_max - abs(self.position)) * random.random() / 10)
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 10)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
-                price = self.market.last_traded_price + Price(spread * random.random() - spread/2)
+                price = self.market.last_traded_price + Price(spread * (random.random() - 0.5))
 
                 if price > 0 and quantity > 0:
                     order = Order(
