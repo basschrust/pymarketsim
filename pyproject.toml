@@ -22,7 +22,6 @@ dependencies = [
     "pandas>=2.2",
     "PyYAML>=6.0",
     "loguru>=0.7",
-    "fastcubicspline>=1.1.5",
     "torch>=2.2",
 ]
 
