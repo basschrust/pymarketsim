@@ -52,7 +52,7 @@ markets:
           volume: 5
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 20
           L: 3 # memory length
@@ -184,7 +184,7 @@ markets:
           volume: 5
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 20
           L: 3 # memory length
