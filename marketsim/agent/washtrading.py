@@ -92,7 +92,7 @@ class WashTradingAgent(Agent):
                         agent_id=self.agent_id,
                         asset_id=self.market.asset_id,
                         time=current_time,
-                        order_type=1 if side == 'BUY' else -1,
+                        order_type=1 if side == BUY else -1,
                     )
                     orders.append(order)
         return orders
@@ -114,6 +114,8 @@ class WashTradingAgent(Agent):
 
 class WashTradingPool:
     def __init__(self, market: Market, pool_id: int, manipulation_type: str, manipulation_start: int, manipulation_end: int):
+        # TODO: maybe we could store a reciprocal hook in each of those agents in the pool so that they can
+        # check the balance of each other and push their position towards equilibrium?
         raise # as yet it's not used
         self.market = market
         self.id = pool_id
