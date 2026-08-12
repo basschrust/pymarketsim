@@ -43,11 +43,11 @@ class WashTradingAgent(Agent):
             quantity = int((self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"])) + 1
             if length < (period["end"] - period["start"])/2:
                 # in the second half we push more on volume to properly balance the position
-                quantity *= 2
+                quantity = int(1.2 * quantity)
             # if q_max almost reached we could try to push more with spread?
             if self.manipulation_boundaries["lam"] > random.random():
                 #withdraw his old orders if yet not exercised
-                self.market.withdraw_all(self.agent_id)
+                self.market.withdraw_all(agent_id=self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
@@ -83,7 +83,8 @@ class WashTradingAgent(Agent):
                     quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 20)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
-                price = self.market.last_traded_price + Price(spread * (random.random() - 0.5))
+                # TODO: some rebalance spread parameter?
+                price = self.market.last_traded_price + Price(0.2* spread * (random.random() - 0.5))
 
                 if price > 0 and quantity > 0:
                     order = Order(

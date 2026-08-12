@@ -41,7 +41,7 @@ class MMZOHAgent(Agent):
         if current_time % self.rebalance_period == 0:
             # AK - clear previous orders (should we?)
             print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
-            self.market.withdraw_all(self.agent_id)
+            self.market.withdraw_all(agent_id=self.agent_id)
             # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
             # that's basically the same to just withdraw all and create new, the problem might be with timing
             # - we could loose the slot in the queue of waiting orders
@@ -50,13 +50,14 @@ class MMZOHAgent(Agent):
             best_ask = self.market.order_book.get_best_ask()
             best_bid = self.market.order_book.get_best_bid()
 
-            print(f"Best ask: {best_ask}, Best bid {best_bid}")
+            print(f"Best bid {best_bid}, best ask: {best_ask}")
 
             estimate = self.market.last_traded_price
+            print(f"Last traded price: {estimate}")
             HALF = Decimal("0.5")
             st = max(estimate + HALF * self.omega, best_bid)
             bt = min(estimate - HALF * self.omega, best_ask)
-
+            print(f"Setting basic spread to: {bt}, {st}")
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)

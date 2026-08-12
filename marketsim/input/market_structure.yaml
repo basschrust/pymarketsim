@@ -1,7 +1,7 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 500
+sim_time: 800
 lob_plot_interval: 25
 
 # definitions of the securities
@@ -14,9 +14,9 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 15
+        number: 25
         config:
-          lam: 0.3
+          lam: 0.4
           q_max: 80
           mean_volume: 2
           mean_spread: 0.3
@@ -36,20 +36,20 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.07
-          K: 3
-          omega: 0.08
-          rebalance_period: 5
+          xi: 0.11
+          K: 2
+          omega: 0.18
+          rebalance_period: 15
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 3
+          K: 2
           omega: 0.12
-          rebalance_period: 7
-          volume: 5
+          rebalance_period: 17
+          volume: 11
       hbl:
         agent_class: HBLAgent
         number: 0
@@ -101,7 +101,7 @@ markets:
               start: 150
               end: 300
             lam: 0.9
-            spread: 0.1
+            spread: 0.44 # 0.1 seems like too small one, 0.4 seems to work fine
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -146,9 +146,9 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 15
+        number: 25
         config:
-          lam: 0.3
+          lam: 0.4
           q_max: 80
           mean_volume: 2
           mean_spread: 0.3
@@ -168,20 +168,20 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.07
-          K: 3
-          omega: 0.08
-          rebalance_period: 5
+          xi: 0.11
+          K: 2
+          omega: 0.18
+          rebalance_period: 15
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 3
+          K: 2
           omega: 0.12
-          rebalance_period: 7
-          volume: 5
+          rebalance_period: 17
+          volume: 11
       hbl:
         agent_class: HBLAgent
         number: 0
