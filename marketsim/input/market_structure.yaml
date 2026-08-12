@@ -34,7 +34,7 @@ markets:
           pv_var: 5.0e2
       mmzoh_1:
         agent_class: MMZOHAgent
-        number: 1
+        number: 0
         config:
           xi: 0.05
           K: 3
@@ -166,7 +166,7 @@ markets:
           pv_var: 5.0e2
       mmzoh_1:
         agent_class: MMZOHAgent
-        number: 1
+        number: 0
         config:
           xi: 0.05
           K: 3
