@@ -1,15 +1,7 @@
-import random
-from typing import List
-
-from fontTools.merge.util import current_time
-from loguru import logger
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
-from marketsim.loggers import basic
 from marketsim.market.price import Price
-from marketsim.fourheap.constants import BUY, SELL
 from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting

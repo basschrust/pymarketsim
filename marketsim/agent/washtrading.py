@@ -31,6 +31,7 @@ class WashTradingAgent(Agent):
 
 
     def take_action(self, current_time: int, estimate: Price|None=None):
+        self.market.withdraw_all(agent_id=self.agent_id)
         period = self.manipulation_boundaries["manipulation_period"]
         orders = []
 
@@ -49,10 +50,10 @@ class WashTradingAgent(Agent):
                 self.market.withdraw_all(self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                    price = price + Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random()))
-                elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
+                    price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
-                    price = max(price - Price((self.manipulation_boundaries["spread"]*0.9 + 0.2 * random.random())), Price(0.01))
+                    price = max(price - Price(self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
@@ -73,22 +74,27 @@ class WashTradingAgent(Agent):
                 # so let only one side of the orders
                 if current_time < period["start"]:
                     side = random.choice([BUY, SELL])
+                    quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
                 else:
+                    # so we are after the manipulation period - let's just rebalance here
                     side = self.manipulation_boundaries["manipulation_side"]
-                    # but how not to exceed the q_max?
-                quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
-                spread = 0.2 #  Decimal(self.shade[1] - self.shade[0])
-                price = self.market.last_traded_price + Price(spread * random.random() + spread/2)
+                    # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
+                        # till the end of the simulation
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 10)
 
-                order = Order(
-                    price=price,
-                    quantity=quantity,
-                    agent_id=self.agent_id,
-                    asset_id=self.market.asset_id,
-                    time=current_time,
-                    order_type=1 if side == 'BUY' else -1,
-                )
-                orders.append(order)
+                spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
+                price = self.market.last_traded_price + Price(spread * (random.random() - 0.5))
+
+                if price > 0 and quantity > 0:
+                    order = Order(
+                        price=price,
+                        quantity=quantity,
+                        agent_id=self.agent_id,
+                        asset_id=self.market.asset_id,
+                        time=current_time,
+                        order_type=1 if side == 'BUY' else -1,
+                    )
+                    orders.append(order)
         return orders
 
 
