@@ -52,7 +52,7 @@ markets:
           volume: 5
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -87,7 +87,7 @@ markets:
               start: 150
               end: 300
             lam: 0.9
-            spread: 0.2
+            spread: 0.1
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -101,7 +101,7 @@ markets:
               start: 150
               end: 300
             lam: 0.9
-            spread: 0.2
+            spread: 0.1
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -184,7 +184,7 @@ markets:
           volume: 5
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length

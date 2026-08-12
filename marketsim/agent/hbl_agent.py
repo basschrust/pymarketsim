@@ -2,8 +2,9 @@ import random
 import sys
 import scipy as sp
 import numpy as np
-#from sqlalchemy.sql.functions import current_time
 from loguru import logger
+
+from scipy.interpolate import PchipInterpolator
 
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price, D
@@ -11,7 +12,7 @@ from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
-from fastcubicspline import FCS
+#from fastcubicspline import FCS
 from marketsim.utils.id_generator import id_generator
 
 
@@ -295,7 +296,13 @@ class HBLAgent(Agent):
             best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
             def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001):
-                cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
+                #cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
+                # TODO: check if this produces exactly the same results:
+                cs = PchipInterpolator(
+                    [bound1, bound2 + epsilon],
+                    [bound1Belief, float(bound2Belief)],
+                )
+
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
 
@@ -457,7 +464,12 @@ class HBLAgent(Agent):
 
                 assert float(bound2) + epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
+                #cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
+                # TODO: check if this produces exactly the same results:
+                cs = PchipInterpolator(
+                    [bound1, bound2 + epsilon],
+                    [bound1Belief, float(bound2Belief)],
+                )
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((float(bound1), float(bound2)))
                 
