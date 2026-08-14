@@ -388,7 +388,7 @@ def plot_bid_ask(
     bid_ask: dict[int, list[float]],
     output_file: str,
     title: str = "Bid ask",
-    clip_value: float = 10.0,
+    clip_value: float = 3.0,
 ) -> None:
     """
     Plot best bid and best ask over simulation time.
@@ -401,25 +401,18 @@ def plot_bid_ask(
         output_file: Output PNG filename.
         clip_value: Value used to clip +/-inf values.
     """
-
     times = sorted(bid_ask)
-
-    bids = []
-    asks = []
     spreads = []
 
     for time in times:
         bid, ask = bid_ask[time]
 
-        if not math.isfinite(bid):
-            bid = -clip_value if bid < 0 else clip_value
+        spread = float(ask) - float(bid)
 
-        if not math.isfinite(ask):
-            ask = -clip_value if ask < 0 else clip_value
+        if not math.isfinite(spread):
+            spread = clip_value
 
-        bids.append(bid)
-        asks.append(ask)
-        spreads.append(bid - ask)
+        spreads.append(spread)
 
     fig, ax = plt.subplots(figsize=(10, 5))
 

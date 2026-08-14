@@ -62,7 +62,7 @@ class WashTradingAgent(Agent):
                     price = max(Price((float(price) - self.manipulation_boundaries["spread"])*(0.98 + 0.04 * random.random())), Price(0.01))
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
-                            (self.q_max - abs(self.position)) * 2.5 / (length * self.manipulation_boundaries["lam"]))
+                            (self.q_max - abs(self.position)) * 1.5 / (length * self.manipulation_boundaries["lam"]))
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
