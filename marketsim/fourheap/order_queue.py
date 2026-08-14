@@ -136,7 +136,11 @@ class OrderQueue:
     def contains(self, order_id: int) -> bool:
         return order_id in self.order_dict
 
+    # TODO: mark as deprecated, let's use the pop_best_order only
     def push_to(self) -> Order|None:
+        return self.pop_best_order()
+
+    def pop_best_order(self) -> Order | None:
         while self.heap:
             price, order_id = heapq.heappop(self.heap)
             if order_id not in self.deleted_ids:

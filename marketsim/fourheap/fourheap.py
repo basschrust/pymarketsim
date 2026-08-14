@@ -31,7 +31,7 @@ class FourHeap:
         self.heaps = [self.buy_matched, self.buy_unmatched, self.sell_matched, self.sell_unmatched]
         self.agent_id_map = defaultdict(list)
 
-        self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
+        self.midprices = defaultdict([int, Price]) #[] # AK: well, it should be tied to the time slots
         self.market = market
 
 
@@ -43,7 +43,7 @@ class FourHeap:
         counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
         counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
 
-        to_match = counter_unmatched.push_to() # this pops the top order from the queue (TODO: rename this method)
+        to_match = counter_unmatched.pop_best_order() #push_to() # this pops the top order from the queue (TODO: rename this method)
         executed_price = to_match.price #counter_unmatched.peek() # so this took next order limit, which was wrong
         if to_match is not None:
             to_match_quantity = to_match.quantity
@@ -70,7 +70,7 @@ class FourHeap:
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
-        replaced = matched.push_to()
+        replaced = matched.pop_best_order()
         if replaced is not None:
             replaced_quantity = replaced.quantity
             if replaced_quantity == q_order:
@@ -147,7 +147,7 @@ class FourHeap:
             raise # this should not happen - order already executed
             order_q = self.buy_matched.order_dict[order_id].quantity
             self.buy_matched.remove(order_id)
-            s = self.sell_matched.push_to()
+            s = self.sell_matched.pop_best_order()
             s_quantity = s.quantity
             if s_quantity == order_q:
                 self.insert(s)
@@ -160,13 +160,13 @@ class FourHeap:
                 while order_q > 0:
                     order_q -= s_quantity
                     self.insert(s)
-                    s = self.sell_matched.push_to()
+                    s = self.sell_matched.pop_best_order()
                     s_quantity = s.quantity
         elif self.sell_matched.contains(order_id):
             raise  # this should not happen
             order_q = self.sell_matched.order_dict[order_id].quantity
             self.sell_matched.remove(order_id)
-            b = self.buy_matched.push_to()
+            b = self.buy_matched.pop_best_order()
             b_quantity = b.quantity
             if b_quantity == order_q:
                 self.insert(b)
@@ -179,7 +179,7 @@ class FourHeap:
                 while order_q > 0:
                     order_q -= b_quantity
                     self.insert(b)
-                    b = self.buy_matched.push_to()
+                    b = self.buy_matched.pop_best_order()
                     b_quantity = b.quantity
 
     def withdraw_all(self, agent_id: int) -> None:
