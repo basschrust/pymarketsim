@@ -12,7 +12,7 @@ from marketsim.agent.hbl_agent import HBLAgent
 from marketsim.agent.agent import Agent
 from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 
@@ -27,14 +27,13 @@ class Simulator:
                  markets: dict = {},
                  lob_plot_interval: int = 10,
                  ):
-        print("Initializing simulation with following parameters...")
+        print("Initializing simulation with parameters in market_structure.yaml ...")
 
-        # self.num_assets = num_assets
         self.sim_time = sim_time
         self.lam = lam # lambda (activity factor)
         self.mean = mean
         self.r = r
-        self.shock_var = shock_var # change propability of fundamental (market consensus) value
+        self.shock_var = shock_var # change probability of fundamental (market consensus) value
 
         self.current_time = 0
         self.markets = [] # each market serves single security
@@ -101,9 +100,9 @@ class Simulator:
             assert cash_sum == 0
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
-                if not agent.is_market_maker():
-                    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
-                                # so moving this to take_action?
+                #if not agent.is_market_maker():
+                #    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
+                                # so moving this to take_action? # the agents take care of it by themselves
                 orders = agent.take_action(current_time=self.current_time) # but there should be different actions
                             # in different markets, solved: agents are defined inside a single market
                 print(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
@@ -203,6 +202,9 @@ class Simulator:
             plot_by_type(market.trades_by_agent_type_ext,
                          output_file=f"{config.output_dir}/trades_by_type_ext_{str(market)}.png",
                          title=f"Trades by extended type in {market.name}", mode="extended")
+            plot_bid_ask(market.bid_ask_history,
+                         output_file=f"{config.output_dir}/bid_ask_history_{str(market)}.png",
+                         title=f"Bid ask history {str(market)}")
 
     def run(self) -> None:
         for t in range(self.sim_time):

@@ -24,6 +24,8 @@ class Market:
                                                 "High": reference_price,
                                                 "Close": reference_price,
                                                 "Volume": 0, }}
+        self.bid_ask_history = {}
+        self.realized_volatility = {0:0}
         self.orders_by_agent_type = {}
         self.trades_by_agent_type = {}
         self.trades_by_agent_type_ext = {}
@@ -31,7 +33,7 @@ class Market:
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
-        self.market_type = market_type # "discrete" or "continuous"
+        self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased?
         self.agents = {}
         self.name = name
 
@@ -92,6 +94,7 @@ class Market:
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
+        self.bid_ask_history.setdefault(current_time, [self.order_book.buy_unmatched.peek(), self.order_book.sell_unmatched.peek()])
         print(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
         print(
             f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
@@ -175,7 +178,7 @@ class Market:
         return f"Market_{self.asset_id}"
 
     @staticmethod
-    def aggregate_order_queue(order_queue, reverse=False, cumulative=False):
+    def aggregate_order_queue(order_queue: dict, reverse: bool=False, cumulative: bool=False):
         aggregated = defaultdict(int)
 
         for price, quantity in order_queue:
