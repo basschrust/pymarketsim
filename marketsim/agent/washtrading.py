@@ -40,10 +40,7 @@ class WashTradingAgent(Agent):
             price = estimate if estimate is not None else self.market.last_traded_price
             length = period["end"] - current_time + 1  # how many days left in the manipulation period
             # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
-            quantity = int((self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"])) + 1
-            if length < (period["end"] - period["start"])/2:
-                # in the second half we push more on volume to properly balance the position
-                quantity = int(1.2 * quantity)
+
             # if q_max almost reached we could try to push more with spread?
             if self.manipulation_boundaries["lam"] > random.random():
                 #withdraw his old orders if yet not exercised
@@ -51,21 +48,41 @@ class WashTradingAgent(Agent):
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                    if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                        quantity = int(
+                            (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                    else:
+                        # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
+                        quantity = int(
+                            (self.q_max - abs(self.position)) * 2.5 / (length * self.manipulation_boundaries["lam"]))
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
-                    price = max(price - Price(self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())), Price(0.01))
+                    # TODO: check if this is not the reason the market falls down systematically - the spread should
+                    # lead to lognormal in long term.
+                    price = max(Price((float(price) - self.manipulation_boundaries["spread"])*(0.98 + 0.04 * random.random())), Price(0.01))
+                    if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                        quantity = int(
+                            (self.q_max - abs(self.position)) * 2.5 / (length * self.manipulation_boundaries["lam"]))
+                    else:
+                        quantity = int(
+                            (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
-                order = Order(
-                    price=price,
-                    quantity=quantity,
-                    agent_id=self.agent_id,
-                    asset_id=self.market.asset_id,
-                    time=current_time,
-                    order_type=1 if self.manipulation_boundaries["manipulation_side"]=='BUY' else -1,
-                )
-                orders.append(order)
+                if length < (period["end"] - period["start"]) / 2:
+                    # in the second half we push more on volume to properly balance the position
+                    quantity = int(1.2 * quantity)
+
+                if price > 0 and quantity > 0:
+                    order = Order(
+                        price=price,
+                        quantity=quantity,
+                        agent_id=self.agent_id,
+                        asset_id=self.market.asset_id,
+                        time=current_time,
+                        order_type=1 if self.manipulation_boundaries["manipulation_side"]=='BUY' else -1,
+                    )
+                    orders.append(order)
 
         else:
             # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
