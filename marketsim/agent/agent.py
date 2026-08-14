@@ -6,6 +6,7 @@ import traceback
 
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
+from marketsim.market import Market
 
 
 def validate_update(quantity: int, cash: Price) -> None:
@@ -24,12 +25,13 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self):
+    def __init__(self, market: Market):
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
         self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick
         self.position = 0
         self._cash = Price(0)
+        self.logger = market.logger
 
     @property
     def cash(self):
