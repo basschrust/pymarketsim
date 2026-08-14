@@ -17,8 +17,8 @@ from marketsim.input import config
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100), name: str|None=None,
                  market_type: str = "discrete"):
-        self.order_book = FourHeap(plus_one=True, market=self)
         self.asset_id = id_generator.next()
+        self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.traded_prices = {0:{"Open": reference_price,
                                                 "Low": reference_price,

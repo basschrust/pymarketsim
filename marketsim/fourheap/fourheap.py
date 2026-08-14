@@ -4,6 +4,7 @@ from collections import defaultdict
 import math
 import numpy as np
 from typing import TYPE_CHECKING
+from loguru import logger
 
 from marketsim.fourheap import constants
 from marketsim.fourheap.order import Order, MatchedOrder
@@ -24,7 +25,7 @@ class FourHeap:
         self.plus_one = plus_one # AK - wtf is that? if True gets ask price in clearing, bid otherwise
 
         self.market = market
-        self.logger = self.market.logger
+        self.logger = logger.bind(market_id=market.asset_id)
 
         self.buy_matched = OrderQueue(is_max_heap=False, is_matched=True, logger=self.logger)
         self.buy_unmatched = OrderQueue(is_max_heap=True, is_matched=False, logger=self.logger)
