@@ -23,20 +23,23 @@ class FourHeap:
     def __init__(self, plus_one=False, market: Market|None = None):
         self.plus_one = plus_one # AK - wtf is that? if True gets ask price in clearing, bid otherwise
 
-        self.buy_matched = OrderQueue(is_max_heap=False, is_matched=True)
-        self.buy_unmatched = OrderQueue(is_max_heap=True, is_matched=False)
-        self.sell_matched = OrderQueue(is_max_heap=True, is_matched=True)
-        self.sell_unmatched = OrderQueue(is_max_heap=False, is_matched=False)
+        self.market = market
+        self.logger = self.market.logger
+
+        self.buy_matched = OrderQueue(is_max_heap=False, is_matched=True, logger=self.logger)
+        self.buy_unmatched = OrderQueue(is_max_heap=True, is_matched=False, logger=self.logger)
+        self.sell_matched = OrderQueue(is_max_heap=True, is_matched=True, logger=self.logger)
+        self.sell_unmatched = OrderQueue(is_max_heap=False, is_matched=False, logger=self.logger)
 
         self.heaps = [self.buy_matched, self.buy_unmatched, self.sell_matched, self.sell_unmatched]
         self.agent_id_map = defaultdict(list)
 
-        self.midprices = defaultdict([int, Price]) #[] # AK: well, it should be tied to the time slots
-        self.market = market
+        self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
+
 
 
     def handle_new_order(self, order: Order) -> None:
-        print(f"handle_new_order {order}")
+        self.logger.info(f"handle_new_order {order}")
         q_order = order.quantity
         orders_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         orders_unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
@@ -64,9 +67,10 @@ class FourHeap:
                 #orders_unmatched.add_order(new_order) # AK fix? TODO: but we have to check if this new order doesn't match next
                     # order on the other side
 
-    def handle_replace(self, order) -> None:
-        raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
-        print(f"handle_replace {order}")
+    def handle_replace(self, order: Order) -> None:
+        #raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
+        # now developing this for the opening/closing phase
+        self.logger.info(f"handle_replace {order}")
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
         unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
         q_order = order.quantity
@@ -89,7 +93,7 @@ class FourHeap:
 
     def insert(self, order: Order, trading_phase: str = "continuous") -> None:
         # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
-        print(f"fourheap.insert {order}, trading_phase: {trading_phase}")
+        self.logger.info(f"fourheap.insert {order}, trading_phase: {trading_phase}")
         if trading_phase == "continuous":
             self.agent_id_map[order.agent_id].append(order.order_id)
             if order.order_type == constants.SELL:
@@ -144,7 +148,7 @@ class FourHeap:
         elif self.sell_unmatched.contains(order_id):
             self.sell_unmatched.remove(order_id)
         elif self.buy_matched.contains(order_id):
-            raise # this should not happen - order already executed
+            raise # this should not happen - order already executed (in continuous, but in closing it may)
             order_q = self.buy_matched.order_dict[order_id].quantity
             self.buy_matched.remove(order_id)
             s = self.sell_matched.pop_best_order()
@@ -163,7 +167,7 @@ class FourHeap:
                     s = self.sell_matched.pop_best_order()
                     s_quantity = s.quantity
         elif self.sell_matched.contains(order_id):
-            raise  # this should not happen
+            raise  # this should not happen in continuous, but may happen in opening/closing/fixing
             order_q = self.sell_matched.order_dict[order_id].quantity
             self.sell_matched.remove(order_id)
             b = self.buy_matched.pop_best_order()

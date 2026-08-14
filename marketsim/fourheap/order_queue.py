@@ -1,11 +1,12 @@
 import heapq
 import math
+#from loguru import logger
 
 from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.market.price import Price
 
 class OrderQueue:
-    def __init__(self, is_max_heap=False, is_matched=False):
+    def __init__(self, is_max_heap: bool = False, is_matched: bool = False, logger = None):
         self.is_max_heap = is_max_heap
         self.is_matched = is_matched
 
@@ -13,9 +14,10 @@ class OrderQueue:
         self.heap = []
         self.order_dict = {}
         self.deleted_ids = set()
+        self.logger = logger
 
     def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None, matched_with: int | None=None) -> None:
-        print(f"order_queue.add_order {order} with executed_price: {executed_price}, executed_mode: {executed_mode}, matched_with: {matched_with}")
+        self.logger.info(f"order_queue.add_order {order} with executed_price: {executed_price}, executed_mode: {executed_mode}, matched_with: {matched_with}")
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):
@@ -58,7 +60,7 @@ class OrderQueue:
 
         # AK - for matched heaps this should always be empty, always return inf
         if self.is_matched:
-            print(f"Peeking matched heap: {self.heap[0]}")
+            self.logger.info(f"Peeking matched heap: {self.heap[0]}")
             # raise
         return c*self.heap[0][0]
 
@@ -137,7 +139,7 @@ class OrderQueue:
         return order_id in self.order_dict
 
     # TODO: mark as deprecated, let's use the pop_best_order only
-    def push_to(self) -> Order|None:
+    def push_to(self) -> Order | None:
         return self.pop_best_order()
 
     def pop_best_order(self) -> Order | None:
