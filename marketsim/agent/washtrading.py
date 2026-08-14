@@ -41,9 +41,9 @@ class WashTradingAgent(Agent):
             best_bid = self.market.order_book.buy_unmatched.peek()
             best_ask = self.market.order_book.sell_unmatched.peek()
             if not math.isfinite(best_bid):
-                best_bid = self.market.last_traded_price
+                best_bid = self.market.last_traded_price - Price(0.01)
             if not math.isfinite(best_ask):
-                best_ask = self.market.last_traded_price
+                best_ask = self.market.last_traded_price + Price(0.01)
             #price = estimate if estimate is not None else self.market.last_traded_price
             length = period["end"] - current_time + 1  # how many days left in the manipulation period
             # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
@@ -55,14 +55,14 @@ class WashTradingAgent(Agent):
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     #price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
-                    price = Price(best_ask) # or just below it?
+                    price = Price(best_ask) # or just below it? or randomly very close?
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
                     else:
                         # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
                         quantity = int(
-                            (self.q_max - abs(self.position)) * 1.2 / (length * self.manipulation_boundaries["lam"]))
+                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
                     # TODO: check if this is not the reason the market falls down systematically - the spread should
@@ -71,7 +71,7 @@ class WashTradingAgent(Agent):
                     price = Price(best_bid) # if the edge is weak we could push further by bigger order
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
-                            (self.q_max - abs(self.position)) * 1.2 / (length * self.manipulation_boundaries["lam"]))
+                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
@@ -123,9 +123,6 @@ class WashTradingAgent(Agent):
                     )
                     orders.append(order)
         return orders
-
-
-
 
     def __str__(self):
         return f'WT_{self.pool_id}_{self.agent_id}'

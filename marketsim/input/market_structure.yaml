@@ -39,7 +39,7 @@ markets:
           xi: 0.11
           K: 2
           omega: 0.18
-          rebalance_period: 13
+          rebalance_period: 15
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
@@ -171,7 +171,7 @@ markets:
           xi: 0.11
           K: 2
           omega: 0.18
-          rebalance_period: 13
+          rebalance_period: 15
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
@@ -303,7 +303,7 @@ markets:
           xi: 0.11
           K: 2
           omega: 0.18
-          rebalance_period: 13
+          rebalance_period: 15
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
