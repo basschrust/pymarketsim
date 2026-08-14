@@ -34,7 +34,7 @@ class Market:
         self.last_traded_price = reference_price
         self.event_queue = EventQueue()
         self.end_time = time_steps
-        self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased?
+        self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
         self.agents = {}
         self.name = name
         logger.add(

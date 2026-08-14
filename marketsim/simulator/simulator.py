@@ -28,9 +28,9 @@ class Simulator:
                  markets: dict = {},
                  lob_plot_interval: int = 10,
                  ):
-        logger.add(sink=f"{config.output_dir}/main.log",
-            format="{elapsed} | {message}",
-        )
+        # logger.add(sink=f"{config.output_dir}/main.log",
+        #     format="{elapsed} | {message}",
+        # )
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
 

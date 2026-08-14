@@ -9,8 +9,14 @@ logger.remove()
 # One file per each run:
 # log_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S")
 
-logger.add(sink=f"{config.output_dir}/main.log",
-           format="{elapsed} | {message}",) # elapsed is timedelta, doesn't understand {HH:mm:ss.SSS}
+# logger.add(sink=f"{config.output_dir}/main.log",
+#            format="{elapsed} | {message}",) # elapsed is timedelta, doesn't understand {HH:mm:ss.SSS}
+logger.add(
+    sink=f"{config.output_dir}/main.log",
+    format="{elapsed} | {message}",
+    filter=lambda record: "market_id" not in record["extra"],
+)
+
 
 class StreamToLogger:
     def write(self, log):
