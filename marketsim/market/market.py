@@ -1,6 +1,7 @@
 import pandas as pd
 from collections import defaultdict
 from itertools import accumulate
+from loguru import logger
 
 from marketsim.market.price import Price, D
 from marketsim.event.event_queue import EventQueue
@@ -36,10 +37,17 @@ class Market:
         self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased?
         self.agents = {}
         self.name = name
+        logger.add(
+            f"{config.output_dir}/market_{self.asset_id}.log",
+            format="{elapsed} | {message}",
+            filter=lambda record, market_id=self.asset_id:
+            record["extra"].get("market_id") == market_id,
+        )
+        self.logger = logger.bind(market_id=self.asset_id)
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
-            print(f"Adding agent {str(agent)} to market {str(self)}")
+            self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
             self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
             self.trades_by_agent_type.setdefault(agent.group,
@@ -95,21 +103,21 @@ class Market:
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
         self.bid_ask_history.setdefault(current_time, [self.order_book.buy_unmatched.peek(), self.order_book.sell_unmatched.peek()])
-        print(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
-        print(
+        self.logger.info(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
+        self.logger.info(
             f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
             f", sell: {self.order_book.sell_unmatched.heap[0][1] if not self.order_book.sell_unmatched.is_empty() else '<None>'}")
-        print(
+        self.logger.info(
             f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
             f", sell: {self.order_book.sell_unmatched.peek_order()}")
         # plot the order book state here - first just print it:
-        print(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
-        print(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
+        self.logger.info(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
+        self.logger.info(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
 
         for order in orders:
             if order.quantity <= 0:
                 continue
-            print(f"Inserting order: {order}")
+            self.logger.info(f"Inserting order: {order}")
             self.order_book.insert(order)
             # if we are in continuous mode we should clear the market here, after entering each order
             #let's see what happens ...
@@ -125,7 +133,7 @@ class Market:
         return self.order_book.midprices
 
     def reset(self, fundamental: Fundamental) -> None:
-        print("Resetting market...")
+        self.logger.info("Resetting market...")
         self.order_book = FourHeap()
         self.matched_orders = []
         self.event_queue = EventQueue()
@@ -196,8 +204,8 @@ class Market:
         bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
         asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
 
-        print(f"Bids: {bids}")
-        print(f"Asks: {asks}")
+        self.logger.info(f"Bids: {bids}")
+        self.logger.info(f"Asks: {asks}")
 
         plot_order_book(
             bids=bids,
