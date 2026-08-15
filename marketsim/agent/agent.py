@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import math
 from typing import List
 from dataclasses import dataclass, field
 import traceback
-
-from marketsim.fourheap.order import Order, MatchedOrder
+from typing import TYPE_CHECKING
 from marketsim.market.price import Price
-from marketsim.market import Market
+
+if TYPE_CHECKING:
+    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.market import Market
 
 
 def validate_update(quantity: int, cash: Price) -> None:

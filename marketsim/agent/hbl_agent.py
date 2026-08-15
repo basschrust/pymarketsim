@@ -7,7 +7,7 @@ from loguru import logger
 from scipy.interpolate import PchipInterpolator
 
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price, D
+from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL

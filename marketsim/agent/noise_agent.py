@@ -15,7 +15,7 @@ class NoiseAgent(Agent):
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
     def __init__(self, market: Market, q_max: int, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)):
-        super().__init__()
+        super().__init__(market=market)
         self.group = "Noise"
         self.agent_id = id_generator.next()
         self.market = market

@@ -1,21 +1,17 @@
 import pandas as pd
 from loguru import logger
+from typing import TYPE_CHECKING
 
-from marketsim.agent import WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
-from marketsim.market.price import Price
-from marketsim.market.market import Market
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
-from marketsim.agent.zi_informed import ZIAgentInformed
-from marketsim.agent.zi_not_informed import ZIAgentNotInformed
-from marketsim.agent.market_maker_zoh import MMZOHAgent
-from marketsim.agent.hbl_agent import HBLAgent
-from marketsim.agent.agent import Agent
-from marketsim.agent.market_maker import MMAgent
 from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
+from marketsim.market import Price, Market
+from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
+from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent
+
 
 
 class Simulator:

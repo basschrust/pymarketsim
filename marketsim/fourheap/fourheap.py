@@ -5,15 +5,13 @@ import math
 import numpy as np
 from typing import TYPE_CHECKING
 from loguru import logger
-
-from marketsim.fourheap import constants
-from marketsim.fourheap.order import Order, MatchedOrder
 from marketsim.fourheap.order_queue import OrderQueue
-from marketsim.market.price import Price
+from marketsim.fourheap import constants
+from marketsim.market.price import  Price
 
 if TYPE_CHECKING:
-    from marketsim.market.market import Market
-
+    from marketsim.market import Market
+    from marketsim.fourheap import Order, MatchedOrder
 
 
 class FourHeap:

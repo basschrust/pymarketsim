@@ -1,29 +1,36 @@
+from __future__ import annotations
+
 import pandas as pd
 from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
+from typing import TYPE_CHECKING
 
-from marketsim.market.price import Price, D
-from marketsim.event.event_queue import EventQueue
-from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
+from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
-from marketsim.fourheap import constants
 from marketsim.utils.id_generator import id_generator
-from marketsim.agent.agent import Agent
 from marketsim.plot.simple_plot import plot_order_book
 from marketsim.input import config
+from marketsim.market.price import Price
+from marketsim.fourheap.fourheap import FourHeap
+
+if TYPE_CHECKING:
+    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.agent import Agent
+
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100), name: str|None=None,
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
+        self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
-        self.traded_prices = {0:{"Open": reference_price,
-                                                "Low": reference_price,
-                                                "High": reference_price,
-                                                "Close": reference_price,
+        self.traded_prices = {0:{"Open": self.last_traded_price,
+                                                "Low": self.last_traded_price,
+                                                "High": self.last_traded_price,
+                                                "Close": self.last_traded_price,
                                                 "Volume": 0, }}
         self.bid_ask_history = {}
         self.realized_volatility = {0:0}
@@ -31,7 +38,7 @@ class Market:
         self.trades_by_agent_type = {}
         self.trades_by_agent_type_ext = {}
         self.fundamental = fundamental
-        self.last_traded_price = reference_price
+
         self.event_queue = EventQueue()
         self.end_time = time_steps
         self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
