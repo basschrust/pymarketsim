@@ -3,10 +3,13 @@ from typing import TYPE_CHECKING
 from dataclasses import dataclass
 
 from marketsim.utils.id_generator import id_generator
-from marketsim.market.price import Price
+
 
 if TYPE_CHECKING:
-    from marketsim.fourheap.order import Order
+    from marketsim.fourheap import Order
+    from marketsim.market import Price
+    from marketsim.fourheap import constants
+
 
 def validate_price(price: Price) -> None:
     if price <=0:

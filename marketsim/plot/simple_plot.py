@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import mplfinance as mpf
 from pathlib import Path
+import math
+
 
 def simple_plot_old(x: list, y: list, output_file: str) -> None:
     plt.plot(x, y)
@@ -381,6 +383,52 @@ def plot_by_type(
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
 
+
+def plot_bid_ask(
+    bid_ask: dict[int, list[float]],
+    output_file: str,
+    title: str = "Bid ask",
+    clip_value: float = 3.0,
+) -> None:
+    """
+    Plot best bid and best ask over simulation time.
+
+    Args:
+        bid_ask: {
+            time_tick: [best_bid, best_ask],
+            ...
+        }
+        output_file: Output PNG filename.
+        clip_value: Value used to clip +/-inf values.
+    """
+    times = sorted(bid_ask)
+    spreads = []
+
+    for time in times:
+        bid, ask = bid_ask[time]
+
+        spread = float(ask) - float(bid)
+
+        if not math.isfinite(spread):
+            spread = clip_value
+
+        spreads.append(spread)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.plot(times, spreads, label="Spread")
+
+    ax.set_xlabel("Simulation time")
+    ax.set_ylabel("Spread")
+    ax.grid(True)
+    ax.legend()
+    ax.set_title(title)
+
+    fig.tight_layout()
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
 
 
 class Plotter:

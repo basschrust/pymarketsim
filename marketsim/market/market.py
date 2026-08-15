@@ -1,43 +1,60 @@
+from __future__ import annotations
+
 import pandas as pd
 from collections import defaultdict
 from itertools import accumulate
+from loguru import logger
+from typing import TYPE_CHECKING
 
-from marketsim.market.price import Price, D
-from marketsim.event.event_queue import EventQueue
-from marketsim.fourheap.fourheap import FourHeap, Order, MatchedOrder
+from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
-from marketsim.fourheap import constants
 from marketsim.utils.id_generator import id_generator
-from marketsim.agent.agent import Agent
 from marketsim.plot.simple_plot import plot_order_book
 from marketsim.input import config
+from marketsim.market.price import Price
+from marketsim.fourheap.fourheap import FourHeap
+
+if TYPE_CHECKING:
+    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.agent import Agent
+
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price= Price(100), name: str|None=None,
+    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
-        self.order_book = FourHeap(plus_one=True, market=self)
+        self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
+        self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
-        self.traded_prices = {0:{"Open": reference_price,
-                                                "Low": reference_price,
-                                                "High": reference_price,
-                                                "Close": reference_price,
+        self.traded_prices = {0:{"Open": self.last_traded_price,
+                                                "Low": self.last_traded_price,
+                                                "High": self.last_traded_price,
+                                                "Close": self.last_traded_price,
                                                 "Volume": 0, }}
+        self.bid_ask_history = {}
+        self.realized_volatility = {0:0}
         self.orders_by_agent_type = {}
         self.trades_by_agent_type = {}
         self.trades_by_agent_type_ext = {}
         self.fundamental = fundamental
-        self.last_traded_price = reference_price
+
         self.event_queue = EventQueue()
         self.end_time = time_steps
-        self.market_type = market_type # "discrete" or "continuous"
+        self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
         self.agents = {}
         self.name = name
+        logger.add(
+            f"{config.output_dir}/market_{self.asset_id}.log",
+            format="{elapsed} | {message}",
+            filter=lambda record, market_id=self.asset_id:
+            record["extra"].get("market_id") == market_id,
+        )
+        self.logger = logger.bind(market_id=self.asset_id)
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
-            print(f"Adding agent {str(agent)} to market {str(self)}")
+            self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
             self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
             self.trades_by_agent_type.setdefault(agent.group,
@@ -80,6 +97,7 @@ class Market:
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
+        self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # rolling the traded_prices first:
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
             yesterday = self.traded_prices[current_time-1]
@@ -92,21 +110,22 @@ class Market:
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
-        print(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
-        print(
+        self.bid_ask_history.setdefault(current_time, [self.order_book.buy_unmatched.peek(), self.order_book.sell_unmatched.peek()])
+        self.logger.info(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
+        self.logger.info(
             f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
             f", sell: {self.order_book.sell_unmatched.heap[0][1] if not self.order_book.sell_unmatched.is_empty() else '<None>'}")
-        print(
+        self.logger.info(
             f"With volumes: buy: {self.order_book.buy_unmatched.peek_order()}"
             f", sell: {self.order_book.sell_unmatched.peek_order()}")
         # plot the order book state here - first just print it:
-        print(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
-        print(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
+        self.logger.info(f"The LOB buy orders: {self.order_book.buy_unmatched.heap}")
+        self.logger.info(f"The LOB sell orders: {self.order_book.sell_unmatched.heap}")
 
         for order in orders:
             if order.quantity <= 0:
                 continue
-            print(f"Inserting order: {order}")
+            self.logger.info(f"Inserting order: {order}")
             self.order_book.insert(order)
             # if we are in continuous mode we should clear the market here, after entering each order
             #let's see what happens ...
@@ -122,7 +141,7 @@ class Market:
         return self.order_book.midprices
 
     def reset(self, fundamental: Fundamental) -> None:
-        print("Resetting market...")
+        self.logger.info("Resetting market...")
         self.order_book = FourHeap()
         self.matched_orders = []
         self.event_queue = EventQueue()
@@ -175,7 +194,7 @@ class Market:
         return f"Market_{self.asset_id}"
 
     @staticmethod
-    def aggregate_order_queue(order_queue, reverse=False, cumulative=False):
+    def aggregate_order_queue(order_queue: dict, reverse: bool=False, cumulative: bool=False):
         aggregated = defaultdict(int)
 
         for price, quantity in order_queue:
@@ -193,8 +212,8 @@ class Market:
         bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
         asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
 
-        print(f"Bids: {bids}")
-        print(f"Asks: {asks}")
+        self.logger.info(f"Bids: {bids}")
+        self.logger.info(f"Asks: {asks}")
 
         plot_order_book(
             bids=bids,

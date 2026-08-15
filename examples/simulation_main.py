@@ -1,11 +1,15 @@
-import inspect
+from __future__ import annotations
 
-from marketsim.agent.washtrading import WashTradingAgent
-from marketsim.simulator.simulator import Simulator
-from marketsim.market.market import Price
+import inspect
+from typing import TYPE_CHECKING
+
 from marketsim.input.config import CONFIG
 from marketsim.loggers.basic import StreamToLogger
 from marketsim.plot.simple_plot import simple_plot
+from marketsim.simulator import Simulator
+
+if TYPE_CHECKING:
+    from marketsim.market import Price
 
 
 def kwargs_for(func, config):

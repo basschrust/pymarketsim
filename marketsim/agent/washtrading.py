@@ -1,3 +1,4 @@
+import math
 import random
 from typing import List
 import numpy as np
@@ -13,7 +14,7 @@ from marketsim.utils.id_generator import id_generator
 
 class WashTradingAgent(Agent):
     def __init__(self, market: Market, q_max: int, lam: float = 0.5, pool_id: int = 0, manipulation_boundaries: dict = None, mean_volume: float = 5.0):
-        super().__init__()
+        super().__init__(market=market)
         self.group = "WASH_TRADING"
         self.agent_id = id_generator.next()
         self.market = market
@@ -30,39 +31,47 @@ class WashTradingAgent(Agent):
         return self.agent_id
 
 
-    def take_action(self, current_time: int, estimate: Price|None=None):
+    def take_action(self, current_time: int): #, estimate: Price|None=None):
         self.market.withdraw_all(agent_id=self.agent_id)
         period = self.manipulation_boundaries["manipulation_period"]
         orders = []
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
-            price = estimate if estimate is not None else self.market.last_traded_price
+            best_bid = self.market.order_book.buy_unmatched.peek()
+            best_ask = self.market.order_book.sell_unmatched.peek()
+            if not math.isfinite(best_bid):
+                best_bid = self.market.last_traded_price - Price(0.01)
+            if not math.isfinite(best_ask):
+                best_ask = self.market.last_traded_price + Price(0.01)
+            #price = estimate if estimate is not None else self.market.last_traded_price
             length = period["end"] - current_time + 1  # how many days left in the manipulation period
             # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
 
             # if q_max almost reached we could try to push more with spread?
-            if self.manipulation_boundaries["lam"] > random.random():
+            if True: #self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
                 #withdraw his old orders if yet not exercised
                 self.market.withdraw_all(agent_id=self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                    price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                    #price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                    price = Price(best_ask) # or just below it? or randomly very close?
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
                     else:
                         # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
                         quantity = int(
-                            (self.q_max - abs(self.position)) * 2.5 / (length * self.manipulation_boundaries["lam"]))
+                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
                     # TODO: check if this is not the reason the market falls down systematically - the spread should
                     # lead to lognormal in long term.
-                    price = max(Price((float(price) - self.manipulation_boundaries["spread"])*(0.98 + 0.04 * random.random())), Price(0.01))
+                    #price = max(Price((float(price) - self.manipulation_boundaries["spread"])*(0.98 + 0.04 * random.random())), Price(0.01))
+                    price = Price(best_bid) # if the edge is weak we could push further by bigger order
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
-                            (self.q_max - abs(self.position)) * 2.5 / (length * self.manipulation_boundaries["lam"]))
+                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
@@ -114,9 +123,6 @@ class WashTradingAgent(Agent):
                     )
                     orders.append(order)
         return orders
-
-
-
 
     def __str__(self):
         return f'WT_{self.pool_id}_{self.agent_id}'

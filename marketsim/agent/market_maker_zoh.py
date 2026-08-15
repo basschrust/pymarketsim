@@ -13,7 +13,7 @@ class MMZOHAgent(Agent):
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7):
-        super().__init__()
+        super().__init__(market=market)
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market # could agent serve multiple markets?
@@ -40,7 +40,7 @@ class MMZOHAgent(Agent):
         # add orders only in rebalance periods:
         if current_time % self.rebalance_period == 0:
             # AK - clear previous orders (should we?)
-            print(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
+            self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
             self.market.withdraw_all(agent_id=self.agent_id)
             # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
             # that's basically the same to just withdraw all and create new, the problem might be with timing
@@ -50,14 +50,14 @@ class MMZOHAgent(Agent):
             best_ask = self.market.order_book.get_best_ask()
             best_bid = self.market.order_book.get_best_bid()
 
-            print(f"Best bid {best_bid}, best ask: {best_ask}")
+            self.logger.info(f"Best bid {best_bid}, best ask: {best_ask}")
 
             estimate = self.market.last_traded_price
-            print(f"Last traded price: {estimate}")
+            self.logger.info(f"Last traded price: {estimate}")
             HALF = Decimal("0.5")
             st = max(estimate + HALF * self.omega, best_bid)
             bt = min(estimate - HALF * self.omega, best_ask)
-            print(f"Setting basic spread to: {bt}, {st}")
+            self.logger.info(f"Setting basic spread to: {bt}, {st}")
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)

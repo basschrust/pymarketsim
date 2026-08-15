@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 import math
 from typing import List
 from dataclasses import dataclass, field
 import traceback
-
-from marketsim.fourheap.order import Order, MatchedOrder
+from typing import TYPE_CHECKING
 from marketsim.market.price import Price
+
+if TYPE_CHECKING:
+    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.market import Market
 
 
 def validate_update(quantity: int, cash: Price) -> None:
@@ -24,12 +29,13 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self):
+    def __init__(self, market: Market):
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
         self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick
         self.position = 0
         self._cash = Price(0)
+        self.logger = market.logger
 
     @property
     def cash(self):
