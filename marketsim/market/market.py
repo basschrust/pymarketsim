@@ -5,6 +5,7 @@ from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
 from typing import TYPE_CHECKING
+import math
 
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
@@ -221,3 +222,55 @@ class Market:
             output_file=f"{config.output_dir}/LOB/LOB_{self.asset_id}_{current_time}.png",
             title=f"Order book at {current_time}"
         )
+
+    def calculate_realized_volatility(
+            self,
+            window: int = 20,
+    ) -> dict:
+        """
+        Calculate rolling realized volatility from closing prices.
+
+        Returns:
+            {time_tick: realized_volatility}
+        """
+
+        times = sorted(self.traded_prices)
+
+        # Close price for each tick
+        closes = {
+            t: float(self.traded_prices[t]["Close"])
+            for t in times
+        }
+
+        # Log returns
+        returns = {}
+
+        previous_price = None
+
+        for t in times:
+            price = closes[t]
+
+            if (
+                    previous_price is not None
+                    and previous_price > 0
+                    and price > 0
+            ):
+                returns[t] = math.log(price / previous_price)
+
+            previous_price = price
+
+        # Rolling realized volatility
+        volatility = {}
+
+        return_times = sorted(returns)
+
+        for i, t in enumerate(return_times):
+            window_returns = list(
+                returns.values()
+            )[max(0, i - window + 1): i + 1]
+
+            volatility[t] = math.sqrt(
+                sum(r * r for r in window_returns)
+            )
+
+        return volatility

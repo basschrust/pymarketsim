@@ -14,7 +14,7 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
           lam: 0.35
           q_max: 80
@@ -37,7 +37,7 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 3
+          K: 4
           omega: 0.1
           rebalance_period: 11
           volume: 7
@@ -79,7 +79,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
@@ -93,7 +93,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
@@ -146,7 +146,7 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
           lam: 0.35
           q_max: 80
@@ -169,7 +169,7 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 3
+          K: 4
           omega: 0.1
           rebalance_period: 11
           volume: 7
@@ -278,7 +278,7 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
           lam: 0.35
           q_max: 80
@@ -301,7 +301,7 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 3
+          K: 4
           omega: 0.1
           rebalance_period: 11
           volume: 7
@@ -343,7 +343,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
@@ -357,7 +357,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL

@@ -431,6 +431,34 @@ def plot_bid_ask(
     plt.close(fig)
 
 
+def plot_realized_volatility(
+    volatility: dict,
+    output_file: str,
+    title: str = "Realized volatility",
+) -> None:
+    if not volatility:
+        return
+
+    times = sorted(volatility)
+    values = [volatility[t] for t in times]
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.plot(times, values, label="Realized volatility")
+
+    ax.set_xlabel("Simulation time")
+    ax.set_ylabel("Realized volatility")
+    ax.set_title(title)
+    ax.grid(True)
+    ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
+
 class Plotter:
     def line(self, x: list, y: list, output_file: str) -> None:
         plt.plot(x, y)

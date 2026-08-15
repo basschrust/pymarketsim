@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask, plot_realized_volatility
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market import Price, Market
@@ -182,7 +182,6 @@ class Simulator:
                     output_file=agent_file,
                 )
 
-
             # plot the security values history:
             traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
                                    for t, item in market.traded_prices.items()}
@@ -205,6 +204,12 @@ class Simulator:
             plot_bid_ask(market.bid_ask_history,
                          output_file=f"{config.output_dir}/bid_ask_history_{str(market)}.png",
                          title=f"Bid ask history {str(market)}")
+            #calculate and plot realized volatility:
+            volatility = market.calculate_realized_volatility()
+            plot_realized_volatility(volatility=volatility,
+                                     output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
+                                     title=f"Realized volatility {str(market)}")
+
 
     def run(self) -> None:
         for t in range(self.sim_time):
