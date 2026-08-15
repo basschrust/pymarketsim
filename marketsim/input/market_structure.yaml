@@ -18,7 +18,7 @@ markets:
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 4
+          mean_volume: 2
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -40,7 +40,7 @@ markets:
           K: 4
           omega: 0.1
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -52,7 +52,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -104,7 +104,7 @@ markets:
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           pv_var: 0.01
@@ -150,7 +150,7 @@ markets:
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 4
+          mean_volume: 2
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -172,7 +172,7 @@ markets:
           K: 4
           omega: 0.1
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -184,7 +184,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -235,7 +235,7 @@ markets:
             spread: 0.5
       spoofers:
         agent_class: SpoofingAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           pv_var: 0.01
@@ -282,7 +282,7 @@ markets:
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 4
+          mean_volume: 2
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -304,7 +304,7 @@ markets:
           K: 4
           omega: 0.1
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -316,7 +316,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -368,7 +368,7 @@ markets:
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           pv_var: 0.01

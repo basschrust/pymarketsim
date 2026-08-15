@@ -203,12 +203,13 @@ class Simulator:
                          title=f"Trades by extended type in {market.name}", mode="extended")
             plot_bid_ask(market.bid_ask_history,
                          output_file=f"{config.output_dir}/bid_ask_history_{str(market)}.png",
-                         title=f"Bid ask history {str(market)}")
+                         title=f"Bid ask spread history {str(market)}")
             #calculate and plot realized volatility:
-            volatility = market.calculate_realized_volatility()
+            window = 50
+            volatility = market.calculate_realized_volatility(window=window)
             plot_realized_volatility(volatility=volatility,
                                      output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
-                                     title=f"Realized volatility {str(market)}")
+                                     title=f"Realized volatility {str(market)} with window {window}")
 
 
     def run(self) -> None:
