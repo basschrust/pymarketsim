@@ -13,7 +13,6 @@ from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgen
 from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent
 
 
-
 class Simulator:
     def __init__(self,
                  sim_time: int,
@@ -97,7 +96,7 @@ class Simulator:
             cash_sum = 0
             for agent_id, agent in market.agents.items():
                 cash_sum += agent.cash
-            self.logger.info(f"Asserting initial cash sum: {cash_sum}")
+            market.logger.info(f"Asserting initial cash sum: {cash_sum}")
             assert cash_sum == 0
             for agent_id in market.agents:
                 agent = market.agents[agent_id]

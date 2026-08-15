@@ -1,7 +1,7 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 20
+sim_time: 2000
 lob_plot_interval: 25
 
 # definitions of the securities
