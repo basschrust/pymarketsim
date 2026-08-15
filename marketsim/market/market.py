@@ -97,6 +97,7 @@ class Market:
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
+        self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # rolling the traded_prices first:
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
             yesterday = self.traded_prices[current_time-1]
