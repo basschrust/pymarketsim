@@ -73,7 +73,7 @@ class Agent(ABC):
 
     def record_valuation(self, current_time: int, price: Price) -> None:
         self.position_history[current_time] = self.position
-        self.position_value_history[current_time] = self.cash + self.position*price
+        self.position_value_history[current_time] = self.cash + self.position * price
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity

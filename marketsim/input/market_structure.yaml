@@ -14,11 +14,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 35
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 2
+          mean_volume: 4
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -37,17 +37,17 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 2
-          omega: 0.18
-          rebalance_period: 15
+          K: 3
+          omega: 0.1
+          rebalance_period: 11
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 2
-          omega: 0.12
+          K: 3
+          omega: 0.1
           rebalance_period: 17
           volume: 11
       hbl:
@@ -124,15 +124,15 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 55
+          q_max: 25
           period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 5
@@ -146,11 +146,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 35
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 2
+          mean_volume: 4
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -169,17 +169,17 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 2
-          omega: 0.18
-          rebalance_period: 15
+          K: 3
+          omega: 0.1
+          rebalance_period: 11
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 2
-          omega: 0.12
+          K: 3
+          omega: 0.1
           rebalance_period: 17
           volume: 11
       hbl:
@@ -255,15 +255,15 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 55
+          q_max: 25
           period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 5
@@ -278,11 +278,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 35
         config:
           lam: 0.35
           q_max: 80
-          mean_volume: 2
+          mean_volume: 4
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -301,17 +301,17 @@ markets:
         number: 1
         config:
           xi: 0.11
-          K: 2
-          omega: 0.18
-          rebalance_period: 15
+          K: 3
+          omega: 0.1
+          rebalance_period: 11
           volume: 7
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
         config:
           xi: 0.1
-          K: 2
-          omega: 0.12
+          K: 3
+          omega: 0.1
           rebalance_period: 17
           volume: 11
       hbl:
@@ -388,15 +388,15 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 55
+          q_max: 25
           period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 0
+        number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 5
