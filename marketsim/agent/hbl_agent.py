@@ -3,6 +3,7 @@ import sys
 import scipy as sp
 import numpy as np
 from loguru import logger
+from bisect import bisect_left
 
 from scipy.interpolate import PchipInterpolator
 
@@ -12,7 +13,7 @@ from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
-#from fastcubicspline import FCS
+from fastcubicspline import FCS
 from marketsim.utils.id_generator import id_generator
 
 
@@ -55,7 +56,6 @@ class HBLAgent(Agent):
     def estimate_fundamental(self, current_time: int) -> Price:
         #raise # TODO: AK - not used any more as only last trade decides? still used...
         mean, r, T = self.market.get_info()
-        #t = self.market.get_time()
         val = self.market.get_fundamental_value(current_time=current_time)
         rho = (1 - r) ** (T - current_time)
 
@@ -103,6 +103,7 @@ class HBLAgent(Agent):
         """
         # Assumes that matched_orders is ordered by timestep of trades - well, that is risky...
         last_matched_order_ind = len(self.market.matched_orders) - self.L * 2
+        # TODO: isn't this the bottleneck? A long matched_orders dict?
         earliest_order_time = min(self.market.matched_orders[last_matched_order_ind:],
                              key=lambda matched_order: matched_order.order.time).order.time
         return earliest_order_time
@@ -137,6 +138,7 @@ class HBLAgent(Agent):
                 if order.price >= p and order.order_type == BUY:
                     BG += order.quantity
                 for matched_order in self.market.matched_orders:
+                    # TODO: this loop is probably ineffective
                     if order.order_id == matched_order.order.order_id:
                         if matched_order.order.order_type == SELL and matched_order.price >= p:
                             TAG += order.quantity
@@ -164,6 +166,7 @@ class HBLAgent(Agent):
                     AL += order.quantity
                 found_matched = False
                 for matched_order in self.market.matched_orders:
+                    # TODO: why all matched orders, not only in the memory period?
                     if order.order_id == matched_order.order.order_id:
                         if matched_order.order.order_type == BUY and matched_order.price - p <= 0:
                             TBL += order.quantity
@@ -214,6 +217,7 @@ class HBLAgent(Agent):
             for ind, order in enumerate(orders):
                 found_matched = False
                 for matched_order in self.market.matched_orders:
+                    # TODO: why not last L ticks?
                     if order.order_id == matched_order.order.order_id:
                         if matched_order.order.order_type == SELL and matched_order.price - p >= 0:
                             TAG += order.quantity
@@ -296,12 +300,12 @@ class HBLAgent(Agent):
             best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
             def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001):
-                #cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
+                cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
                 # TODO: check if this produces exactly the same results:
-                cs = PchipInterpolator(
-                    [bound1, bound2 + epsilon],
-                    [bound1Belief, float(bound2Belief)],
-                )
+                # cs = PchipInterpolator(
+                #     [bound1, bound2 + epsilon],
+                #     [bound1Belief, float(bound2Belief)],
+                # )
 
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
@@ -444,6 +448,7 @@ class HBLAgent(Agent):
             best_buy_belief = 1
             best_ask_belief = self.belief_function(p=Price(best_ask), side=SELL, orders=last_L_orders, current_time=current_time)
             sell_high, sell_high_belief = self.find_worst_order(SELL, sorted(sell_orders_memory, key=lambda order: order.price, reverse=True), last_L_orders, current_time=current_time)
+            sell_high = float(sell_high) # it raised errors when held as Decimal in interpolate(...)
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
             #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
@@ -454,7 +459,7 @@ class HBLAgent(Agent):
                 Sell version of interpolate above. 
                 @TODO: Merge the two
                 """
-                logger.debug(
+                self.logger.info(
                     "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
                     bound1,
                     float(bound2)+epsilon,
@@ -464,12 +469,12 @@ class HBLAgent(Agent):
 
                 assert float(bound2) + epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                #cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
+                cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
                 # TODO: check if this produces exactly the same results:
-                cs = PchipInterpolator(
-                    [bound1, bound2 + epsilon],
-                    [bound1Belief, float(bound2Belief)],
-                )
+                # cs = PchipInterpolator(
+                #     [bound1, bound2 + epsilon],
+                #     [bound1Belief, float(bound2Belief)],
+                # )
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((float(bound1), float(bound2)))
                 
@@ -667,8 +672,8 @@ class HBLAgent(Agent):
                 )
                 return [order]
         except TypeError:
-            logger.exception("TypeError in HBLAgent")
-            print("TypeError in HBLAgent catched!")
+            self.logger.exception("TypeError in HBLAgent")
+            self.logger.info("TypeError in HBLAgent catched!")
 
         return []
 
