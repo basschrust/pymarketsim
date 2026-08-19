@@ -183,14 +183,17 @@ class HBLAgent(Agent):
                 if order.price - p <= 0 and order.order_type == SELL:
                     AL += order.quantity
                 found_matched = False
-                for matched_order in self.market.matched_orders:
+                #for matched_order in self.market.matched_orders:
+                if order.order_id in self.market.matched_orders_hashed:
                     # TODO: why all matched orders, not only in the memory period?
-                    if order.order_id == matched_order.order.order_id:
-                        if matched_order.order.order_type == BUY and matched_order.price - p <= 0:
-                            TBL += order.quantity
-                        found_matched = True
-                        break
-                if not found_matched:
+                    # if order.order_id == matched_order.order.order_id:
+                    #     if matched_order.order.order_type == BUY and matched_order.price - p <= 0:
+                    if self.market.matched_orders_hashed[order.order_id]["order_type"] == BUY\
+                            and self.market.matched_orders_hashed[order.order_id]["price"] - p <= 0:
+                        TBL += order.quantity
+                    found_matched = True
+                    # break
+                if not found_matched: # TODO: after hash optimization else should suffice here
                     if order.order_type == BUY and order.price - p >= 0:
                         # order time to withdrawal time
                         withdrawn = False
@@ -237,13 +240,17 @@ class HBLAgent(Agent):
 
             for ind, order in enumerate(orders):
                 found_matched = False
-                for matched_order in self.market.matched_orders:
-                    # TODO: why not last L ticks?
-                    if order.order_id == matched_order.order.order_id:
-                        if matched_order.order.order_type == SELL and matched_order.price - p >= 0:
+                # for matched_order in self.market.matched_orders:
+                    # TODO: why not last L ticks? - because in the orders var we already have only the remembered ones
+                    # if order.order_id == matched_order.order.order_id:
+                    #     if matched_order.order.order_type == SELL and matched_order.price - p >= 0:
+                if order.order_id in self.market.matched_orders_hashed:
+                    if self.market.matched_orders_hashed[order.order_id]["order_type"] == SELL \
+                        and self.market.matched_orders_hashed[order.order_id]["price"] - p >= 0:
                             TAG += order.quantity
-                        found_matched = True
-                        break
+
+                    found_matched = True
+                    #break
                 if not found_matched:
                     if order.order_type == SELL and order.price - p <= 0:
                         # order time to withdrawal time
@@ -272,7 +279,7 @@ class HBLAgent(Agent):
             if TAG + BG == 0:
                 return 0
             else:
-                # TODO: sometimes the denominator is equal 0
+                # TODO: sometimes the denominator is equal 0 - but then it should return the above 0...
                 return (TAG + BG) / (TAG + BG + RAL)
     
     def get_order_list(self, current_time: int) -> (list, list, list):

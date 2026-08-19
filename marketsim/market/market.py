@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from marketsim.agent import Agent
 
 
-
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
@@ -28,6 +27,7 @@ class Market:
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
+        self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
         self.traded_prices = {0:{"Open": self.last_traded_price,
                                                 "Low": self.last_traded_price,
                                                 "High": self.last_traded_price,
@@ -77,6 +77,13 @@ class Market:
     def clear_market(self, current_time: int) -> list[MatchedOrder]:
         newly_matched_orders = self.order_book.market_clear(current_time=current_time, trading_phase="continuous")
         self.matched_orders += newly_matched_orders
+        for matched_order in newly_matched_orders:
+            inner_order = matched_order.order
+            self.matched_orders_hashed[inner_order.order_id] = {"price":inner_order.price,
+                                                                "quantity":inner_order.quantity,
+                                                                "order_type":inner_order.order_type
+                                                                }
+            # the limit from the order is needed, not the executed price
         return newly_matched_orders
 
     def add_orders(self, orders: list[Order]) -> None:
