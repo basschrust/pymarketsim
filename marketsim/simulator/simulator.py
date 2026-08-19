@@ -103,6 +103,8 @@ class Simulator:
                 #if not agent.is_market_maker():
                 #    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
                                 # so moving this to take_action? # the agents take care of it by themselves
+                # TODO: but now when agents withdraw their orders at the order defined in market structure
+                # TODO: then this may lead to wrong signals as each of them should first see the LOB (!!!)
                 orders = agent.take_action(current_time=self.current_time) # but there should be different actions
                             # in different markets, solved: agents are defined inside a single market
                 market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')

@@ -4,6 +4,7 @@ import scipy as sp
 import numpy as np
 from loguru import logger
 from bisect import bisect_left
+from time import perf_counter
 
 from scipy.interpolate import PchipInterpolator
 
@@ -13,9 +14,25 @@ from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
-from fastcubicspline import FCS
+#from fastcubicspline import FCS
 from marketsim.utils.id_generator import id_generator
 
+
+class Custom_cs:
+    # custom function object to implement linear interpolation instead of computationally demanding cubic spline
+    def __init__(self, x_low: float, x_high: float, y: list, epsilon: float = 0.00001):
+        if len(y) > 2:
+            raise ValueError(f"Custom cs works only with 2 points to interpolate, given: {len(y)}")
+        if x_high <= x_low:
+            raise ValueError(f"x_high must be larger than x_low ({x_low}), given: {x_high}")
+        self.x_low = x_low
+        self.x_high = x_high
+        self.y = y
+        self.epsilon = epsilon
+
+    def __call__(self, x: float) -> float:
+        ret = self.y[0] + (self.y[1]-self.y[0]) * (x - self.x_low) / (self.x_high - self.x_low)
+        return ret
 
 class HBLAgent(Agent):
     def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
@@ -285,14 +302,33 @@ class HBLAgent(Agent):
         Useful references: https://www.sci.brooklyn.cuny.edu/~parsons/courses/840-spring-2009/notes/joel.pdf
             http://spider.sci.brooklyn.cuny.edu/~parsons/courses/840-spring-2005/notes/das.pdf 
         """
+        t0 = perf_counter()
 
         last_L_orders, buy_orders_memory, sell_orders_memory = self.get_order_list(current_time=current_time)
+        t1 = perf_counter()
+
         last_L_orders = np.array(last_L_orders)
         estimate = self.estimate_fundamental(current_time=current_time) # TODO: AK - maybe last traded?
         buy_orders_memory = sorted(buy_orders_memory, key = lambda order:order.price)
         sell_orders_memory = sorted(sell_orders_memory, key = lambda order:order.price)
+        t2 = perf_counter()
+
         best_ask = float(self.market.order_book.sell_unmatched.peek())
         best_buy = float(self.market.order_book.buy_unmatched.peek())
+
+        t3 = perf_counter()
+
+        self.logger.info(
+            f"HBL timing: "
+            f"get_orders={t1 - t0:.6f}s, "
+            f"sorting={t2 - t1:.6f}s, "
+            f"interpolation={t3 - t2:.6f}s, "
+            #f"optimization={t4 - t3:.6f}s, "
+            f"buy_mem={len(buy_orders_memory)}, "
+            f"sell_mem={len(sell_orders_memory)}, "
+            # f"splines={len(spline_interp_objects[0])}"
+        )
+
         #First is interpolate objects. Second is corresponding bounds
         spline_interp_objects = [[], []]
         if side == BUY: 
@@ -300,12 +336,14 @@ class HBLAgent(Agent):
             best_buy_belief = self.belief_function(best_buy, BUY, last_L_orders, current_time=current_time)
             best_ask_belief = 1
             def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001):
-                cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
+                #cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
+                cs = Custom_cs(bound1, bound2 + epsilon, [bound1Belief, float(bound2Belief)])
                 # TODO: check if this produces exactly the same results:
                 # cs = PchipInterpolator(
                 #     [bound1, bound2 + epsilon],
                 #     [bound1Belief, float(bound2Belief)],
                 # )
+
 
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
@@ -430,14 +468,15 @@ class HBLAgent(Agent):
                     interpolate(lower_bound, buy_low, 0, buy_low_belief)
 
             optimal_price = expected_surplus_max()
-            
+
             #Assertion check
             if optimal_price == (0,0):
                 raise Exception("Optimal price not found in buy calculation.")
 
             # For edge case: If a lot of orders have expected surplus of 0 (meaning belief of 0),
             # at least submit order that doesn't lose agent money in the edge case
-            # that the order submits even if it has belief of 0. 
+            # that the order submits even if it has belief of 0.
+            self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             if optimal_price[0] > estimate + private_value:
                 return estimate + private_value, -1
             
@@ -469,7 +508,8 @@ class HBLAgent(Agent):
 
                 assert float(bound2) + epsilon > bound1, f"Invalid interval: {bound1} >= {bound2}"
 
-                cs = FCS(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
+                # FCS replaced by custom interpolation:
+                cs = Custom_cs(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
                 # TODO: check if this produces exactly the same results:
                 # cs = PchipInterpolator(
                 #     [bound1, bound2 + epsilon],
@@ -615,7 +655,8 @@ class HBLAgent(Agent):
             #EDGE CASE (SAME AS ABOVE IN BUY)
             if optimal_price[0] < estimate + private_value:
                 return estimate + private_value, 0
-            
+
+            self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             return optimal_price[0], optimal_price[1]
 
     def take_action(self, current_time: int, seed: int = 0) -> list[Order]:
