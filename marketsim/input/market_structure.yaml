@@ -46,10 +46,10 @@ markets:
         number: 1
         config:
           xi: 0.1
-          K: 3
-          omega: 0.1
+          K: 4
+          omega: 0.07
           rebalance_period: 17
-          volume: 11
+          volume: 20
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -180,10 +180,10 @@ markets:
         number: 1
         config:
           xi: 0.1
-          K: 3
-          omega: 0.1
+          K: 4
+          omega: 0.07
           rebalance_period: 17
-          volume: 11
+          volume: 20
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -312,10 +312,10 @@ markets:
         number: 1
         config:
           xi: 0.1
-          K: 3
-          omega: 0.1
+          K: 4
+          omega: 0.07
           rebalance_period: 17
-          volume: 11
+          volume: 20
       hbl:
         agent_class: HBLAgent
         number: 1
