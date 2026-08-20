@@ -5,6 +5,7 @@ from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
 from typing import TYPE_CHECKING
+import math
 
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
     from marketsim.agent import Agent
 
 
-
 class Market:
     def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
@@ -27,6 +27,7 @@ class Market:
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
+        self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
         self.traded_prices = {0:{"Open": self.last_traded_price,
                                                 "Low": self.last_traded_price,
                                                 "High": self.last_traded_price,
@@ -76,6 +77,13 @@ class Market:
     def clear_market(self, current_time: int) -> list[MatchedOrder]:
         newly_matched_orders = self.order_book.market_clear(current_time=current_time, trading_phase="continuous")
         self.matched_orders += newly_matched_orders
+        for matched_order in newly_matched_orders:
+            inner_order = matched_order.order
+            self.matched_orders_hashed[inner_order.order_id] = {"price":inner_order.price,
+                                                                "quantity":inner_order.quantity,
+                                                                "order_type":inner_order.order_type
+                                                                }
+            # the limit from the order is needed, not the executed price
         return newly_matched_orders
 
     def add_orders(self, orders: list[Order]) -> None:
@@ -221,3 +229,55 @@ class Market:
             output_file=f"{config.output_dir}/LOB/LOB_{self.asset_id}_{current_time}.png",
             title=f"Order book at {current_time}"
         )
+
+    def calculate_realized_volatility(
+            self,
+            window: int = 20,
+    ) -> dict:
+        """
+        Calculate rolling realized volatility from closing prices.
+
+        Returns:
+            {time_tick: realized_volatility}
+        """
+
+        times = sorted(self.traded_prices)
+
+        # Close price for each tick
+        closes = {
+            t: float(self.traded_prices[t]["Close"])
+            for t in times
+        }
+
+        # Log returns
+        returns = {}
+
+        previous_price = None
+
+        for t in times:
+            price = closes[t]
+
+            if (
+                    previous_price is not None
+                    and previous_price > 0
+                    and price > 0
+            ):
+                returns[t] = math.log(price / previous_price)
+
+            previous_price = price
+
+        # Rolling realized volatility
+        volatility = {}
+
+        return_times = sorted(returns)
+
+        for i, t in enumerate(return_times):
+            window_returns = list(
+                returns.values()
+            )[max(0, i - window + 1): i + 1]
+
+            volatility[t] = math.sqrt(
+                sum(r * r for r in window_returns)
+            )
+
+        return volatility

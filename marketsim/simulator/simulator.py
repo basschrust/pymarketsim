@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
+from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask, plot_realized_volatility
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market import Price, Market
@@ -103,6 +103,8 @@ class Simulator:
                 #if not agent.is_market_maker():
                 #    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
                                 # so moving this to take_action? # the agents take care of it by themselves
+                # TODO: but now when agents withdraw their orders at the order defined in market structure
+                # TODO: then this may lead to wrong signals as each of them should first see the LOB (!!!)
                 orders = agent.take_action(current_time=self.current_time) # but there should be different actions
                             # in different markets, solved: agents are defined inside a single market
                 market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
@@ -182,7 +184,6 @@ class Simulator:
                     output_file=agent_file,
                 )
 
-
             # plot the security values history:
             traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
                                    for t, item in market.traded_prices.items()}
@@ -204,7 +205,14 @@ class Simulator:
                          title=f"Trades by extended type in {market.name}", mode="extended")
             plot_bid_ask(market.bid_ask_history,
                          output_file=f"{config.output_dir}/bid_ask_history_{str(market)}.png",
-                         title=f"Bid ask history {str(market)}")
+                         title=f"Bid ask spread history {str(market)}")
+            #calculate and plot realized volatility:
+            window = 50
+            volatility = market.calculate_realized_volatility(window=window)
+            plot_realized_volatility(volatility=volatility,
+                                     output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
+                                     title=f"Realized volatility {str(market)} with window {window}")
+
 
     def run(self) -> None:
         for t in range(self.sim_time):

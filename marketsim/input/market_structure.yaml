@@ -14,11 +14,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 4
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -36,11 +36,11 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
-          K: 3
-          omega: 0.1
+          xi: 0.06
+          K: 4
+          omega: 0.05
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -52,7 +52,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -63,7 +63,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -79,7 +79,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
@@ -93,7 +93,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
@@ -138,6 +138,8 @@ markets:
           q_max: 5
           period: 15
 
+  ########################## second security ###################################################
+
   security_2: # the same market but without WashTRaders:
     name: "No washtraders security"
     ticker: "ABB"
@@ -146,11 +148,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 4
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -168,11 +170,11 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
-          K: 3
-          omega: 0.1
+          xi: 0.06
+          K: 4
+          omega: 0.05
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -184,7 +186,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -195,7 +197,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -278,11 +280,11 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 35
+        number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 4
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -300,11 +302,11 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
-          K: 3
-          omega: 0.1
+          xi: 0.06
+          K: 4
+          omega: 0.05
           rebalance_period: 11
-          volume: 7
+          volume: 12
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -316,7 +318,7 @@ markets:
           volume: 11
       hbl:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 20
           L: 3 # memory length
@@ -327,7 +329,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -343,7 +345,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
@@ -357,7 +359,7 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 700
+          q_max: 1000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
