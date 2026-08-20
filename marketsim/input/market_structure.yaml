@@ -1,7 +1,7 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 80
+sim_time: 2000
 lob_plot_interval: 25
 
 # definitions of the securities
@@ -16,9 +16,9 @@ markets:
         agent_class: NoiseAgent
         number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 2
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -36,9 +36,9 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
+          xi: 0.06
           K: 4
-          omega: 0.1
+          omega: 0.05
           rebalance_period: 11
           volume: 12
       mmzoh_2:
@@ -63,7 +63,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -104,7 +104,7 @@ markets:
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           pv_var: 0.01
@@ -138,6 +138,8 @@ markets:
           q_max: 5
           period: 15
 
+  ########################## second security ###################################################
+
   security_2: # the same market but without WashTRaders:
     name: "No washtraders security"
     ticker: "ABB"
@@ -148,9 +150,9 @@ markets:
         agent_class: NoiseAgent
         number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 2
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -168,9 +170,9 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
+          xi: 0.06
           K: 4
-          omega: 0.1
+          omega: 0.05
           rebalance_period: 11
           volume: 12
       mmzoh_2:
@@ -195,7 +197,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -235,7 +237,7 @@ markets:
             spread: 0.5
       spoofers:
         agent_class: SpoofingAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           pv_var: 0.01
@@ -280,9 +282,9 @@ markets:
         agent_class: NoiseAgent
         number: 45
         config:
-          lam: 0.35
-          q_max: 80
-          mean_volume: 2
+          lam: 0.45
+          q_max: 100
+          mean_volume: 3
           mean_spread: 0.3
       zi_agents_informed:
         number: 0
@@ -300,9 +302,9 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.11
+          xi: 0.06
           K: 4
-          omega: 0.1
+          omega: 0.05
           rebalance_period: 11
           volume: 12
       mmzoh_2:
@@ -327,7 +329,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 0
+        number: 1
         config:
           q_max: 10
           L: 5 # memory length
@@ -368,7 +370,7 @@ markets:
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           pv_var: 0.01
