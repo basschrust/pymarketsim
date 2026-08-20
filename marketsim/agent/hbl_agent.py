@@ -93,6 +93,7 @@ class HBLAgent(Agent):
 
             Note: we reverse order_mem for sells so that we can reuse code.
         """
+        two1 = perf_counter()
         beginning = 0
         end = len(order_mem) - 1
         while beginning < end:
@@ -108,7 +109,12 @@ class HBLAgent(Agent):
                 else:
                     end = mid
             else:
+                two2 = perf_counter()
+                self.logger.info(f"HBL timing - find_worst_order 2: {two2 - two1:.6f}s")
                 return order_mem[mid].price, 0
+        two3 = perf_counter()
+        # this branch is chosen most of the time
+        self.logger.info(f"HBL timing - find_worst_order 3: {two3 - two1:.6f}s")
         return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
     def get_last_trade_time_step(self) -> int:
@@ -136,31 +142,53 @@ class HBLAgent(Agent):
         Returns:
             bool: Whether or not belief is 0
         """
+        # TODO: check performance of this function
+        tfb0 = perf_counter()
         if side == BUY:
             TBL = 0  # Transact bids less or equal
             AL = 0  # Asks less or equal
             for ind, order in enumerate(orders):
                 if order.price <= p and order.order_type == SELL:
-                    AL += order.quantity
-                for matched_order in self.market.matched_orders:
-                    if order.order_id == matched_order.order.order_id:
-                        if matched_order.order.order_type == BUY and matched_order.price <= p:
-                            TBL += order.quantity
-                        break
-            return AL + TBL == 0
+                    # AL += order.quantity
+                    return False
+                # for matched_order in self.market.matched_orders:
+                #     if order.order_id == matched_order.order.order_id:
+                #         if matched_order.order.order_type == BUY and matched_order.price <= p:
+                #             TBL += order.quantity
+                #         break
+                if order.order_id in self.market.matched_orders_hashed:
+                    matched_order = self.market.matched_orders_hashed[order.order_id]
+                    if matched_order["order_type"] == BUY and matched_order["price"] <= p:
+                        tfb1 = perf_counter()
+                        self.logger.info(f"HBL timings - fast_belief_function BF: {tfb1 - tfb0:.6f}s")
+                        return False
+            tfb1 = perf_counter()
+            self.logger.info(f"HBL timings - fast_belief_function BT: {tfb1 - tfb0:.6f}s")
+            return True
+            # return AL + TBL == 0
         else:
             TAG = 0  # Transact ask greater or equal
             BG = 0  # Bid greater or equal
             for ind, order in enumerate(orders):
                 if order.price >= p and order.order_type == BUY:
-                    BG += order.quantity
-                for matched_order in self.market.matched_orders:
-                    # TODO: this loop is probably ineffective
-                    if order.order_id == matched_order.order.order_id:
-                        if matched_order.order.order_type == SELL and matched_order.price >= p:
-                            TAG += order.quantity
-                        break
-            return BG + TAG == 0
+                    #BG += order.quantity
+                    return False
+                # for matched_order in self.market.matched_orders:
+                #     # TODO: this loop is probably ineffective
+                #     if order.order_id == matched_order.order.order_id:
+                #         if matched_order.order.order_type == SELL and matched_order.price >= p:
+                #             TAG += order.quantity
+                #         break
+                if order.order_id in self.market.matched_orders_hashed:
+                    matched_order = self.market.matched_orders_hashed[order.order_id]
+                    if matched_order["order_type"] == SELL and matched_order["price"] >= p:
+                        tfb1 = perf_counter()
+                        self.logger.info(f"HBL timings - fast_belief_function SF: {tfb1 - tfb0:.6f}s")
+                        return False
+            tfb1 = perf_counter()
+            self.logger.info(f"HBL timings - fast_belief_function ST: {tfb1 - tfb0:.6f}s")
+            return True
+            # return BG + TAG == 0
 
     def belief_function(self, p: Price, side: int, orders: list[Order], current_time:int) -> float:
         """
