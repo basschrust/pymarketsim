@@ -142,20 +142,11 @@ class HBLAgent(Agent):
         Returns:
             bool: Whether or not belief is 0
         """
-        # TODO: check performance of this function
         tfb0 = perf_counter()
         if side == BUY:
-            TBL = 0  # Transact bids less or equal
-            AL = 0  # Asks less or equal
             for ind, order in enumerate(orders):
                 if order.price <= p and order.order_type == SELL:
-                    # AL += order.quantity
                     return False
-                # for matched_order in self.market.matched_orders:
-                #     if order.order_id == matched_order.order.order_id:
-                #         if matched_order.order.order_type == BUY and matched_order.price <= p:
-                #             TBL += order.quantity
-                #         break
                 if order.order_id in self.market.matched_orders_hashed:
                     matched_order = self.market.matched_orders_hashed[order.order_id]
                     if matched_order["order_type"] == BUY and matched_order["price"] <= p:
@@ -165,20 +156,10 @@ class HBLAgent(Agent):
             tfb1 = perf_counter()
             self.logger.info(f"HBL timings - fast_belief_function BT: {tfb1 - tfb0:.6f}s")
             return True
-            # return AL + TBL == 0
         else:
-            TAG = 0  # Transact ask greater or equal
-            BG = 0  # Bid greater or equal
             for ind, order in enumerate(orders):
                 if order.price >= p and order.order_type == BUY:
-                    #BG += order.quantity
                     return False
-                # for matched_order in self.market.matched_orders:
-                #     # TODO: this loop is probably ineffective
-                #     if order.order_id == matched_order.order.order_id:
-                #         if matched_order.order.order_type == SELL and matched_order.price >= p:
-                #             TAG += order.quantity
-                #         break
                 if order.order_id in self.market.matched_orders_hashed:
                     matched_order = self.market.matched_orders_hashed[order.order_id]
                     if matched_order["order_type"] == SELL and matched_order["price"] >= p:
@@ -188,7 +169,6 @@ class HBLAgent(Agent):
             tfb1 = perf_counter()
             self.logger.info(f"HBL timings - fast_belief_function ST: {tfb1 - tfb0:.6f}s")
             return True
-            # return BG + TAG == 0
 
     def belief_function(self, p: Price, side: int, orders: list[Order], current_time:int) -> float:
         """
@@ -211,22 +191,18 @@ class HBLAgent(Agent):
                 if order.price - p <= 0 and order.order_type == SELL:
                     AL += order.quantity
                 found_matched = False
-                #for matched_order in self.market.matched_orders:
                 if order.order_id in self.market.matched_orders_hashed:
-                    # TODO: why all matched orders, not only in the memory period?
-                    # if order.order_id == matched_order.order.order_id:
-                    #     if matched_order.order.order_type == BUY and matched_order.price - p <= 0:
                     if self.market.matched_orders_hashed[order.order_id]["order_type"] == BUY\
                             and self.market.matched_orders_hashed[order.order_id]["price"] - p <= 0:
                         TBL += order.quantity
                     found_matched = True
-                    # break
                 if not found_matched: # TODO: after hash optimization else should suffice here
                     if order.order_type == BUY and order.price - p >= 0:
                         # order time to withdrawal time
                         withdrawn = False
                         latest_order_time = 0
                         for i in range(ind + 1, len(orders)):
+                            # TODO: check performance of this loop, too
                             if (orders[i].agent_id == order.agent_id
                                     and orders[i].order_id != order.order_id and orders[i].time > order.time):
                                 latest_order_time = orders[i].time
@@ -268,18 +244,12 @@ class HBLAgent(Agent):
 
             for ind, order in enumerate(orders):
                 found_matched = False
-                # for matched_order in self.market.matched_orders:
-                    # TODO: why not last L ticks? - because in the orders var we already have only the remembered ones
-                    # if order.order_id == matched_order.order.order_id:
-                    #     if matched_order.order.order_type == SELL and matched_order.price - p >= 0:
                 if order.order_id in self.market.matched_orders_hashed:
                     if self.market.matched_orders_hashed[order.order_id]["order_type"] == SELL \
                         and self.market.matched_orders_hashed[order.order_id]["price"] - p >= 0:
                             TAG += order.quantity
-
                     found_matched = True
-                    #break
-                if not found_matched:
+                if not found_matched: # TODO: is not else enough here?
                     if order.order_type == SELL and order.price - p <= 0:
                         # order time to withdrawal time
                         withdrawn = False
@@ -322,8 +292,6 @@ class HBLAgent(Agent):
         #raise # AK - this probably is never called? it is! by determine_optimal_price(...)
         self.lower_bound_mem = self.get_last_trade_time_step() # TODO: gives order, should give int(or time tick)?
 
-        buy_orders_memory = []
-        sell_orders_memory = []
         last_L_orders = []
         for time in range(self.lower_bound_mem, current_time+1):
             last_L_orders.extend(self.market.event_queue.scheduled_activities[time])
@@ -366,10 +334,8 @@ class HBLAgent(Agent):
             f"get_orders={t1 - t0:.6f}s, "
             f"sorting={t2 - t1:.6f}s, "
             f"interpolation={t3 - t2:.6f}s, "
-            #f"optimization={t4 - t3:.6f}s, "
             f"buy_mem={len(buy_orders_memory)}, "
             f"sell_mem={len(sell_orders_memory)}, "
-            # f"splines={len(spline_interp_objects[0])}"
         )
 
         #First is interpolate objects. Second is corresponding bounds
@@ -380,13 +346,8 @@ class HBLAgent(Agent):
             best_ask_belief = 1
 
             def interpolate(bound1: float, bound2: float, bound1Belief: float, bound2Belief: float, epsilon: float = 0.001):
-                #cs = FCS(bound1, bound2+epsilon, [bound1Belief, float(bound2Belief)])
                 cs = Custom_cs(bound1, bound2 + epsilon, [bound1Belief, float(bound2Belief)])
-                # TODO: check if this produces exactly the same results:
-                # cs = PchipInterpolator(
-                #     [bound1, bound2 + epsilon],
-                #     [bound1Belief, float(bound2Belief)],
-                # )
+                # TODO: check if this produces exactly the same results as PchipInterpolater and FCS
 
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((bound1, bound2))
@@ -544,6 +505,7 @@ class HBLAgent(Agent):
             sell_high = float(sell_high) # it raised errors when held as Decimal in interpolate(...)
             optimal_price = (0,-sys.maxsize)
             best_buy_belief = 1
+            # TODO: check those types here
             #sell_low = float(sell_orders_memory[0].price) # let's stick to the Price type here, no! scipy needs float!
             sell_low = float(sell_orders_memory[0].price) # probably the price causes "ValueError: x_high must be greater that x_low"
             sell_low_belief = self.belief_function(sell_low, SELL, last_L_orders, current_time=current_time)
@@ -565,11 +527,7 @@ class HBLAgent(Agent):
 
                 # FCS replaced by custom interpolation:
                 cs = Custom_cs(float(bound1), float(bound2)+epsilon, [float(bound1Belief), float(bound2Belief)])
-                # TODO: check if this produces exactly the same results:
-                # cs = PchipInterpolator(
-                #     [bound1, bound2 + epsilon],
-                #     [bound1Belief, float(bound2Belief)],
-                # )
+
                 spline_interp_objects[0].append(cs)
                 spline_interp_objects[1].append((float(bound1), float(bound2)))
                 
@@ -607,17 +565,6 @@ class HBLAgent(Agent):
 
                 min_survey = valid_points[np.argmin(valid_surpluses)]
 
-                # point_surpluses = vOptimize(test_points)
-                # min_index = np.argmin(point_surpluses)
-                # min_survey = test_points[min_index]
-                # AK debug
-                # print(test_points)
-                # print(point_surpluses)
-                # print(min_index)
-                # print(vOptimize(min_survey)) # it is None
-                # print(vOptimize([min_survey]))
-                # print(vOptimize(np.array([min_survey])))
-                # AK debug end
                 max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[float(lb), float(ub)]])
 
                 t2b = perf_counter()
@@ -735,7 +682,7 @@ class HBLAgent(Agent):
         try:
             random.seed(current_time + seed) # AK why not save it somehow to recreate specific scenarios?
             side = random.choice(["BUY", "SELL"])
-            #estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
+            # TODO: estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
             estimate = self.market.last_traded_price
             spread = self.shade[1] - self.shade[0]
             price = estimate
