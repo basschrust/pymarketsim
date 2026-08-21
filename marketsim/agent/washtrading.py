@@ -103,7 +103,7 @@ class WashTradingAgent(Agent):
                     quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
                 else:
                     # so we are after the manipulation period - let's just rebalance here
-                    side = self.manipulation_boundaries["manipulation_side"]
+                    side = 1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
                         # till the end of the simulation
                     quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 20)
@@ -119,7 +119,7 @@ class WashTradingAgent(Agent):
                         agent_id=self.agent_id,
                         asset_id=self.market.asset_id,
                         time=current_time,
-                        order_type=1 if side == BUY else -1,
+                        order_type=side,
                     )
                     orders.append(order)
         return orders

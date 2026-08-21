@@ -1,8 +1,10 @@
+from collections import defaultdict
 import matplotlib.pyplot as plt
 import pandas as pd
 import mplfinance as mpf
 from pathlib import Path
 import math
+import numpy as np
 
 
 def simple_plot_old(x: list, y: list, output_file: str) -> None:
@@ -453,6 +455,58 @@ def plot_realized_volatility(
     ax.set_title(title)
     ax.grid(True)
     ax.legend()
+
+    fig.tight_layout()
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
+
+def plot_agent_profitability_vs_volatility(
+    agents: list,
+    output_file: str,
+) -> None:
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    groups = defaultdict(list)
+
+    for agent in agents:
+        history = agent.position_value_history
+
+        if len(history) < 2:
+            continue
+
+        # Make sure observations are ordered by simulation time
+        values = np.array(
+            [float(v) for _, v in sorted(history.items())],
+            dtype=float,
+        )
+
+        # Portfolio returns between consecutive simulation ticks
+        returns = values[1:] / values[:-1] - 1
+
+        volatility = np.std(returns)
+
+        # Total profitability over the simulation
+        profitability = values[-1] / values[0] - 1
+
+        groups[agent.group].append(
+            (volatility, profitability, agent.agent_id)
+        )
+
+    for group, points in groups.items():
+        x = [p[0] for p in points]
+        y = [p[1] for p in points]
+
+        ax.scatter(x, y, label=str(group), alpha=0.8)
+
+    ax.axhline(0, linewidth=0.8)
+    ax.axvline(0, linewidth=0.8)
+
+    ax.set_xlabel("Portfolio volatility")
+    ax.set_ylabel("Profitability")
+    ax.set_title("Agent Profitability vs Portfolio Volatility")
+    ax.grid(True, alpha=0.3)
+    ax.legend(title="Group")
 
     fig.tight_layout()
     fig.savefig(output_file, dpi=150)
