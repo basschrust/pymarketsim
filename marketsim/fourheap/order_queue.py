@@ -17,7 +17,7 @@ class OrderQueue:
         self.logger = logger
 
     def add_order(self, order: Order, executed_price: Price | None = None, executed_mode: str | None=None, matched_with: int | None=None) -> None:
-        self.logger.info(f"order_queue.add_order {order} with executed_price: {executed_price}, executed_mode: {executed_mode}, matched_with: {matched_with}")
+        self.logger.debug(f"order_queue.add_order {order} with executed_price: {executed_price}, executed_mode: {executed_mode}, matched_with: {matched_with}")
         price = order.price if not self.is_max_heap else -order.price
         order_id = order.order_id
         if self.contains(order_id):

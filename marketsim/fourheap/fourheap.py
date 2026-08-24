@@ -92,7 +92,7 @@ class FourHeap:
 
     def insert(self, order: Order, trading_phase: str = "continuous") -> None:
         # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
-        self.logger.info(f"fourheap.insert {order}, trading_phase: {trading_phase}")
+        self.logger.debug(f"fourheap.insert {order}, trading_phase: {trading_phase}")
         if trading_phase == "continuous":
             self.agent_id_map[order.agent_id].append(order.order_id)
             if order.order_type == constants.SELL:

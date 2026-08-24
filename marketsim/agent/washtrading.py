@@ -105,12 +105,12 @@ class WashTradingAgent(Agent):
                     # so we are after the manipulation period - let's just rebalance here
                     side = 1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
-                        # till the end of the simulation
-                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 20)
+                        # till the end of the simulation, it should depend on the momentary liquidity
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 30)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                 # TODO: some rebalance spread parameter?
-                price = self.market.last_traded_price + Price(0.2* spread * (random.random() - 0.5))
+                price = self.market.last_traded_price + Price(0.1* spread * (random.random() - 0.5))
 
                 if price > 0 and quantity > 0:
                     order = Order(
@@ -126,7 +126,6 @@ class WashTradingAgent(Agent):
 
     def __str__(self):
         return f'WT_{self.pool_id}_{self.agent_id}'
-            #f'WT_{self.manipulation_type}_{self.manipulation_side}_{self.pool_id}_{self.agent_id}'
 
     def reset(self):
         self.position = 0

@@ -14,12 +14,12 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 15
         config:
           lam: 0.45
           q_max: 100
-          mean_volume: 5
-          mean_spread: 0.3
+          mean_volume: 10
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -38,9 +38,9 @@ markets:
         config:
           xi: 0.08
           K: 7
-          omega: 0.08
+          omega: 0.1
           rebalance_period: 11
-          volume: 70
+          volume: 130
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -49,7 +49,7 @@ markets:
           K: 6
           omega: 0.2
           rebalance_period: 17
-          volume: 80
+          volume: 120
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -148,12 +148,12 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 15
         config:
           lam: 0.45
           q_max: 100
-          mean_volume: 5
-          mean_spread: 0.3
+          mean_volume: 10
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -172,9 +172,9 @@ markets:
         config:
           xi: 0.08
           K: 7
-          omega: 0.08
+          omega: 0.1
           rebalance_period: 11
-          volume: 70
+          volume: 130
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -183,7 +183,7 @@ markets:
           K: 6
           omega: 0.2
           rebalance_period: 17
-          volume: 80
+          volume: 120
       hbl:
         agent_class: HBLAgent
         number: 1
@@ -282,12 +282,12 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 25
+        number: 15
         config:
           lam: 0.45
           q_max: 100
-          mean_volume: 5
-          mean_spread: 0.3
+          mean_volume: 10
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -306,9 +306,9 @@ markets:
         config:
           xi: 0.08
           K: 7
-          omega: 0.08
+          omega: 0.1
           rebalance_period: 11
-          volume: 70
+          volume: 130
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 1
@@ -317,7 +317,7 @@ markets:
           K: 6
           omega: 0.2
           rebalance_period: 17
-          volume: 80
+          volume: 120
       hbl:
         agent_class: HBLAgent
         number: 1
