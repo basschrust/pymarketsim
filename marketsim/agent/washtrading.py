@@ -110,7 +110,7 @@ class WashTradingAgent(Agent):
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                 # TODO: some rebalance spread parameter?
-                price = self.market.last_traded_price + Price(0.1* spread * (random.random() - 0.5))
+                price = self.market.last_traded_price + Price(0.05 * spread * (random.random() - 0.5))
 
                 if price > 0 and quantity > 0:
                     order = Order(

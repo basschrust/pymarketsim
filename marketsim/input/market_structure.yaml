@@ -79,28 +79,28 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 8000
+          q_max: 10000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 1000
               end: 1500
-            lam: 0.9
+            lam: 0.99
             spread: 0.5
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 8000
+          q_max: 10000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 1000
               end: 1500
-            lam: 0.9
+            lam: 0.99
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
@@ -347,28 +347,28 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 8000
+          q_max: 10000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 1000
               end: 1500
-            lam: 0.9
+            lam: 0.99
             spread: 0.5
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 8000
+          q_max: 10000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 1000
               end: 1500
-            lam: 0.9
+            lam: 0.99
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent

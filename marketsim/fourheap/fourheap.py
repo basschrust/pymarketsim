@@ -36,7 +36,6 @@ class FourHeap:
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
 
-
     def handle_new_order(self, order: Order) -> None:
         self.logger.info(f"handle_new_order {order}")
         q_order = order.quantity
@@ -63,6 +62,7 @@ class FourHeap:
                 new_order = order.copy_and_decrease(to_match_quantity)
                 orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
                 self.insert(new_order) # AK - this is problematic - should be added to the unmatched heap now, not the 4heap
+                # TODO: so check if this is needed and optimal
                 #orders_unmatched.add_order(new_order) # AK fix? TODO: but we have to check if this new order doesn't match next
                     # order on the other side
 
@@ -236,6 +236,44 @@ class FourHeap:
 
     def get_best_ask(self) -> float:
         return self.sell_unmatched.peek()
+
+    # methods useful for WashTraders - get the liquidity info:
+    def get_ask_at_volume(self, volume: int) -> Price | float:
+        if self.sell_unmatched.size < volume:
+            return math.inf
+
+        cum_volume = 0
+
+        for price, order_id in sorted(self.sell_unmatched.heap):
+            order = self.sell_unmatched.order_dict[order_id]
+
+            if order_id in self.sell_unmatched.deleted_ids:
+                continue
+
+            cum_volume += order.quantity
+
+            if cum_volume >= volume:
+                return price
+
+        raise ValueError(f"Invalid volume for ask: {volume}")
+
+    def get_bid_at_volume(self, volume: int) -> Price | float:
+        # but if inf /- inf then not Price, but float
+        if self.sell_unmatched.size < volume:
+            return - math.inf
+
+        cum_volume = 0
+        for price, order_id in sorted(self.sell_unmatched.heap, reverse=True):
+            order = self.sell_unmatched.order_dict[order_id]
+
+            if order_id in self.sell_unmatched.deleted_ids:
+                continue
+
+            cum_volume += order.quantity
+            if cum_volume >= volume:
+                return - price
+
+        raise ValueError(f"Invalid volume for bid: {volume}")
 
     def update_midprice(self, current_time: int, lookback=14) -> None:
         best_ask = self.get_best_ask()
