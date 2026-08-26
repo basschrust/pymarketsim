@@ -65,7 +65,7 @@ class WashTradingAgent(Agent):
                         # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
                         quantity = int(
                             (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
-                    price_to_reach = self.market.order_book.get_ask_at_volume(quantity / 4)
+                    price_to_reach = self.market.order_book.get_ask_at_volume(quantity / 16) - Price(0.01)
                     if not math.isfinite(price_to_reach):
                         price_to_reach = self.market.last_traded_price + Price(0.5)
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
@@ -80,8 +80,10 @@ class WashTradingAgent(Agent):
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
-                    price_to_reach = self.market.order_book.get_bid_at_volume(quantity / 4)
-                    if not math.isfinite(price_to_reach):
+                    price_to_reach = self.market.order_book.get_bid_at_volume(quantity / 16)
+                    if math.isfinite(price_to_reach):
+                        price_to_reach = price_to_reach + Price(0.01)
+                    else:
                         price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")

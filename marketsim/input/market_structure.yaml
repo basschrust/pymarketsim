@@ -1,14 +1,14 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 3000
+sim_time: 300
 lob_plot_interval: 25
 debug_logging: False
 
 # definitions of the securities
 markets:
   security_1:
-    name: "WashTraders pulling up 1000-1500"
+    name: "WashTraders pulling up 100-150"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -85,8 +85,8 @@ markets:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 1000
-              end: 1500
+              start: 100
+              end: 150
             lam: 0.99
             spread: 0.5
       poolB:
@@ -99,8 +99,8 @@ markets:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 1000
-              end: 1500
+              start: 100
+              end: 150
             lam: 0.99
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
@@ -276,7 +276,7 @@ markets:
 
   # and the same market pushing the price down:
   security_3:
-    name: "WashTraders pushing down 1000-1500"
+    name: "WashTraders pushing down 100-150"
     ticker: "ACC"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -353,8 +353,8 @@ markets:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 1000
-              end: 1500
+              start: 100
+              end: 150
             lam: 0.99
             spread: 0.5
       poolB:
@@ -367,8 +367,8 @@ markets:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 1000
-              end: 1500
+              start: 100
+              end: 150
             lam: 0.99
             spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:

@@ -48,6 +48,7 @@ class Market:
         logger.add(
             f"{config.output_dir}/market_{self.asset_id}.log",
             format="{elapsed} | {message}",
+            level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, market_id=self.asset_id:
             record["extra"].get("market_id") == market_id,
         )
