@@ -3,6 +3,7 @@
 # generic simulation parameters
 sim_time: 3000
 lob_plot_interval: 25
+debug_logging: False
 
 # definitions of the securities
 markets:

@@ -14,6 +14,7 @@ logger.remove()
 logger.add(
     sink=f"{config.output_dir}/main.log",
     format="{elapsed} | {message}",
+    level="DEBUG" if config.debug_logging else "INFO",
     filter=lambda record: "market_id" not in record["extra"],
 )
 

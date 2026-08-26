@@ -245,12 +245,15 @@ class FourHeap:
         cum_volume = 0
 
         for price, order_id in sorted(self.sell_unmatched.heap):
-            order = self.sell_unmatched.order_dict[order_id]
+            try:
+                order = self.sell_unmatched.order_dict[order_id]
 
-            if order_id in self.sell_unmatched.deleted_ids:
-                continue
+                if order_id in self.sell_unmatched.deleted_ids:
+                    continue
 
-            cum_volume += order.quantity
+                cum_volume += order.quantity
+            except KeyError:
+                self.logger.warning(f"No order with id {order_id} in sell_unmatched - get_ask_at_volume")
 
             if cum_volume >= volume:
                 return price
@@ -259,17 +262,21 @@ class FourHeap:
 
     def get_bid_at_volume(self, volume: int) -> Price | float:
         # but if inf /- inf then not Price, but float
-        if self.sell_unmatched.size < volume:
+        if self.buy_unmatched.size < volume:
             return - math.inf
 
         cum_volume = 0
-        for price, order_id in sorted(self.sell_unmatched.heap, reverse=True):
-            order = self.sell_unmatched.order_dict[order_id]
+        for price, order_id in sorted(self.buy_unmatched.heap, reverse=True):
+            try:
+                order = self.buy_unmatched.order_dict[order_id]
 
-            if order_id in self.sell_unmatched.deleted_ids:
-                continue
+                if order_id in self.buy_unmatched.deleted_ids:
+                    continue
 
-            cum_volume += order.quantity
+                cum_volume += order.quantity
+            except KeyError:
+                self.logger.warning(f"No order with id {order_id} in buy_unmatched - get_bid_at_volume")
+
             if cum_volume >= volume:
                 return - price
 

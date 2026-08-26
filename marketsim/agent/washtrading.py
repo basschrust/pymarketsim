@@ -55,14 +55,19 @@ class WashTradingAgent(Agent):
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     #price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+
                     price = Price(best_ask) # or just below it? or randomly very close?
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+
                     else:
                         # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
                         quantity = int(
                             (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
+                    price_to_reach = self.market.order_book.get_ask_at_volume(quantity / 4)
+                    if not math.isfinite(price_to_reach):
+                        price_to_reach = self.market.last_traded_price + Price(0.5)
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
                     # TODO: check if this is not the reason the market falls down systematically - the spread should
@@ -75,6 +80,9 @@ class WashTradingAgent(Agent):
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                    price_to_reach = self.market.order_book.get_bid_at_volume(quantity / 4)
+                    if not math.isfinite(price_to_reach):
+                        price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
@@ -82,9 +90,12 @@ class WashTradingAgent(Agent):
                     # in the second half we push more on volume to properly balance the position
                     quantity = int(1.2 * quantity)
 
-                if price > 0 and quantity > 0:
+                # the order should be placed with price within the boundaries specified by the venue
+                #if  price_to_reach
+
+                if price_to_reach > 0 and quantity > 0:
                     order = Order(
-                        price=price,
+                        price=price_to_reach,
                         quantity=quantity,
                         agent_id=self.agent_id,
                         asset_id=self.market.asset_id,
