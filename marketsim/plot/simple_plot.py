@@ -97,7 +97,7 @@ def plot_order_book(
         if cumulative:
             total = 0
             depth = []
-            for price, volume in items:
+            for price, volume in items: # TODO: these are yet price, order_id (!!!) - solved (?)
                 total += volume
                 depth.append((float(price), total))
             return depth

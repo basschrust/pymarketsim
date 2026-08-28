@@ -202,11 +202,12 @@ class Market:
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
-    @staticmethod
-    def aggregate_order_queue(order_queue: dict, reverse: bool=False, cumulative: bool=False):
+    def aggregate_order_queue(self, order_queue: dict, reverse: bool=False, cumulative: bool=False):
         aggregated = defaultdict(int)
 
-        for price, quantity in order_queue:
+        for price, order_id in order_queue:
+            quantity = (self.order_book.buy_unmatched.order_dict.get(order_id, 0)
+                        + self.order_book.sell_unmatched.order_dict.get(order_id, 0))
             aggregated[abs(price)] += quantity
 
         items = sorted(aggregated.items(), reverse=reverse)
@@ -221,7 +222,7 @@ class Market:
         bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
         asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
 
-        self.logger.info(f"Bids: {bids}")
+        self.logger.info(f"Bids: {bids}") # TODO: it sums IDs here, not volumes!
         self.logger.info(f"Asks: {asks}")
 
         plot_order_book(
