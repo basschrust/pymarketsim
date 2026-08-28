@@ -256,6 +256,7 @@ class FourHeap:
                 self.logger.warning(f"No order with id {order_id} in sell_unmatched - get_ask_at_volume")
 
             if cum_volume >= volume:
+                self.logger.info(f"Price: {price}, Cumulated volume for ask: {cum_volume}, required  {volume}")
                 return price
 
         raise ValueError(f"Invalid volume for ask: {volume}")
@@ -278,6 +279,7 @@ class FourHeap:
                 self.logger.warning(f"No order with id {order_id} in buy_unmatched - get_bid_at_volume")
 
             if cum_volume >= volume:
+                self.logger.info(f"Price: {price}, Cumulated volume for bid: {cum_volume}, required {volume}")
                 return - price
 
         raise ValueError(f"Invalid volume for bid: {volume}")
