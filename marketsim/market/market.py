@@ -206,8 +206,13 @@ class Market:
         aggregated = defaultdict(int)
 
         for price, order_id in order_queue:
-            quantity = (self.order_book.buy_unmatched.order_dict.get(order_id, 0)
-                        + self.order_book.sell_unmatched.order_dict.get(order_id, 0))
+            buy_order = self.order_book.buy_unmatched.order_dict.get(order_id)
+            sell_order = self.order_book.sell_unmatched.order_dict.get(order_id)
+
+            quantity = (
+                    (buy_order.quantity if buy_order is not None else 0)
+                    + (sell_order.quantity if sell_order is not None else 0)
+            )
             aggregated[abs(price)] += quantity
 
         items = sorted(aggregated.items(), reverse=reverse)
