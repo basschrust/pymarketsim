@@ -267,7 +267,7 @@ class FourHeap:
             return - math.inf
 
         cum_volume = 0
-        for price, order_id in sorted(self.buy_unmatched.heap, reverse=True):
+        for price, order_id in sorted(self.buy_unmatched.heap):
             try:
                 order = self.buy_unmatched.order_dict[order_id]
 
