@@ -215,8 +215,17 @@ class Simulator:
 
 
     def run(self) -> None:
+        last_progress = -1
+
         for t in range(self.sim_time):
             self.logger.info(f"Step: {t}.", end='')
             self.step()
+            progress = (step + 1) * 100 // total_steps
+
+            if progress != last_progress:
+                print(f"\rProgress: {progress:3d}%", end="", flush=True)
+                last_progress = progress
+
+        print()
         self.end_sim()
 

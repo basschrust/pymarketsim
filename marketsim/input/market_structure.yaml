@@ -1,14 +1,14 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 300
+sim_time: 3000
 lob_plot_interval: 25
 debug_logging: False
 
 # definitions of the securities
 markets:
   security_1:
-    name: "WashTraders pulling up 100-150"
+    name: "WashTraders pulling up 1000-1500"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -18,8 +18,8 @@ markets:
         number: 15
         config:
           lam: 0.1
-          q_max: 100
-          mean_volume: 10
+          q_max: 1000
+          mean_volume: 15
           mean_spread: 0.8
       zi_agents_informed:
         number: 0
@@ -41,7 +41,7 @@ markets:
           K: 3
           omega: 0.1
           rebalance_period: 20
-          volume: 130
+          volume: 60
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 0
@@ -53,9 +53,9 @@ markets:
           volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 20
+          q_max: 200
           L: 3 # memory length
           shade:
             - 0.1
@@ -64,9 +64,9 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 10
+          q_max: 100
           L: 5 # memory length
           shade:
             - 0.05
@@ -85,10 +85,10 @@ markets:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 100
-              end: 150
+              start: 1000
+              end: 1500
             lam: 0.99
-            spread: 0.5
+            spread: 0.2 # check this - it highly affects rebalancing, 0.5 was probably too high
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -99,10 +99,10 @@ markets:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 100
-              end: 150
+              start: 1000
+              end: 1500
             lam: 0.99
-            spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.2 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -152,8 +152,8 @@ markets:
         number: 15
         config:
           lam: 0.1
-          q_max: 100
-          mean_volume: 10
+          q_max: 1000
+          mean_volume: 15
           mean_spread: 0.8
       zi_agents_informed:
         number: 0
@@ -175,7 +175,7 @@ markets:
           K: 3
           omega: 0.1
           rebalance_period: 20
-          volume: 130
+          volume: 60
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 0
@@ -187,7 +187,7 @@ markets:
           volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 20
           L: 3 # memory length
@@ -198,7 +198,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           L: 5 # memory length
@@ -276,7 +276,7 @@ markets:
 
   # and the same market pushing the price down:
   security_3:
-    name: "WashTraders pushing down 100-150"
+    name: "WashTraders pushing down 1000-1500"
     ticker: "ACC"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
@@ -286,8 +286,8 @@ markets:
         number: 15
         config:
           lam: 0.1
-          q_max: 100
-          mean_volume: 10
+          q_max: 1000
+          mean_volume: 15
           mean_spread: 0.8
       zi_agents_informed:
         number: 0
@@ -309,7 +309,7 @@ markets:
           K: 3
           omega: 0.1
           rebalance_period: 20
-          volume: 130
+          volume: 60
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 0
@@ -321,9 +321,9 @@ markets:
           volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 20
+          q_max: 200
           L: 3 # memory length
           shade:
             - 0.1
@@ -332,9 +332,9 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 10
+          q_max: 100
           L: 5 # memory length
           shade:
             - 0.05
@@ -353,10 +353,10 @@ markets:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
-              start: 100
-              end: 150
+              start: 1000
+              end: 1500
             lam: 0.99
-            spread: 0.5
+            spread: 0.2
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -367,10 +367,10 @@ markets:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
-              start: 100
-              end: 150
+              start: 1000
+              end: 1500
             lam: 0.99
-            spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.2 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0

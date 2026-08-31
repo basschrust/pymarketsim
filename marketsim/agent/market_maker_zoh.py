@@ -58,6 +58,7 @@ class MMZOHAgent(Agent):
             st = max(estimate + HALF * self.omega, best_bid)
             bt = min(estimate - HALF * self.omega, best_ask)
             self.logger.info(f"Setting basic spread to: {bt}, {st}")
+            # TODO: adjust the spread for position rebalancing
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)
