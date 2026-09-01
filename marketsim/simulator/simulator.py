@@ -2,6 +2,8 @@ import pandas as pd
 from loguru import logger
 from typing import TYPE_CHECKING
 
+from marketsim.loggers.basic import terminal
+
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
@@ -215,8 +217,28 @@ class Simulator:
 
 
     def run(self) -> None:
+        last_progress = -1
+        bar_length = 40
+
         for t in range(self.sim_time):
             self.logger.info(f"Step: {t}.", end='')
             self.step()
+
+            # showing progress bar:
+            progress = (t + 1) / self.sim_time
+            percentage = int(progress * 100)
+
+            if percentage != last_progress:
+                filled = int(bar_length * progress)
+                bar = "█" * filled + "░" * (bar_length - filled)
+
+                terminal.write(
+                    f"\r|{bar}| {percentage:3d}%"
+                )
+                terminal.flush()
+
+                last_progress = percentage
+
+        terminal.write("\n")
         self.end_sim()
 

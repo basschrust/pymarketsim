@@ -48,6 +48,7 @@ class Market:
         logger.add(
             f"{config.output_dir}/market_{self.asset_id}.log",
             format="{elapsed} | {message}",
+            level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, market_id=self.asset_id:
             record["extra"].get("market_id") == market_id,
         )
@@ -201,11 +202,17 @@ class Market:
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
-    @staticmethod
-    def aggregate_order_queue(order_queue: dict, reverse: bool=False, cumulative: bool=False):
+    def aggregate_order_queue(self, order_queue: dict, reverse: bool=False, cumulative: bool=False):
         aggregated = defaultdict(int)
 
-        for price, quantity in order_queue:
+        for price, order_id in order_queue:
+            buy_order = self.order_book.buy_unmatched.order_dict.get(order_id)
+            sell_order = self.order_book.sell_unmatched.order_dict.get(order_id)
+
+            quantity = (
+                    (buy_order.quantity if buy_order is not None else 0)
+                    + (sell_order.quantity if sell_order is not None else 0)
+            )
             aggregated[abs(price)] += quantity
 
         items = sorted(aggregated.items(), reverse=reverse)
@@ -220,7 +227,7 @@ class Market:
         bids = self.aggregate_order_queue(order_queue=self.order_book.buy_unmatched.heap)
         asks = self.aggregate_order_queue(order_queue=self.order_book.sell_unmatched.heap)
 
-        self.logger.info(f"Bids: {bids}")
+        self.logger.info(f"Bids: {bids}") # TODO: it sums IDs here, not volumes!
         self.logger.info(f"Asks: {asks}")
 
         plot_order_book(

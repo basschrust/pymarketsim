@@ -55,14 +55,21 @@ class WashTradingAgent(Agent):
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                     #price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+
                     price = Price(best_ask) # or just below it? or randomly very close?
                     if self.manipulation_boundaries["manipulation_side"] == "BUY":
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+
                     else:
                         # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
                         quantity = int(
                             (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
+                    # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
+                    price_to_reach = self.market.order_book.get_ask_at_volume(quantity / 2) #+ Price(0.01)
+
+                    if not math.isfinite(price_to_reach):
+                        price_to_reach = self.market.last_traded_price + Price(0.5)
                 elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                     # prevent price from falling below 0:
                     # TODO: check if this is not the reason the market falls down systematically - the spread should
@@ -75,6 +82,13 @@ class WashTradingAgent(Agent):
                     else:
                         quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                    price_to_reach = self.market.order_book.get_bid_at_volume(quantity / 2)
+                    # TODO: add also a memory what price we set in the previous step (and was the order executed?)
+                    # TODO: and matched with the other side of the WT or just MM or Noise?
+                    if math.isfinite(price_to_reach):
+                        price_to_reach = price_to_reach #- Price(0.01)
+                    else:
+                        price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
                 else:
                     raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
 
@@ -82,9 +96,12 @@ class WashTradingAgent(Agent):
                     # in the second half we push more on volume to properly balance the position
                     quantity = int(1.2 * quantity)
 
-                if price > 0 and quantity > 0:
+                # the order should be placed with price within the boundaries specified by the venue
+                #if  price_to_reach
+
+                if price_to_reach > 0 and quantity > 0:
                     order = Order(
-                        price=price,
+                        price=price_to_reach,
                         quantity=quantity,
                         agent_id=self.agent_id,
                         asset_id=self.market.asset_id,
@@ -103,14 +120,14 @@ class WashTradingAgent(Agent):
                     quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position) < self.q_max else 1
                 else:
                     # so we are after the manipulation period - let's just rebalance here
-                    side = self.manipulation_boundaries["manipulation_side"]
+                    side = 1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
-                        # till the end of the simulation
-                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 20)
+                        # till the end of the simulation, it should depend on the momentary liquidity
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 30)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                 # TODO: some rebalance spread parameter?
-                price = self.market.last_traded_price + Price(0.2* spread * (random.random() - 0.5))
+                price = self.market.last_traded_price + Price(0.05 * spread * (random.random() - 0.5))
 
                 if price > 0 and quantity > 0:
                     order = Order(
@@ -119,14 +136,13 @@ class WashTradingAgent(Agent):
                         agent_id=self.agent_id,
                         asset_id=self.market.asset_id,
                         time=current_time,
-                        order_type=1 if side == BUY else -1,
+                        order_type=side,
                     )
                     orders.append(order)
         return orders
 
     def __str__(self):
         return f'WT_{self.pool_id}_{self.agent_id}'
-            #f'WT_{self.manipulation_type}_{self.manipulation_side}_{self.pool_id}_{self.agent_id}'
 
     def reset(self):
         self.position = 0

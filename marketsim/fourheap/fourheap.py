@@ -36,7 +36,6 @@ class FourHeap:
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
 
-
     def handle_new_order(self, order: Order) -> None:
         self.logger.info(f"handle_new_order {order}")
         q_order = order.quantity
@@ -63,6 +62,7 @@ class FourHeap:
                 new_order = order.copy_and_decrease(to_match_quantity)
                 orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
                 self.insert(new_order) # AK - this is problematic - should be added to the unmatched heap now, not the 4heap
+                # TODO: so check if this is needed and optimal
                 #orders_unmatched.add_order(new_order) # AK fix? TODO: but we have to check if this new order doesn't match next
                     # order on the other side
 
@@ -92,7 +92,7 @@ class FourHeap:
 
     def insert(self, order: Order, trading_phase: str = "continuous") -> None:
         # very important method in continuous market - determines the price in CDA (Cont.Double Auction)
-        self.logger.info(f"fourheap.insert {order}, trading_phase: {trading_phase}")
+        self.logger.debug(f"fourheap.insert {order}, trading_phase: {trading_phase}")
         if trading_phase == "continuous":
             self.agent_id_map[order.agent_id].append(order.order_id)
             if order.order_type == constants.SELL:
@@ -236,6 +236,53 @@ class FourHeap:
 
     def get_best_ask(self) -> float:
         return self.sell_unmatched.peek()
+
+    # methods useful for WashTraders - get the liquidity info:
+    def get_ask_at_volume(self, volume: int) -> Price | float:
+        if self.sell_unmatched.size < volume:
+            return math.inf
+
+        cum_volume = 0
+
+        for price, order_id in sorted(self.sell_unmatched.heap):
+            try:
+                order = self.sell_unmatched.order_dict[order_id]
+
+                if order_id in self.sell_unmatched.deleted_ids:
+                    continue
+
+                cum_volume += order.quantity
+            except KeyError:
+                self.logger.warning(f"No order with id {order_id} in sell_unmatched - get_ask_at_volume")
+
+            if cum_volume >= volume:
+                self.logger.info(f"Price: {price}, Cumulated volume for ask: {cum_volume}, required  {volume}")
+                return price
+
+        raise ValueError(f"Invalid volume for ask: {volume}")
+
+    def get_bid_at_volume(self, volume: int) -> Price | float:
+        # but if inf /- inf then not Price, but float
+        if self.buy_unmatched.size < volume:
+            return - math.inf
+
+        cum_volume = 0
+        for price, order_id in sorted(self.buy_unmatched.heap):
+            try:
+                order = self.buy_unmatched.order_dict[order_id]
+
+                if order_id in self.buy_unmatched.deleted_ids:
+                    continue
+
+                cum_volume += order.quantity
+            except KeyError:
+                self.logger.warning(f"No order with id {order_id} in buy_unmatched - get_bid_at_volume")
+
+            if cum_volume >= volume:
+                self.logger.info(f"Price: {price}, Cumulated volume for bid: {cum_volume}, required {volume}")
+                return - price
+
+        raise ValueError(f"Invalid volume for bid: {volume}")
 
     def update_midprice(self, current_time: int, lookback=14) -> None:
         best_ask = self.get_best_ask()

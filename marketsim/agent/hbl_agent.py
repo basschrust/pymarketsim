@@ -110,11 +110,11 @@ class HBLAgent(Agent):
                     end = mid
             else:
                 two2 = perf_counter()
-                self.logger.info(f"HBL timing - find_worst_order 2: {two2 - two1:.6f}s")
+                self.logger.debug(f"HBL timing - find_worst_order 2: {two2 - two1:.6f}s")
                 return order_mem[mid].price, 0
         two3 = perf_counter()
         # this branch is chosen most of the time
-        self.logger.info(f"HBL timing - find_worst_order 3: {two3 - two1:.6f}s")
+        self.logger.debug(f"HBL timing - find_worst_order 3: {two3 - two1:.6f}s")
         return order_mem[0].price, self.belief_function(order_mem[0].price, side, orders, current_time=current_time)
 
     def get_last_trade_time_step(self) -> int:
@@ -151,10 +151,10 @@ class HBLAgent(Agent):
                     matched_order = self.market.matched_orders_hashed[order.order_id]
                     if matched_order["order_type"] == BUY and matched_order["price"] <= p:
                         tfb1 = perf_counter()
-                        self.logger.info(f"HBL timings - fast_belief_function BF: {tfb1 - tfb0:.6f}s")
+                        self.logger.debug(f"HBL timings - fast_belief_function BF: {tfb1 - tfb0:.6f}s")
                         return False
             tfb1 = perf_counter()
-            self.logger.info(f"HBL timings - fast_belief_function BT: {tfb1 - tfb0:.6f}s")
+            self.logger.debug(f"HBL timings - fast_belief_function BT: {tfb1 - tfb0:.6f}s")
             return True
         else:
             for ind, order in enumerate(orders):
@@ -164,10 +164,10 @@ class HBLAgent(Agent):
                     matched_order = self.market.matched_orders_hashed[order.order_id]
                     if matched_order["order_type"] == SELL and matched_order["price"] >= p:
                         tfb1 = perf_counter()
-                        self.logger.info(f"HBL timings - fast_belief_function SF: {tfb1 - tfb0:.6f}s")
+                        self.logger.debug(f"HBL timings - fast_belief_function SF: {tfb1 - tfb0:.6f}s")
                         return False
             tfb1 = perf_counter()
-            self.logger.info(f"HBL timings - fast_belief_function ST: {tfb1 - tfb0:.6f}s")
+            self.logger.debug(f"HBL timings - fast_belief_function ST: {tfb1 - tfb0:.6f}s")
             return True
 
     def belief_function(self, p: Price, side: int, orders: list[Order], current_time:int) -> float:
@@ -227,7 +227,7 @@ class HBLAgent(Agent):
                                 RBG += (time_till_withdrawal / self.grace_period) * order.quantity
 
             pbf2 = perf_counter()
-            self.logger.info(f"HBL timing - beliefB: {pbf2-pbf1:.6f}s")
+            self.logger.debug(f"HBL timing - beliefB: {pbf2-pbf1:.6f}s")
             if TBL + AL == 0:
                 return 0
             else:
@@ -273,7 +273,7 @@ class HBLAgent(Agent):
                                 RAL += (time_till_withdrawal / self.grace_period) * order.quantity
 
             pbf2 = perf_counter()
-            self.logger.info(f"HBL timing - beliefS: {pbf2 - pbf1:.6f}s")
+            self.logger.debug(f"HBL timing - beliefS: {pbf2 - pbf1:.6f}s")
             if TAG + BG == 0:
                 return 0
             else:
@@ -329,7 +329,7 @@ class HBLAgent(Agent):
 
         t3 = perf_counter()
 
-        self.logger.info(
+        self.logger.debug(
             f"HBL timing: "
             f"get_orders={t1 - t0:.6f}s, "
             f"sorting={t2 - t1:.6f}s, "
@@ -395,7 +395,7 @@ class HBLAgent(Agent):
                 max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[lb, ub]])
                 t1b = perf_counter()
 
-                self.logger.info(f"HBL timing - optimization: {t1a - t1b:.6f}s")
+                self.logger.debug(f"HBL timing - optimization: {t1a - t1b:.6f}s")
                 
                 return max_x.x.item(), -max_x.fun
 
@@ -422,7 +422,7 @@ class HBLAgent(Agent):
                     buy_half = buy_low + self.buy_half_shade * abs(best_buy - buy_low)
                     buy_half_belief = self.belief_function(buy_half, BUY, last_L_orders)
                     tb2 = perf_counter()
-                    self.logger.info(f"HBL timing - belief functions: {tb1 - tb2:.6f}s")
+                    self.logger.debug(f"HBL timing - belief functions: {tb1 - tb2:.6f}s")
                     if best_buy != buy_high:
                         #interpolate between best buy and buy_high 
                         interpolate(best_buy, buy_high, best_buy_belief, buy_high_belief)
@@ -451,7 +451,7 @@ class HBLAgent(Agent):
                         buy_half = lower_bound + self.buy_half_shade * abs(best_buy - lower_bound)
                         buy_half_belief = self.belief_function(buy_half, BUY, last_L_orders)
                         tb4 = perf_counter()
-                        self.logger.info(f"HBL timing - belief2: {tb3 - tb4:.6f}s")
+                        self.logger.debug(f"HBL timing - belief2: {tb3 - tb4:.6f}s")
                         interpolate(buy_mid, best_buy, buy_mid_belief, best_buy_belief)
                         interpolate(buy_half, buy_mid, buy_half_belief, buy_mid_belief)
                         interpolate(lower_bound, buy_half, 0, buy_half_belief)
@@ -515,7 +515,7 @@ class HBLAgent(Agent):
                 Sell version of interpolate above. 
                 @TODO: Merge the two
                 """
-                self.logger.info(
+                self.logger.debug(
                     "Creating FCS: bound1={}, bound2={}, beliefs=({}, {})",
                     bound1,
                     float(bound2)+epsilon,
@@ -568,7 +568,7 @@ class HBLAgent(Agent):
                 max_x = sp.optimize.minimize(vOptimize, min_survey, bounds=[[float(lb), float(ub)]])
 
                 t2b = perf_counter()
-                self.logger.info(f"HBL timings - optimization: {t2b - t2a:.6f}s")
+                self.logger.debug(f"HBL timings - optimization: {t2b - t2a:.6f}s")
                 return max_x.x.item(), -max_x.fun
 
             if best_buy > sell_low:

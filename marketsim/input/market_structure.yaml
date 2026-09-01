@@ -1,25 +1,26 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 2000
+sim_time: 3000
 lob_plot_interval: 25
+debug_logging: False
 
 # definitions of the securities
 markets:
   security_1:
-    name: "WashTraders pulling up 1000-1300"
+    name: "WashTraders pulling up 1000-1500"
     ticker: "AAA"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 45
+        number: 15
         config:
-          lam: 0.45
-          q_max: 100
-          mean_volume: 3
-          mean_spread: 0.3
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -36,25 +37,25 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.06
-          K: 4
-          omega: 0.05
-          rebalance_period: 11
-          volume: 12
-      mmzoh_2:
-        agent_class: MMZOHAgent
-        number: 1
-        config:
-          xi: 0.1
+          xi: 0.12
           K: 3
           omega: 0.1
+          rebalance_period: 20
+          volume: 60
+      mmzoh_2:
+        agent_class: MMZOHAgent
+        number: 0
+        config:
+          xi: 0.1
+          K: 6
+          omega: 0.2
           rebalance_period: 17
-          volume: 11
+          volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 20
+          q_max: 200
           L: 3 # memory length
           shade:
             - 0.1
@@ -63,9 +64,9 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 10
+          q_max: 100
           L: 5 # memory length
           shade:
             - 0.05
@@ -79,29 +80,29 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 1000
+          q_max: 3000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 1000
-              end: 1300
-            lam: 0.9
-            spread: 0.5
+              end: 1500
+            lam: 0.99
+            spread: 0.09 # check this - it highly affects rebalancing, 0.5 was probably too high
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 1000
+          q_max: 3000
           manipulation_boundaries:
             manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 1000
-              end: 1300
-            lam: 0.9
-            spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+              end: 1500
+            lam: 0.99
+            spread: 0.09 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -135,7 +136,7 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 5
+          q_max: 20
           period: 15
 
   ########################## second security ###################################################
@@ -148,12 +149,12 @@ markets:
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 45
+        number: 15
         config:
-          lam: 0.45
-          q_max: 100
-          mean_volume: 3
-          mean_spread: 0.3
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -170,23 +171,23 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.06
-          K: 4
-          omega: 0.05
-          rebalance_period: 11
-          volume: 12
-      mmzoh_2:
-        agent_class: MMZOHAgent
-        number: 1
-        config:
-          xi: 0.1
+          xi: 0.12
           K: 3
           omega: 0.1
+          rebalance_period: 20
+          volume: 60
+      mmzoh_2:
+        agent_class: MMZOHAgent
+        number: 0
+        config:
+          xi: 0.1
+          K: 6
+          omega: 0.2
           rebalance_period: 17
-          volume: 11
+          volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 20
           L: 3 # memory length
@@ -197,7 +198,7 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
           q_max: 10
           L: 5 # memory length
@@ -268,24 +269,26 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 5
+          q_max: 20
           period: 15
+
+###################### third security #######################################
 
   # and the same market pushing the price down:
   security_3:
-    name: "WashTraders pushing down 1000-1300"
-    ticker: "AAA"
+    name: "WashTraders pushing down 1000-1500"
+    ticker: "ACC"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
       noise:
         agent_class: NoiseAgent
-        number: 45
+        number: 15
         config:
-          lam: 0.45
-          q_max: 100
-          mean_volume: 3
-          mean_spread: 0.3
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -302,25 +305,25 @@ markets:
         agent_class: MMZOHAgent
         number: 1
         config:
-          xi: 0.06
-          K: 4
-          omega: 0.05
-          rebalance_period: 11
-          volume: 12
-      mmzoh_2:
-        agent_class: MMZOHAgent
-        number: 1
-        config:
-          xi: 0.1
+          xi: 0.12
           K: 3
           omega: 0.1
+          rebalance_period: 20
+          volume: 60
+      mmzoh_2:
+        agent_class: MMZOHAgent
+        number: 0
+        config:
+          xi: 0.1
+          K: 6
+          omega: 0.2
           rebalance_period: 17
-          volume: 11
+          volume: 120
       hbl:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 20
+          q_max: 200
           L: 3 # memory length
           shade:
             - 0.1
@@ -329,9 +332,9 @@ markets:
           pv_var: 3.0e2
       hbl2:
         agent_class: HBLAgent
-        number: 1
+        number: 0
         config:
-          q_max: 10
+          q_max: 100
           L: 5 # memory length
           shade:
             - 0.05
@@ -345,29 +348,29 @@ markets:
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 1000
+          q_max: 3000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: BUY
             manipulation_period:
               start: 1000
-              end: 1300
-            lam: 0.9
-            spread: 0.5
+              end: 1500
+            lam: 0.99
+            spread: 0.09
       poolB:
         agent_class: WashTradingAgent
         number: 1
         config:
           lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 1000
+          q_max: 3000
           manipulation_boundaries:
             manipulation_type: PUSH_DOWN #PULL_UP
             manipulation_side: SELL
             manipulation_period: # could be more than 1 period
               start: 1000
-              end: 1300
-            lam: 0.9
-            spread: 0.5 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+              end: 1500
+            lam: 0.99
+            spread: 0.09 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -401,5 +404,5 @@ markets:
         number: 1
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 5
+          q_max: 20
           period: 15
