@@ -88,7 +88,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.2 # check this - it highly affects rebalancing, 0.5 was probably too high
+            spread: 0.12 # check this - it highly affects rebalancing, 0.5 was probably too high
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -102,7 +102,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.2 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.12 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -356,7 +356,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.2
+            spread: 0.12
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -370,7 +370,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.2 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.12 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
