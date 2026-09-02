@@ -7,19 +7,23 @@ from datetime import datetime
 from pathlib import Path
 
 
-class Loader(yaml.SafeLoader):
+class IncludeLoader(yaml.SafeLoader):
     pass
 
 
 def include_constructor(loader, node):
-    filename = Path(loader.name).parent / loader.construct_scalar(node)
+    relative_path = loader.construct_scalar(node)
 
-    with open(filename, "r") as f:
-        return yaml.load(f, Loader)
+    base_path = Path(loader.name).parent
+    file_path = base_path / relative_path
+
+    with open(file_path, "r") as f:
+        sub_loader = IncludeLoader(f)
+        sub_loader.name = str(file_path)
+        return sub_loader.get_single_data()
 
 
-Loader.add_constructor("!include", include_constructor)
-
+IncludeLoader.add_constructor("!include", include_constructor)
 
 
 # One directory per run
@@ -34,15 +38,28 @@ else:
     src_file = "marketsim/input/market_structure.yaml"
 
 # Copy the configuration used for this run
-shutil.copy2(
-    src_file,
-    f"{output_dir}/market_structure.yaml",
-)
+# shutil.copy2(
+#     src=src_file,
+#     dst=f"{output_dir}/market_structure.yaml",
+# )
 
-# with open(src_file) as f:
-#     CONFIG = yaml.safe_load(f)
+# with open(src_file, "r") as f:
+#     Loader.name = src_file
+#     CONFIG = yaml.load(f, Loader)
 
+# Load and resolve all templates
 with open(src_file, "r") as f:
-    Loader.name = src_file
-    CONFIG = yaml.load(f, Loader)
+    loader = IncludeLoader(f)
+    loader.name = src_file
+    CONFIG = loader.get_single_data()
+
+
+# Save the fully resolved configuration used for this run
+with open(f"{output_dir}/market_structure.yaml", "w") as f:
+    yaml.safe_dump(
+        CONFIG,
+        f,
+        sort_keys=False,
+        default_flow_style=False,
+    )
 
