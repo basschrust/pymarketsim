@@ -233,12 +233,12 @@ class Simulator:
                 bar = "█" * filled + "░" * (bar_length - filled)
 
                 terminal.write(
-                    f"\r|{bar}| {percentage:3d}%   Steps completed: {t}/{self.sim_time}"
+                    f"\r|{bar}| {percentage:3d}%   Steps completed: {t+1}/{self.sim_time}"
                 )
                 terminal.flush()
 
                 last_progress = percentage
 
-        terminal.write("Preparing summary...\n")
+        terminal.write("\nPreparing summary...\n")
         self.end_sim()
         terminal.write("Simulation complete.")
