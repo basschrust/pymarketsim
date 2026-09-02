@@ -88,7 +88,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.09 # check this - it highly affects rebalancing, 0.5 was probably too high
+            spread: 0.01 # check this - it highly affects rebalancing, 0.5 was probably too high
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -102,7 +102,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.09 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.01 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -125,7 +125,7 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 25
@@ -133,7 +133,7 @@ markets:
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
@@ -258,7 +258,7 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 25
@@ -266,7 +266,7 @@ markets:
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
@@ -356,7 +356,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.09
+            spread: 0.01  # it affects rebalance (strongly!)
       poolB:
         agent_class: WashTradingAgent
         number: 1
@@ -370,7 +370,7 @@ markets:
               start: 1000
               end: 1500
             lam: 0.99
-            spread: 0.09 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+            spread: 0.01 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
       spoofers:
         agent_class: SpoofingAgent
         number: 0
@@ -393,7 +393,7 @@ markets:
           period: 55
       momentum_2:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 25
@@ -401,7 +401,7 @@ markets:
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
-        number: 1
+        number: 0
         config:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20

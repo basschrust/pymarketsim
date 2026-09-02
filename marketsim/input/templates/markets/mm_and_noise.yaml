@@ -1,0 +1,23 @@
+  security_1:
+    name: "Market Makers and Noise"
+    ticker: "MMN"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
+      mmzoh_1:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.12
+          K: 3
+          omega: 0.1
+          rebalance_period: 20
+          volume: 60
