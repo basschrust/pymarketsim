@@ -77,8 +77,7 @@ class WashTradingAgent(Agent):
                                 return orders
 
                         else:
-                            # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
-                            pass
+                            self.price_to_reach = max(self.price_to_reach - Price(0.05), Price(0.01))
 
                     elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                         self.quantity = int(
@@ -92,7 +91,7 @@ class WashTradingAgent(Agent):
                             self.price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
 
                         if self.manipulation_boundaries["manipulation_side"] == "BUY":
-                            pass
+                            self.price_to_reach = self.price_to_reach+Price(0.05)
                         else:
                             if self.price_to_reach > 0 and self.quantity > 0:
                                 order = Order(
