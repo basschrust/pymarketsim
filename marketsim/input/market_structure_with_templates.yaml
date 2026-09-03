@@ -13,14 +13,7 @@ markets:
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
-      noise: !include templates/agents/noise.yaml
-#        agent_class: NoiseAgent
-#        number: 15
-#        config:
-#          lam: 0.1
-#          q_max: 1000
-#          mean_volume: 15
-#          mean_spread: 0.8
+      noise: !include templates/agents/noise_15_agents_rather_lazy.yaml
       zi_agents_informed:
         number: 0
       zi_agents_not_informed:
@@ -33,15 +26,7 @@ markets:
             - 0.1
             - 0.3
           pv_var: 5.0e2
-      mmzoh_1:
-        agent_class: MMZOHAgent
-        number: 1
-        config:
-          xi: 0.12
-          K: 3
-          omega: 0.1
-          rebalance_period: 20
-          volume: 60
+      mmzoh_1: !include templates/agents/MM_rebalance_20_vol_60.yaml
       mmzoh_2:
         agent_class: MMZOHAgent
         number: 0

@@ -2,14 +2,13 @@
 import os
 import sys
 import yaml
-import shutil
 from datetime import datetime
 from pathlib import Path
 
 
+# make use of templates in market structure:
 class IncludeLoader(yaml.SafeLoader):
     pass
-
 
 def include_constructor(loader, node):
     relative_path = loader.construct_scalar(node)
@@ -37,15 +36,6 @@ if len(sys.argv) > 1:
 else:
     src_file = "marketsim/input/market_structure.yaml"
 
-# Copy the configuration used for this run
-# shutil.copy2(
-#     src=src_file,
-#     dst=f"{output_dir}/market_structure.yaml",
-# )
-
-# with open(src_file, "r") as f:
-#     Loader.name = src_file
-#     CONFIG = yaml.load(f, Loader)
 
 # Load and resolve all templates
 with open(src_file, "r") as f:
