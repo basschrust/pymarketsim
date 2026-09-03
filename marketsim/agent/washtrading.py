@@ -17,14 +17,17 @@ class WashTradingAgent(Agent):
         super().__init__(market=market)
         self.group = "WASH_TRADING"
         self.agent_id = id_generator.next()
-        self.market = market
+        self.market = market # TODO: needed here if passed to super?
         self.q_max = q_max
-        self.lam = lam # yet not used
+        self.lam = lam # yet not used - probably used in the non-manipulation period
         self.position = 0
         self.cash = 0
         self.pool_id = pool_id
         self.manipulation_boundaries = manipulation_boundaries # what if several such periods? maybe list of dicts?
         self.mean_volume = mean_volume
+        # specific for this (WashTrading) type:
+        self.price_to_reach = self.market.last_traded_price
+        self.quantity = 0
 
 
     def get_id(self) -> int:
@@ -38,77 +41,117 @@ class WashTradingAgent(Agent):
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
-            best_bid = self.market.order_book.buy_unmatched.peek()
-            best_ask = self.market.order_book.sell_unmatched.peek()
-            if not math.isfinite(best_bid):
-                best_bid = self.market.last_traded_price - Price(0.01)
-            if not math.isfinite(best_ask):
-                best_ask = self.market.last_traded_price + Price(0.01)
-            #price = estimate if estimate is not None else self.market.last_traded_price
             length = period["end"] - current_time + 1  # how many days left in the manipulation period
             # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
 
             # if q_max almost reached we could try to push more with spread?
-            if True: #self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
+            if self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
+                # but then this method is easy to find out
                 #withdraw his old orders if yet not exercised
                 self.market.withdraw_all(agent_id=self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
-                if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                    #price = price + Price((self.manipulation_boundaries["spread"]*(0.9 + 0.2 * random.random())))
+                if current_time % 2 == 1:
+                    # in odd time ticks calculate volume & price and make order of one side
 
-                    price = Price(best_ask) # or just below it? or randomly very close?
-                    if self.manipulation_boundaries["manipulation_side"] == "BUY":
-                        quantity = int(
+                    if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
+                        self.quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                        # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
+                        self.price_to_reach = self.market.order_book.get_ask_at_volume(
+                            self.quantity / 2)  # + Price(0.01)
 
-                    else:
-                        # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
-                        quantity = int(
-                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
-                    # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
-                    price_to_reach = self.market.order_book.get_ask_at_volume(quantity / 2) #+ Price(0.01)
+                        if not math.isfinite(self.price_to_reach):
+                            self.price_to_reach = self.market.last_traded_price + Price(0.5)
 
-                    if not math.isfinite(price_to_reach):
-                        price_to_reach = self.market.last_traded_price + Price(0.5)
-                elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
-                    # prevent price from falling below 0:
-                    # TODO: check if this is not the reason the market falls down systematically - the spread should
-                    # lead to lognormal in long term.
-                    #price = max(Price((float(price) - self.manipulation_boundaries["spread"])*(0.98 + 0.04 * random.random())), Price(0.01))
-                    price = Price(best_bid) # if the edge is weak we could push further by bigger order
-                    if self.manipulation_boundaries["manipulation_side"] == "BUY":
-                        quantity = int(
-                            (self.q_max - abs(self.position)) * 1 / (length * self.manipulation_boundaries["lam"]))
-                    else:
-                        quantity = int(
+                        if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                            if self.price_to_reach > 0 and self.quantity > 0:
+                                order = Order(
+                                    price=self.price_to_reach,
+                                    quantity=self.quantity,
+                                    agent_id=self.agent_id,
+                                    asset_id=self.market.asset_id,
+                                    time=current_time,
+                                    order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                )
+                                orders.append(order)
+                                return orders
+
+                        else:
+                            # it was hard to set the proper volume here, the position kept being unbalanced so we have to sell more quickly
+                            pass
+
+                    elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
+                        self.quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
-                    price_to_reach = self.market.order_book.get_bid_at_volume(quantity / 2)
-                    # TODO: add also a memory what price we set in the previous step (and was the order executed?)
-                    # TODO: and matched with the other side of the WT or just MM or Noise?
-                    if math.isfinite(price_to_reach):
-                        price_to_reach = price_to_reach #- Price(0.01)
+                        self.price_to_reach = self.market.order_book.get_bid_at_volume(self.quantity / 2)
+                        # TODO: add also a memory what price we set in the previous step (and was the order executed?)
+                        # TODO: and matched with the other side of the WT or just MM or Noise?
+                        if math.isfinite(self.price_to_reach):
+                            self.price_to_reach = self.price_to_reach  # - Price(0.01)
+                        else:
+                            self.price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
+
+                        if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                            pass
+                        else:
+                            if self.price_to_reach > 0 and self.quantity > 0:
+                                order = Order(
+                                    price=self.price_to_reach,
+                                    quantity=self.quantity,
+                                    agent_id=self.agent_id,
+                                    asset_id=self.market.asset_id,
+                                    time=current_time,
+                                    order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                )
+                                orders.append(order)
+                                return orders
+
                     else:
-                        price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
+                        raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
                 else:
-                    raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
+                    # in even time ticks place the other side order, use price and volume calculated in previous step
+                    if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
+                        if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                            self.quantity = 0
+                        else:
+                            if self.price_to_reach > 0 and self.quantity > 0:
+                                order = Order(
+                                    price=self.price_to_reach,
+                                    quantity=self.quantity,
+                                    agent_id=self.agent_id,
+                                    asset_id=self.market.asset_id,
+                                    time=current_time,
+                                    order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                )
+                                orders.append(order)
+
+                    elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
+                        if self.manipulation_boundaries["manipulation_side"] == "SELL":
+                            self.quantity = 0
+                        else:
+                            if self.price_to_reach > 0 and self.quantity > 0:
+                                order = Order(
+                                    price=self.price_to_reach,
+                                    quantity=self.quantity,
+                                    agent_id=self.agent_id,
+                                    asset_id=self.market.asset_id,
+                                    time=current_time,
+                                    order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                )
+                                orders.append(order)
+
+                    else:
+                        raise ValueError(
+                            f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
+
 
                 if length < (period["end"] - period["start"]) / 2:
                     # in the second half we push more on volume to properly balance the position
-                    quantity = int(1.2 * quantity)
+                    self.quantity = int(1.2 * self.quantity)
 
                 # the order should be placed with price within the boundaries specified by the venue
                 #if  price_to_reach
 
-                if price_to_reach > 0 and quantity > 0:
-                    order = Order(
-                        price=price_to_reach,
-                        quantity=quantity,
-                        agent_id=self.agent_id,
-                        asset_id=self.market.asset_id,
-                        time=current_time,
-                        order_type=1 if self.manipulation_boundaries["manipulation_side"]=='BUY' else -1,
-                    )
-                    orders.append(order)
 
         else:
             # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)
