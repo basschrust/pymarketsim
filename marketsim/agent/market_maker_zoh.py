@@ -12,7 +12,7 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7):
+                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000):
         super().__init__(market=market)
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
@@ -26,6 +26,7 @@ class MMZOHAgent(Agent):
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
         self.volume = volume
+        self.q_max = q_max
 
     def get_id(self) -> int:
         return self.agent_id
@@ -58,7 +59,24 @@ class MMZOHAgent(Agent):
             st = max(estimate + HALF * self.omega, best_bid)
             bt = min(estimate - HALF * self.omega, best_ask)
             self.logger.info(f"Setting basic spread to: {bt}, {st}")
+            buy_volume = self.volume
+            sell_volume = self.volume
             # TODO: adjust the spread for position rebalancing
+            if abs(self.position) > self.q_max/2:
+                if self.position > 0:
+                    # the MM position is very long - needs to sell, so lower the prices
+                    st = st - HALF * self.omega
+                    bt = bt - HALF * self.omega
+                    if self.position > 3/4 * self.q_max:
+                        # if getting close to max we also limit the volume of buy orders:
+                        buy_volume = int(buy_volume /2)
+                else:
+                    # the MM position is very short - has to buy more, raise the prices
+                    st = st + HALF * self.omega
+                    bt = bt + HALF * self.omega
+                    if self.position < -3/4 * self.q_max:
+                        sell_volume = int(sell_volume /2)
+
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)
@@ -66,7 +84,7 @@ class MMZOHAgent(Agent):
                     orders.append(
                         Order(
                             price=price_bid,
-                            quantity=self.volume, #7,#1, # we ćould raise the quantity in each ladder step...
+                            quantity=buy_volume, #7,#1, # we ćould raise the quantity in each ladder step...
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=BUY,
@@ -76,7 +94,7 @@ class MMZOHAgent(Agent):
                     orders.append(
                         Order(
                             price= Price(st + (k + 1)*self.xi),
-                            quantity=self.volume, # 7,#1,
+                            quantity=sell_volume, # 7,#1,
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=SELL,
