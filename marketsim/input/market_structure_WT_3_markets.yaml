@@ -23,41 +23,4 @@ markets:
 ###################### third security #######################################
 
   # and the same market pushing the price down:
-  security_3:
-    name: "WashTraders pushing down 1000-1500"
-    ticker: "ACC"
-    market_type: continuous
-    lam: 0.8 # does this have any effect? It's defined in each agent though
-    agent_groups:
-      noise: !include templates/agents/noise_15_agents_rather_lazy.yaml
-      mmzoh_1: !include templates/agents/MM_rebalance_20_vol_60.yaml
-
-      # manipulators:
-      poolA:
-        agent_class: WashTradingAgent
-        number: 1
-        config:
-          lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 3000
-          manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
-            manipulation_side: BUY
-            manipulation_period:
-              start: 1000
-              end: 1500
-            lam: 0.99
-            spread: 0.01  # it affects rebalance (strongly!)
-      poolB:
-        agent_class: WashTradingAgent
-        number: 1
-        config:
-          lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-          q_max: 3000
-          manipulation_boundaries:
-            manipulation_type: PUSH_DOWN #PULL_UP
-            manipulation_side: SELL
-            manipulation_period: # could be more than 1 period
-              start: 1000
-              end: 1500
-            lam: 0.99
-            spread: 0.01 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+  security_3: !include templates/markets/wt_push_down_1000_1500.yaml
