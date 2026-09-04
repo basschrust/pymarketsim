@@ -12,12 +12,12 @@ agent_groups:
     number: 1
     config:
       lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-      q_max: 3000
+      q_max: 2000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: BUY
         manipulation_period:
-          start: 1000
+          start: 1002
           end: 1500
         lam: 0.99
         spread: 0.01  # it affects rebalance (strongly!)
@@ -26,12 +26,12 @@ agent_groups:
     number: 1
     config:
       lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
-      q_max: 3000
+      q_max: 2000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: SELL
         manipulation_period: # could be more than 1 period
-          start: 1000
+          start: 1002
           end: 1500
         lam: 0.99
         spread: 0.01 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!

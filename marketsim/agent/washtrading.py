@@ -35,7 +35,8 @@ class WashTradingAgent(Agent):
 
 
     def take_action(self, current_time: int): #, estimate: Price|None=None):
-        self.market.withdraw_all(agent_id=self.agent_id)
+        #self.market.withdraw_all(agent_id=self.agent_id) # no! we have to leave it for the crossing with the
+            # WT on the other side!
         period = self.manipulation_boundaries["manipulation_period"]
         orders = []
 
@@ -48,17 +49,18 @@ class WashTradingAgent(Agent):
             if self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
                 # but then this method is easy to find out
                 #withdraw his old orders if yet not exercised
-                self.market.withdraw_all(agent_id=self.agent_id)
+                #self.market.withdraw_all(agent_id=self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
-                if current_time % 2 == 1:
+                if current_time % 3 == 1:
                     # in odd time ticks calculate volume & price and make order of one side
+                    self.market.withdraw_all(agent_id=self.agent_id) # cancel also only in odd ticks
 
                     if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                         self.quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
                         # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
                         self.price_to_reach = self.market.order_book.get_ask_at_volume(
-                            self.quantity / 2)  # + Price(0.01)
+                            self.quantity / 4)  # + Price(0.01)
 
                         if not math.isfinite(self.price_to_reach):
                             self.price_to_reach = self.market.last_traded_price + Price(0.5)
@@ -75,14 +77,13 @@ class WashTradingAgent(Agent):
                                 )
                                 orders.append(order)
                                 return orders
-
                         else:
-                            self.price_to_reach = max(self.price_to_reach - Price(0.05), Price(0.01))
+                            self.price_to_reach = max(self.price_to_reach - Price(0.01), Price(0.01))
 
                     elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                         self.quantity = int(
                             (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
-                        self.price_to_reach = self.market.order_book.get_bid_at_volume(self.quantity / 2)
+                        self.price_to_reach = self.market.order_book.get_bid_at_volume(self.quantity / 4)
                         # TODO: add also a memory what price we set in the previous step (and was the order executed?)
                         # TODO: and matched with the other side of the WT or just MM or Noise?
                         if math.isfinite(self.price_to_reach):
@@ -91,7 +92,7 @@ class WashTradingAgent(Agent):
                             self.price_to_reach = max(self.market.last_traded_price - Price(0.5), Price(0.01))
 
                         if self.manipulation_boundaries["manipulation_side"] == "BUY":
-                            self.price_to_reach = self.price_to_reach+Price(0.05)
+                            self.price_to_reach = self.price_to_reach+Price(0.01)
                         else:
                             if self.price_to_reach > 0 and self.quantity > 0:
                                 order = Order(
@@ -107,8 +108,8 @@ class WashTradingAgent(Agent):
 
                     else:
                         raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
-                else:
-                    # in even time ticks place the other side order, use price and volume calculated in previous step
+                elif current_time % 3 == 2:
+                    # in even time ticks (2/3) place the other side order, use price and volume calculated in previous step
                     if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                         if self.manipulation_boundaries["manipulation_side"] == "BUY":
                             self.quantity = 0
@@ -142,15 +143,8 @@ class WashTradingAgent(Agent):
                     else:
                         raise ValueError(
                             f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
-
-
-                if length < (period["end"] - period["start"]) / 2:
-                    # in the second half we push more on volume to properly balance the position
-                    self.quantity = int(1.2 * self.quantity)
-
-                # the order should be placed with price within the boundaries specified by the venue
-                #if  price_to_reach
-
+                else:
+                    self.logger.info(f"WT waiting turn in time {current_time}.")
 
         else:
             # TODO: be a normal ZI agent :)  (sometimes smoothly align position using PVs)

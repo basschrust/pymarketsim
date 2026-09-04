@@ -64,19 +64,25 @@ class MMZOHAgent(Agent):
             # TODO: adjust the spread for position rebalancing
             if abs(self.position) > self.q_max/2:
                 if self.position > 0:
-                    # the MM position is very long - needs to sell, so lower the prices
-                    st = st - HALF * self.omega
-                    bt = bt - HALF * self.omega
+                    # the MM position is very long - needs to sell, so move the prices up
+                    st = st + HALF * self.omega
+                    bt = bt + HALF * self.omega
                     if self.position > 3/4 * self.q_max:
                         # if getting close to max we also limit the volume of buy orders:
                         buy_volume = int(buy_volume /2)
+                        if self.position > self.q_max:
+                            # if we exceeded the q_max then volume should be only symbolic
+                            buy_volume = 1
                 else:
-                    # the MM position is very short - has to buy more, raise the prices
-                    st = st + HALF * self.omega
-                    bt = bt + HALF * self.omega
+                    # the MM position is very short - has to buy more, lower the prices
+                    st = st - HALF * self.omega
+                    bt = bt - HALF * self.omega
                     if self.position < -3/4 * self.q_max:
                         sell_volume = int(sell_volume /2)
+                        if self.position < - self.q_max:
+                            sell_volume = 1
 
+            self.logger.info(f"Basic spread adjusted to: {bt}, {st}")
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)
