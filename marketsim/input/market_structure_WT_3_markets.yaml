@@ -1,0 +1,26 @@
+# market structure configuration file
+
+# generic simulation parameters
+sim_time: 5000
+lob_plot_interval: 25
+debug_logging: False
+
+# definitions of the securities
+markets:
+  security_1: !include templates/markets/wt_pull_up_1000_1500.yaml
+
+  ########################## second security ###################################################
+
+  security_2: # the same market but without WashTRaders:
+    name: "No washtraders security"
+    ticker: "ABB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise: !include templates/agents/noise_15_agents_rather_lazy.yaml
+      mmzoh_1: !include templates/agents/MM_rebalance_20_vol_60.yaml
+
+###################### third security #######################################
+
+  # and the same market pushing the price down:
+  security_3: !include templates/markets/wt_push_down_1000_1500.yaml

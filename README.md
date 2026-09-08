@@ -37,7 +37,7 @@ python -m pip install --upgrade pip
 
 pip install -e .
 
-python -m examples.simulation_main
+python -m run.simulation_main
 ```
 
 You can replace or augment the background agents with your own implementations by subclassing `marketsim.agent.agent.Agent` and registering instances in `sim.agents`. Fundamentals are swappable as long as they implement the `marketsim.fundamental.fundamental_abc.Fundamental` interface.
