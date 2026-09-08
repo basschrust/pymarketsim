@@ -7,7 +7,7 @@ debug_logging: False
 
 # definitions of the securities
 markets:
-  security_1: !include templates/markets/wt_pull_up_1000_1500.yaml
+  security_1: !include templates/markets/wt_pull_up_1000_2000.yaml
 
   ########################## second security ###################################################
 
@@ -18,9 +18,9 @@ markets:
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
       noise: !include templates/agents/noise_15_agents_rather_lazy.yaml
-      mmzoh_1: !include templates/agents/MM_rebalance_20_vol_60.yaml
+      mmzoh_1: !include templates/agents/MM_rebalance_23_vol_60.yaml
 
 ###################### third security #######################################
 
   # and the same market pushing the price down:
-  security_3: !include templates/markets/wt_push_down_1000_1500.yaml
+  security_3: !include templates/markets/wt_push_down_1000_2000.yaml

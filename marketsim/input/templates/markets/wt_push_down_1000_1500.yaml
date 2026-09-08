@@ -11,7 +11,7 @@ agent_groups:
     agent_class: WashTradingAgent
     number: 1
     config:
-      lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
+      lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
       q_max: 2000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
@@ -20,12 +20,12 @@ agent_groups:
           start: 1002
           end: 1500
         lam: 0.99
-        spread: 0.01  # it affects rebalance (strongly!)
+        spread: 0.00  # it affects rebalance (strongly!)
   poolB:
     agent_class: WashTradingAgent
     number: 1
     config:
-      lam: 0.3 # activation factor outside manipulation periods - should behave like ZI
+      lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
       q_max: 2000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
@@ -34,4 +34,4 @@ agent_groups:
           start: 1002
           end: 1500
         lam: 0.99
-        spread: 0.01 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+        spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
