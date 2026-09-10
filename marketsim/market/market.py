@@ -38,6 +38,11 @@ class Market:
         self.orders_by_agent_type = {}
         self.trades_by_agent_type = {}
         self.trades_by_agent_type_ext = {}
+        # by groups - including counterparty groups:
+        self.trade_history_by_groups = {}
+        self.agent_groups = set()
+
+        # TODO: check if this fundamental (externally provided value) is needed here
         self.fundamental = fundamental
 
         self.event_queue = EventQueue()
@@ -58,12 +63,21 @@ class Market:
         for agent in agents:
             self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
+            self.agent_groups.add(agent.group)
             self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
             self.trades_by_agent_type.setdefault(agent.group,
                                                  {"Count_buy": 0, "Volume_buy": 0, "Count_sell": 0, "Volume_sell": 0})
             self.trades_by_agent_type_ext.setdefault(agent.group,
                                                  {"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
                                                      , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+            # this one is tricky as requires n-square combination
+            # TODO: but also with already existing groups!
+            # and then by time...
+        for g1 in self.agent_groups:
+            for g2 in self.agent_groups:
+                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
+                                                     , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+        self.logger.info(f"trade_history_by_groups: {self.trade_history_by_groups}")
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -80,10 +94,12 @@ class Market:
         self.matched_orders += newly_matched_orders
         for matched_order in newly_matched_orders:
             inner_order = matched_order.order
-            self.matched_orders_hashed[inner_order.order_id] = {"price":inner_order.price,
-                                                                "quantity":inner_order.quantity,
-                                                                "order_type":inner_order.order_type
-                                                                }
+            self.matched_orders_hashed[inner_order.order_id] =  matched_order
+                                                         # TODO: it requires change in the HBL agents implementation
+                                                                #{ "price":inner_order.price,
+                                                                # "quantity":inner_order.quantity,
+                                                                # "order_type":inner_order.order_type
+                                                                #}
             # the limit from the order is needed, not the executed price
         return newly_matched_orders
 
@@ -116,11 +132,12 @@ class Market:
                                                 "Close": yesterday["Close"],
                                                 "Volume": 0, }
 
+        # taking the orders from queue to LOB:
         orders = self.event_queue.get_activities(current_time=current_time)
         self.buy_init_volume, self.sell_init_volume = 0, 0
         newly_matched_orders = []
         self.bid_ask_history.setdefault(current_time, [self.order_book.buy_unmatched.peek(), self.order_book.sell_unmatched.peek()])
-        self.logger.info(f"Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
+        self.logger.info(f"Starting step {current_time}. Current spread is: {self.order_book.buy_unmatched.peek()} {self.order_book.sell_unmatched.peek()}")
         self.logger.info(
             f"Defined by orders: buy: {self.order_book.buy_unmatched.heap[0][1] if not self.order_book.buy_unmatched.is_empty() else '<None>'}"
             f", sell: {self.order_book.sell_unmatched.heap[0][1] if not self.order_book.sell_unmatched.is_empty() else '<None>'}")
@@ -140,7 +157,13 @@ class Market:
             #let's see what happens ...
             if self.market_type == "continuous":
                 newly_matched_orders += self.clear_market(current_time=current_time)
+
+        # after all orders have been inserted into LOB the cleraing procedure should start in the "fixing" phase
         newly_matched_orders += self.clear_market(current_time=current_time)
+        if newly_matched_orders:
+            #raise # currently we're in continuous only - so here no order should be matched
+            # but it reaches this point :/
+            self.logger.info(f"Should not reach this point, matched: {newly_matched_orders}")
 
         # Compute midprices. AK - in continuous mode it may need a change
         self.order_book.update_midprice(current_time=current_time)
@@ -185,17 +208,29 @@ class Market:
         agent_id = matched_order.order.agent_id
         self.agents[agent_id].record_trade(matched_order=matched_order)
         # record it by type:
+        ccp_agent = self.matched_orders_hashed[matched_order.order.matched_with].order.agent_id
+        ccp_group = self.agents[ccp_agent].group
+
         if matched_order.order.order_type == 1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_buy"] += matched_order.order.quantity
             # and the ext version - filling the waited/arrived value - why not use a pandas DF?
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_buy"][matched_order.order.executed_mode] += 1
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+            # and with information about counterparty group:
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Count_buy"][matched_order.order.executed_mode] += 1
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+
         elif matched_order.order.order_type == -1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_sell"] += matched_order.order.quantity
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_sell"][matched_order.order.executed_mode] += 1
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_sell"][matched_order.order.executed_mode] += matched_order.order.quantity
+            # split by ccp:
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Count_sell"][
+                matched_order.order.executed_mode] += 1
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Volume_sell"][
+                matched_order.order.executed_mode] += matched_order.order.quantity
         else:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 

@@ -5,5 +5,5 @@ config:
   K: 3
   omega: 0.08
   rebalance_period: 23
-  volume: 60
+  volume: 40
   q_max: 1000

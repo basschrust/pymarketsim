@@ -3,7 +3,7 @@ ticker: "AAA"
 market_type: continuous
 lam: 0.8 # does this have any effect? It's defined in each agent though
 agent_groups:
-  noise: !include ../agents/noise_15_agents_rather_lazy.yaml
+  noise: !include ../agents/noise_25_agents_rather_lazy.yaml
   mmzoh_1: !include ../agents/MM_rebalance_20_vol_60.yaml
   # manipulators:
   poolA:
