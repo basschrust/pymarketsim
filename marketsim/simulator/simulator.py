@@ -45,7 +45,7 @@ class Simulator:
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r,
                                                 shock_var=self.shock_var)
 
-            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"], name=m_conf.get("name"))
+            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
 
             self.markets.append(market)
 
@@ -99,11 +99,6 @@ class Simulator:
             assert cash_sum == 0
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
-                #if not agent.is_market_maker():
-                #    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
-                                # so moving this to take_action? # the agents take care of it by themselves
-                # TODO: but now when agents withdraw their orders at the order defined in market structure
-                # TODO: then this may lead to wrong signals as each of them should first see the LOB (!!!)
                 orders = agent.take_action(current_time=self.current_time) # but there should be different actions
                             # in different markets, solved: agents are defined inside a single market
                 market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
@@ -150,6 +145,7 @@ class Simulator:
                 agent = market.agents[agent_id]
                 values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
                 values_by_last_traded_price[agent_id] = agent.position * market.last_traded_price + agent.cash
+            # TODO: put the results in separate, simple (CSV) files
             market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
             positions_sum = 0
             cash_sum = 0
@@ -211,6 +207,19 @@ class Simulator:
             plot_realized_volatility(volatility=volatility,
                                      output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
                                      title=f"Realized volatility {str(market)} with window {window}")
+
+            # plot the history of trading between agent groups:
+            market.trade_stats_df = pd.DataFrame(
+                [
+                    {
+                        "agentGroup": agentGroup,
+                        "cpGroup": cpGroup,
+                        "timeTick": timeTick,
+                        **values,
+                    }
+                    for (agentGroup, cpGroup, timeTick), values in market.trade_stats.items()
+                ]
+            )
 
 
     def run(self) -> None:

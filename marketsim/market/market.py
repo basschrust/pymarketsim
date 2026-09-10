@@ -41,6 +41,14 @@ class Market:
         # by groups - including counterparty groups:
         self.trade_history_by_groups = {}
         self.agent_groups = set()
+        # and let's use the power of DataFrames:
+        self.trade_stats = {}
+        self.trade_stats_df = pd.DataFrame()
+        # columns=[
+        #     "agentGroup", "ccpGroup", "timeTick", "Count_buy_arrived", "Count_buy_waited",
+        #         "Count_sell_arrived", "Count_sell_waited", "Volume_buy_arrived", "Volume_buy_waited",
+        #         "Volume_sell_arrived", "Volume_sell_waited"
+        # ])
 
         # TODO: check if this fundamental (externally provided value) is needed here
         self.fundamental = fundamental
@@ -208,8 +216,9 @@ class Market:
         agent_id = matched_order.order.agent_id
         self.agents[agent_id].record_trade(matched_order=matched_order)
         # record it by type:
-        ccp_agent = self.matched_orders_hashed[matched_order.order.matched_with].order.agent_id
-        ccp_group = self.agents[ccp_agent].group
+        cp_agent = self.matched_orders_hashed[matched_order.order.matched_with].order.agent_id
+        cp_group = self.agents[cp_agent].group
+        key = (current_time, self.agents[matched_order.order.agent_id].group, cp_group)
 
         if matched_order.order.order_type == 1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
@@ -218,8 +227,19 @@ class Market:
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_buy"][matched_order.order.executed_mode] += 1
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
             # and with information about counterparty group:
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Count_buy"][matched_order.order.executed_mode] += 1
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Count_buy"][matched_order.order.executed_mode] += 1
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+
+            # use the power of Pandas DFs (later in conversion:) ):
+            if key not in self.trade_stats:
+                self.trade_stats[key] = {"Count_buy": 1,
+                                         "Volume_buy": matched_order.order.quantity,
+                                         "Count_sell": 0,
+                                         "Volume_sell": 0
+                                         }
+            else:
+                self.trade_stats[key]["Count_buy"] += 1
+                self.trade_stats[key]["Volume_buy"] += matched_order.order.quantity
 
         elif matched_order.order.order_type == -1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
@@ -227,10 +247,20 @@ class Market:
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_sell"][matched_order.order.executed_mode] += 1
             self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_sell"][matched_order.order.executed_mode] += matched_order.order.quantity
             # split by ccp:
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Count_sell"][
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Count_sell"][
                 matched_order.order.executed_mode] += 1
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][ccp_group]["Volume_sell"][
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Volume_sell"][
                 matched_order.order.executed_mode] += matched_order.order.quantity
+
+            # use the power of Pandas DFs (later in conversion:) ):
+            if key not in self.trade_stats:
+                self.trade_stats[key] = {"Count_buy": 0,
+                                         "Volume_buy": 0,
+                                         "Count_sell": 1,
+                                         "Volume_sell": matched_order.order.quantity}
+            else:
+                self.trade_stats[key]["Count_sell"] += 1
+                self.trade_stats[key]["Volume_sell"] += matched_order.order.quantity
         else:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
