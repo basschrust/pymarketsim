@@ -25,4 +25,57 @@ markets:
           K: 5
           omega: 0.2
           rebalance_period: 10
-
+  second_market:
+    name: "Any name"
+    agent_groups:
+      zi_agents_informed:
+        number: 0
+      noise_agents:
+        agent_class: NoiseAgent
+        number: 3
+        config:
+          lam: 0.8
+          q_max: 100
+      noise_agents_2:
+        agent_class: NoiseAgent
+        number: 5
+        config:
+          lam: 0.8
+          q_max: 1000
+      mmzoh:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.2
+          K: 5
+          omega: 0.2
+          rebalance_period: 10
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 2000
+          manipulation_boundaries:
+            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 9
+              end: 30
+            lam: 0.99
+            spread: 0.00  # it affects rebalance (strongly!)
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.1 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 2000
+          manipulation_boundaries:
+            manipulation_type: PUSH_DOWN #PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 9
+              end: 30
+            lam: 0.99
+            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!

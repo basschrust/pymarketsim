@@ -526,3 +526,68 @@ class Plotter:
 
     def hist(self, df: pd.DataFrame, output_file: str) -> None:
         pass
+
+# the magic subplots for capital movement between groups:
+def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
+    """
+    Plot buy/sell volume history for each agent group.
+
+    For each unique agentGroup, create one figure.
+    The figure contains one subplot for each cpGroup
+    associated with that agentGroup.
+
+    X-axis: timeTick
+    Y-axis: volume
+    Lines: Volume_buy, Volume_sell
+    """
+
+    for agent_group in df["agentGroup"].unique():
+
+        agent_df = df[df["agentGroup"] == agent_group]
+
+        cp_groups = agent_df["cpGroup"].unique()
+        n_subplots = len(cp_groups)
+
+        fig, axes = plt.subplots(
+            n_subplots,
+            1,
+            figsize=(12, 4 * n_subplots),
+            sharex=True,
+        )
+
+        # When there is only one subplot, matplotlib doesn't return a list
+        if n_subplots == 1:
+            axes = [axes]
+
+        fig.suptitle(
+            f"Volume history - Agent Group: {agent_group}",
+            fontsize=14,
+        )
+
+        for ax, cp_group in zip(axes, cp_groups):
+            cp_df = agent_df[agent_df["cpGroup"] == cp_group]
+            ax.plot(
+                cp_df["timeTick"],
+                cp_df["Volume_buy"],
+                label="Volume_buy",
+            )
+            ax.plot(
+                cp_df["timeTick"],
+                cp_df["Volume_sell"],
+                label="Volume_sell",
+            )
+
+            ax.set_title(f"CP Group: {cp_group}")
+            ax.set_ylabel("Volume")
+            ax.grid(True)
+            ax.legend()
+
+            axes[-1].set_xlabel("Time tick")
+
+            plt.tight_layout()
+
+            output_file = output_file_tpl + agent_group + ".png"
+            Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+            fig.savefig(output_file, dpi=150)
+            plt.close(fig)
+

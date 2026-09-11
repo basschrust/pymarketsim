@@ -10,7 +10,7 @@ import math
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import plot_order_book
+from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers
 from marketsim.input import config
 from marketsim.market.price import Price
 from marketsim.fourheap.fourheap import FourHeap
@@ -44,11 +44,6 @@ class Market:
         # and let's use the power of DataFrames:
         self.trade_stats = {}
         self.trade_stats_df = pd.DataFrame()
-        # columns=[
-        #     "agentGroup", "ccpGroup", "timeTick", "Count_buy_arrived", "Count_buy_waited",
-        #         "Count_sell_arrived", "Count_sell_waited", "Volume_buy_arrived", "Volume_buy_waited",
-        #         "Volume_sell_arrived", "Volume_sell_waited"
-        # ])
 
         # TODO: check if this fundamental (externally provided value) is needed here
         self.fundamental = fundamental
@@ -139,6 +134,15 @@ class Market:
                                                 "High": yesterday["Close"],
                                                 "Close": yesterday["Close"],
                                                 "Volume": 0, }
+
+            for g1 in self.agent_groups:
+                for g2 in self.agent_groups:
+                    key = (current_time, g1, g2)
+                    self.trade_stats[key] = {"Count_buy": 0,
+                                         "Volume_buy": 0,
+                                         "Count_sell": 0,
+                                         "Volume_sell": 0
+                                         }
 
         # taking the orders from queue to LOB:
         orders = self.event_queue.get_activities(current_time=current_time)
@@ -267,6 +271,8 @@ class Market:
     def __str__(self) -> str:
         return f"Market_{self.asset_id}"
 
+    ## plotting and supporting functions     #######################
+
     def aggregate_order_queue(self, order_queue: dict, reverse: bool=False, cumulative: bool=False):
         aggregated = defaultdict(int)
 
@@ -353,3 +359,19 @@ class Market:
             )
 
         return volatility
+
+    def plot_trade_stats(self):
+        self.trade_stats_df = pd.DataFrame(
+            [
+                {
+                    "timeTick": timeTick,
+                    "agentGroup": agentGroup,
+                    "cpGroup": cpGroup,
+                    **values,
+                }
+                for (timeTick, agentGroup, cpGroup), values in self.trade_stats.items()
+            ]
+        )
+
+        self.logger.info(f"Volume transfers: {self.trade_stats_df.head(30)}")
+        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_{str(self)}_")
