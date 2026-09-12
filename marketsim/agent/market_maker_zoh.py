@@ -13,7 +13,7 @@ class MMZOHAgent(Agent):
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
-                 , rebalance_by: str = "time"):
+                 , rebalance_by: str = "time", rebalance_volume: int = 70):
         super().__init__(market=market)
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
@@ -27,6 +27,9 @@ class MMZOHAgent(Agent):
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
         self.rebalance_by = rebalance_by # time or volume
+        self.rebalance_volume = rebalance_volume
+        self.last_rebalance_time = 0
+
         self.volume = volume
         self.q_max = q_max
 
@@ -38,11 +41,26 @@ class MMZOHAgent(Agent):
     def is_market_maker(self) -> bool:
         return True
 
+    def should_rebalance(self, current_time:int) -> bool:
+        if self.rebalance_by == "time":
+            if current_time % self.rebalance_period == 0:
+                return True
+        elif self.rebalance_by == "volume":
+            # TODO: make the calculation, but what about methods - own, global, side, cash?
+            # TODO: check for performance:
+            cum_volume = 0
+            for i in range(self.last_rebalance_time, current_time):
+                cum_volume += self.market.traded_prices.get(i, {}).get("Volume", 0)
+            if cum_volume >= self.rebalance_volume:
+            # register last rebalance time
+                self.last_rebalance_time = current_time
+                return True
+        return False
 
     def take_action(self, current_time: int):
         orders = []
         # add orders only in rebalance periods:
-        if current_time % self.rebalance_period == 0:
+        if self.should_rebalance(current_time):
             # AK - clear previous orders (should we?)
             self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
             self.market.withdraw_all(agent_id=self.agent_id)

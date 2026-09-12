@@ -318,7 +318,6 @@ class Market:
         Returns:
             {time_tick: realized_volatility}
         """
-
         times = sorted(self.traded_prices)
 
         # Close price for each tick
@@ -329,24 +328,20 @@ class Market:
 
         # Log returns
         returns = {}
-
         previous_price = None
 
         for t in times:
             price = closes[t]
-
             if (
                     previous_price is not None
                     and previous_price > 0
                     and price > 0
             ):
                 returns[t] = math.log(price / previous_price)
-
             previous_price = price
 
         # Rolling realized volatility
         volatility = {}
-
         return_times = sorted(returns)
 
         for i, t in enumerate(return_times):
