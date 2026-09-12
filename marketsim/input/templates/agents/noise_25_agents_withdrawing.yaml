@@ -1,0 +1,8 @@
+agent_class: NoiseAgent
+number: 25
+config:
+  lam: 0.05
+  q_max: 1000
+  mean_volume: 8
+  mean_spread: 0.5
+  withdraw_old: True

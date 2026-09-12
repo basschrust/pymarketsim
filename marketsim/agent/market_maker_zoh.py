@@ -12,7 +12,8 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000):
+                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
+                 , rebalance_by: str = "time"):
         super().__init__(market=market)
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
@@ -25,8 +26,10 @@ class MMZOHAgent(Agent):
         self.K = K # number of orders in the ladder
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
+        self.rebalance_by = rebalance_by # time or volume
         self.volume = volume
         self.q_max = q_max
+
 
     def get_id(self) -> int:
         return self.agent_id

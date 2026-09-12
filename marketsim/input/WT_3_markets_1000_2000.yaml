@@ -18,6 +18,7 @@ markets:
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
       noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
+      noise2: !include templates/agents/noise_25_agents_withdrawing.yaml
       mmzoh_1: !include templates/agents/MM_rebalance_23_vol_60.yaml
 
 ###################### third security #######################################
