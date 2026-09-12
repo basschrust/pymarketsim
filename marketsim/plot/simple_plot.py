@@ -550,7 +550,7 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
 
         fig, axes = plt.subplots(
             n_subplots,
-            1,
+            ncols=1,
             figsize=(12, 4 * n_subplots),
             sharex=True,
         )
@@ -573,21 +573,27 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
             )
             ax.plot(
                 cp_df["timeTick"],
-                cp_df["Volume_sell"],
+                -cp_df["Volume_sell"],
                 label="Volume_sell",
             )
+            # Display absolute values on Y-axis
+            ax.yaxis.set_major_formatter(
+                lambda x, pos: f"{abs(x):g}"
+            )
+
+            # Put X-axis through y=0
+            ax.axhline(0, linewidth=1)
 
             ax.set_title(f"CP Group: {cp_group}")
             ax.set_ylabel("Volume")
             ax.grid(True)
             ax.legend()
 
-            axes[-1].set_xlabel("Time tick")
+        axes[-1].set_xlabel("Time tick")
 
-            plt.tight_layout()
+        plt.tight_layout()
 
-            output_file = output_file_tpl + agent_group + ".png"
-            Path(output_file).parent.mkdir(parents=True, exist_ok=True)
-            fig.savefig(output_file, dpi=150)
-            plt.close(fig)
-
+        output_file = output_file_tpl + agent_group + ".png"
+        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(output_file, dpi=150)
+        plt.close(fig)

@@ -35,7 +35,8 @@ class NoiseAgent(Agent):
     def take_action(self, current_time: int):
         orders = []
         if random.random() < self.lam:
-            # self.market.withdraw_all(agent_id=self.agent_id) # TODO: check the impact on resistance/support
+            self.market.withdraw_all(agent_id=self.agent_id) # TODO: check the impact on resistance/support -
+            # TODO: make it configurable - option name: withdraw_on_new/withdraw_old T/F
             side = random.choice([BUY, SELL])
             # side chosen randomly and stick to that, but later this agent may place many orders on chosen side
             quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?

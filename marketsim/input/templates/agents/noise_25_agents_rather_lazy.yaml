@@ -1,7 +1,7 @@
 agent_class: NoiseAgent
 number: 25
 config:
-  lam: 0.12
+  lam: 0.25
   q_max: 1000
   mean_volume: 15
-  mean_spread: 0.6
+  mean_spread: 0.7
