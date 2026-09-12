@@ -42,6 +42,8 @@ class MMZOHAgent(Agent):
         return True
 
     def should_rebalance(self, current_time:int) -> bool:
+        if current_time == 0:
+            return True
         if self.rebalance_by == "time":
             if current_time % self.rebalance_period == 0:
                 return True

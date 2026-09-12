@@ -6,6 +6,6 @@ config:
   omega: 0.12
   #rebalance_period: 23
   rebalance_by: volume
-  rebalance_volume: 500
+  rebalance_volume: 1000
   volume: 60
   q_max: 2000
