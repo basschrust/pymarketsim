@@ -92,3 +92,9 @@ class Agent(ABC):
             self.trade_history[matched_order.time] = {"trades": 1, "volume": abs(matched_order.order.quantity),
                                                     } # side, volume bought/sold, ...
 
+        # TODO: record also with what kind of agent the capital was exchanged with.
+        # and record it also per group...
+        # TODO: structure like: self.trade_history_by_groups =
+        #  {"MM":{ timeTick1: { volumeBought: , volumeSold: , cashBalance: }, timeTick2: {} } }
+        # TODO: reconcile it at the end
+

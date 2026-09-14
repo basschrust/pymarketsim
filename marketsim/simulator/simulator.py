@@ -7,7 +7,8 @@ from marketsim.loggers.basic import terminal
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import simple_plot, plot_agent_history, plot_by_type, plot_bid_ask, plot_realized_volatility
+from marketsim.plot.simple_plot import (simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
+, plot_realized_volatility, plot_volume_transfers)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market import Price, Market
@@ -34,18 +35,20 @@ class Simulator:
         self.r = r
         self.shock_var = shock_var # change probability of fundamental (market consensus) value
 
-        self.current_time = 0
+        self.current_time = 0 # TODO: needed in Market, here probably not?
         self.markets = [] # each market serves single security
 
         self.agents = {} # but agents are now moved to markets
         self.lob_plot_interval = lob_plot_interval
+        self.last_progress = -1
+        self.bar_length = 40
 
         for m_key, m_conf in markets.items():
             # TODO: take parameters from market conf
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r,
                                                 shock_var=self.shock_var)
 
-            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf["market_type"], name=m_conf.get("name"))
+            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
 
             self.markets.append(market)
 
@@ -89,6 +92,8 @@ class Simulator:
 
         return
 
+    ######################### __init__ ends here   ###################
+
     def step(self) -> None:
         self.logger.info(f'\nIt is time step {self.current_time}')
         for market in self.markets:
@@ -99,11 +104,6 @@ class Simulator:
             assert cash_sum == 0
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
-                #if not agent.is_market_maker():
-                #    market.withdraw_all(agent_id) # AK: well, the market maker should not withdraw the orders
-                                # so moving this to take_action? # the agents take care of it by themselves
-                # TODO: but now when agents withdraw their orders at the order defined in market structure
-                # TODO: then this may lead to wrong signals as each of them should first see the LOB (!!!)
                 orders = agent.take_action(current_time=self.current_time) # but there should be different actions
                             # in different markets, solved: agents are defined inside a single market
                 market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
@@ -138,6 +138,9 @@ class Simulator:
     def end_sim(self) -> None:
         """ End the simulation and print summary """
         self.logger.info(f"\n\nSimulation ended. time: {self.current_time}")
+        self.last_progress = -1
+        self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
+        market_steps = 0
         for market in self.markets:
             market.logger.info(f"Market {str(market)}:")
             fundamental_val = Price(market.get_final_fundamental())
@@ -150,6 +153,7 @@ class Simulator:
                 agent = market.agents[agent_id]
                 values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
                 values_by_last_traded_price[agent_id] = agent.position * market.last_traded_price + agent.cash
+            # TODO: put the results in separate, simple (CSV) files
             market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
             positions_sum = 0
             cash_sum = 0
@@ -212,30 +216,39 @@ class Simulator:
                                      output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
                                      title=f"Realized volatility {str(market)} with window {window}")
 
+            # plot the history of trading between agent groups:
+            market.plot_trade_stats()
+
+            self.show_progress_bar(step=market_steps, total=len(self.markets), step_name="Markets")
+            market_steps += 1
+
+    def show_progress_bar(self, step: int, total: int | None = None, step_name: str = "Steps") -> None:
+        if total is None:
+            total = self.sim_time
+        progress = (step + 1) / total
+        percentage = int(progress * 100)
+
+        if percentage != self.last_progress:
+            filled = int(self.bar_length * progress)
+            bar = "█" * filled + "░" * (self.bar_length - filled)
+
+            terminal.write(
+                f"\r|{bar}| {percentage:3d}%   {step_name} completed: {step + 1}/{total}"
+            )
+            terminal.flush()
+
+            self.last_progress = percentage
+
 
     def run(self) -> None:
-        last_progress = -1
-        bar_length = 40
+        terminal.write("\nStarting simulation...\n")
 
-        for t in range(self.sim_time):
-            self.logger.info(f"Step: {t}.", end='')
+        for step in range(self.sim_time):
+            self.logger.info(f"Simulation step start: {step}.", end='')
             self.step()
+            self.show_progress_bar(step)
 
-            # showing progress bar:
-            progress = (t + 1) / self.sim_time
-            percentage = int(progress * 100)
-
-            if percentage != last_progress:
-                filled = int(bar_length * progress)
-                bar = "█" * filled + "░" * (bar_length - filled)
-
-                terminal.write(
-                    f"\r|{bar}| {percentage:3d}%   Steps completed: {t+1}/{self.sim_time}"
-                )
-                terminal.flush()
-
-                last_progress = percentage
-
+        terminal.write("\nSimulation complete.")
         terminal.write("\nPreparing summary...\n")
         self.end_sim()
-        terminal.write("Simulation complete.")
+        terminal.write("\nSummary complete.")

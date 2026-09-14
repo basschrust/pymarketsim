@@ -14,7 +14,8 @@ class NoiseAgent(Agent):
     """
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
-    def __init__(self, market: Market, q_max: int, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)):
+    def __init__(self, market: Market, q_max: int, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
+                 , withdraw_old: bool = False):
         super().__init__(market=market)
         self.group = "Noise"
         self.agent_id = id_generator.next()
@@ -25,6 +26,8 @@ class NoiseAgent(Agent):
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
         self.mean_spread = mean_spread
+        # withdrawing old oders when placing new one:
+        self.withdraw_old = withdraw_old
 
     def get_id(self) -> int:
         return self.agent_id
@@ -35,7 +38,8 @@ class NoiseAgent(Agent):
     def take_action(self, current_time: int):
         orders = []
         if random.random() < self.lam:
-            # self.market.withdraw_all(agent_id=self.agent_id) # TODO: check the impact on resistance/support
+            if self.withdraw_old:
+                self.market.withdraw_all(agent_id=self.agent_id) # TODO: check the impact on resistance/support
             side = random.choice([BUY, SELL])
             # side chosen randomly and stick to that, but later this agent may place many orders on chosen side
             quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?

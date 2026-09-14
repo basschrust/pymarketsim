@@ -12,7 +12,8 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000):
+                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
+                 , rebalance_by: str = "time", rebalance_volume: int = 70):
         super().__init__(market=market)
         self.group = "MMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
@@ -25,8 +26,14 @@ class MMZOHAgent(Agent):
         self.K = K # number of orders in the ladder
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
+        self.rebalance_by = rebalance_by # time or volume
+        self.rebalance_volume = rebalance_volume
+        self.last_rebalance_time = 0
+        self.cum_volume = 0
+
         self.volume = volume
         self.q_max = q_max
+
 
     def get_id(self) -> int:
         return self.agent_id
@@ -35,11 +42,31 @@ class MMZOHAgent(Agent):
     def is_market_maker(self) -> bool:
         return True
 
+    def should_rebalance(self, current_time:int) -> bool:
+        if current_time == 0:
+            return True
+        if self.rebalance_by == "time":
+            if current_time % self.rebalance_period == 0:
+                return True
+        elif self.rebalance_by == "volume":
+            # in case of low trading volume period rebalance by time anyway:
+            if current_time - self.last_rebalance_time >= self.rebalance_period:
+                # TODO: prepare a more sophisticated time comparison function
+                self.last_rebalance_time = current_time
+                self.cum_volume = 0
+                return True
+            # TODO: make the calculation, but what about methods - own, global, side, cash?
+            self.cum_volume += self.market.traded_prices.get(current_time-1, {}).get("Volume", 0)
+            if self.cum_volume >= self.rebalance_volume:
+                self.last_rebalance_time = current_time
+                self.cum_volume = 0
+                return True
+        return False
 
     def take_action(self, current_time: int):
         orders = []
         # add orders only in rebalance periods:
-        if current_time % self.rebalance_period == 0:
+        if self.should_rebalance(current_time):
             # AK - clear previous orders (should we?)
             self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
             self.market.withdraw_all(agent_id=self.agent_id)

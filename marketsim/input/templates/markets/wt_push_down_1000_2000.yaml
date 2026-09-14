@@ -4,6 +4,7 @@ market_type: continuous
 lam: 0.8 # does this have any effect? It's defined in each agent though
 agent_groups:
   noise: !include ../agents/noise_15_agents_rather_lazy.yaml
+  noise_2: !include ../agents/noise_25_agents_withdrawing.yaml
   mmzoh_1: !include ../agents/MM_rebalance_23_vol_60.yaml
 
   # manipulators:
@@ -12,7 +13,7 @@ agent_groups:
     number: 1
     config:
       lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-      q_max: 3000
+      q_max: 8000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: BUY
@@ -26,7 +27,7 @@ agent_groups:
     number: 1
     config:
       lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-      q_max: 3000
+      q_max: 8000
       manipulation_boundaries:
         manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: SELL

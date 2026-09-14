@@ -3,7 +3,7 @@ number: 1
 config:
   xi: 0.12
   K: 3
-  omega: 0.12
+  omega: 0.08
   rebalance_period: 23
-  volume: 60
-  q_max: 2000
+  volume: 40
+  q_max: 1000

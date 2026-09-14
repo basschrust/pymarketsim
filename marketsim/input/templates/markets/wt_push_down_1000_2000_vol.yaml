@@ -1,11 +1,12 @@
-name: "WashTraders pulling up 1002-2000"
-ticker: "AAA"
+name: "WashTraders pushing down 1002-2000"
+ticker: "ACC"
 market_type: continuous
 lam: 0.8 # does this have any effect? It's defined in each agent though
 agent_groups:
-  noise: !include ../agents/noise_25_agents_rather_lazy.yaml
+  noise: !include ../agents/noise_15_agents_rather_lazy.yaml
   noise_2: !include ../agents/noise_25_agents_withdrawing.yaml
-  mmzoh_1: !include ../agents/MM_rebalance_23_vol_60.yaml
+  mmzoh_1: !include ../agents/MM_rebalance_by_vol.yaml
+
   # manipulators:
   poolA:
     agent_class: WashTradingAgent
@@ -14,13 +15,13 @@ agent_groups:
       lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
       q_max: 8000
       manipulation_boundaries:
-        manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+        manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: BUY
         manipulation_period:
           start: 1002
           end: 2000
         lam: 0.99
-        spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
+        spread: 0.00  # it affects rebalance (strongly!)
   poolB:
     agent_class: WashTradingAgent
     number: 1
@@ -28,7 +29,7 @@ agent_groups:
       lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
       q_max: 8000
       manipulation_boundaries:
-        manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+        manipulation_type: PUSH_DOWN #PULL_UP
         manipulation_side: SELL
         manipulation_period: # could be more than 1 period
           start: 1002

@@ -39,10 +39,12 @@ class WashTradingAgent(Agent):
             # WT on the other side!
         period = self.manipulation_boundaries["manipulation_period"]
         orders = []
+        length = period["end"] - period["start"]  # let' make it kiss (keep it silly simple)
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
-            length = max(period["end"] - current_time + 1, 10)  # how many days left in the manipulation period
+            #length = max(period["end"] - current_time + 1, 50)  # how many days left in the manipulation period
+            # moved upper as the length is used also in else clause
             # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
 
             # if q_max almost reached we could try to push more with spread?
@@ -159,7 +161,7 @@ class WashTradingAgent(Agent):
                     side = 1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1
                     # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
                         # till the end of the simulation, it should depend on the momentary liquidity
-                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / 30)
+                    quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / length)
 
                 spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                 # TODO: some rebalance spread parameter?
