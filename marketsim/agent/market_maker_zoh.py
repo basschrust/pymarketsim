@@ -29,6 +29,7 @@ class MMZOHAgent(Agent):
         self.rebalance_by = rebalance_by # time or volume
         self.rebalance_volume = rebalance_volume
         self.last_rebalance_time = 0
+        self.cum_volume = 0
 
         self.volume = volume
         self.q_max = q_max
@@ -50,12 +51,14 @@ class MMZOHAgent(Agent):
         elif self.rebalance_by == "volume":
             # TODO: make the calculation, but what about methods - own, global, side, cash?
             # TODO: check for performance:
-            cum_volume = 0
-            for i in range(self.last_rebalance_time, current_time):
-                cum_volume += self.market.traded_prices.get(i, {}).get("Volume", 0)
-            if cum_volume >= self.rebalance_volume:
+            #cum_volume = 0
+            #for i in range(self.last_rebalance_time, current_time):
+            #    cum_volume += self.market.traded_prices.get(i, {}).get("Volume", 0)
+            self.cum_volume += self.market.traded_prices.get(current_time-1, {}).get("Volume", 0)
+            if self.cum_volume >= self.rebalance_volume:
             # register last rebalance time
                 self.last_rebalance_time = current_time
+                self.cum_volume = 0
                 return True
         return False
 

@@ -1,11 +1,11 @@
 agent_class: MMZOHAgent
 number: 1
 config:
-  xi: 0.12
+  xi: 0.1
   K: 3
-  omega: 0.12
+  omega: 0.06
   #rebalance_period: 23
   rebalance_by: volume
-  rebalance_volume: 1000
-  volume: 60
+  rebalance_volume: 1500
+  volume: 90
   q_max: 2000
