@@ -4,8 +4,8 @@ config:
   xi: 0.1
   K: 3
   omega: 0.06
-  #rebalance_period: 23
+  rebalance_period: 67 # for long periods of low volume the MM will rebalance anyway - using this period
   rebalance_by: volume
-  rebalance_volume: 2500
+  rebalance_volume: 2000
   volume: 90
   q_max: 3000

@@ -248,6 +248,7 @@ class Simulator:
             self.step()
             self.show_progress_bar(step)
 
+        terminal.write("\nSimulation complete.")
         terminal.write("\nPreparing summary...\n")
         self.end_sim()
-        terminal.write("\nSimulation complete.")
+        terminal.write("\nSummary complete.")
