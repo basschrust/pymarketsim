@@ -80,7 +80,6 @@ class Market:
             for g2 in self.agent_groups:
                 self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
                                                      , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
-        self.logger.info(f"trade_history_by_groups: {self.trade_history_by_groups}")
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -99,10 +98,6 @@ class Market:
             inner_order = matched_order.order
             self.matched_orders_hashed[inner_order.order_id] =  matched_order
                                                          # TODO: it requires change in the HBL agents implementation
-                                                                #{ "price":inner_order.price,
-                                                                # "quantity":inner_order.quantity,
-                                                                # "order_type":inner_order.order_type
-                                                                #}
             # the limit from the order is needed, not the executed price
         return newly_matched_orders
 
