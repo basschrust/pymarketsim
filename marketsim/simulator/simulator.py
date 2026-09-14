@@ -35,11 +35,13 @@ class Simulator:
         self.r = r
         self.shock_var = shock_var # change probability of fundamental (market consensus) value
 
-        self.current_time = 0
+        self.current_time = 0 # TODO: needed in Market, here probably not?
         self.markets = [] # each market serves single security
 
         self.agents = {} # but agents are now moved to markets
         self.lob_plot_interval = lob_plot_interval
+        self.last_progress = -1
+        self.bar_length = 40
 
         for m_key, m_conf in markets.items():
             # TODO: take parameters from market conf
@@ -90,6 +92,8 @@ class Simulator:
 
         return
 
+    ######################### __init__ ends here   ###################
+
     def step(self) -> None:
         self.logger.info(f'\nIt is time step {self.current_time}')
         for market in self.markets:
@@ -134,6 +138,9 @@ class Simulator:
     def end_sim(self) -> None:
         """ End the simulation and print summary """
         self.logger.info(f"\n\nSimulation ended. time: {self.current_time}")
+        self.last_progress = -1
+        self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
+        market_steps = 0
         for market in self.markets:
             market.logger.info(f"Market {str(market)}:")
             fundamental_val = Price(market.get_final_fundamental())
@@ -212,30 +219,35 @@ class Simulator:
             # plot the history of trading between agent groups:
             market.plot_trade_stats()
 
+            self.show_progress_bar(step=market_steps, total=len(self.markets), step_name="Markets")
+            market_steps += 1
+
+    def show_progress_bar(self, step: int, total: int | None = None, step_name: str = "Steps") -> None:
+        if total is None:
+            total = self.sim_time
+        progress = (step + 1) / total
+        percentage = int(progress * 100)
+
+        if percentage != self.last_progress:
+            filled = int(self.bar_length * progress)
+            bar = "█" * filled + "░" * (self.bar_length - filled)
+
+            terminal.write(
+                f"\r|{bar}| {percentage:3d}%   {step_name} completed: {step + 1}/{total}"
+            )
+            terminal.flush()
+
+            self.last_progress = percentage
+
 
     def run(self) -> None:
-        last_progress = -1
-        bar_length = 40
+        terminal.write("\nStarting simulation...\n")
 
-        for t in range(self.sim_time):
-            self.logger.info(f"Step: {t}.", end='')
+        for step in range(self.sim_time):
+            self.logger.info(f"Simulation step start: {step}.", end='')
             self.step()
-
-            # showing progress bar:
-            progress = (t + 1) / self.sim_time
-            percentage = int(progress * 100)
-
-            if percentage != last_progress:
-                filled = int(bar_length * progress)
-                bar = "█" * filled + "░" * (bar_length - filled)
-
-                terminal.write(
-                    f"\r|{bar}| {percentage:3d}%   Steps completed: {t+1}/{self.sim_time}"
-                )
-                terminal.flush()
-
-                last_progress = percentage
+            self.show_progress_bar(step)
 
         terminal.write("\nPreparing summary...\n")
         self.end_sim()
-        terminal.write("Simulation complete.")
+        terminal.write("\nSimulation complete.")
