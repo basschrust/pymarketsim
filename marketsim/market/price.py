@@ -14,6 +14,12 @@ class Price(Decimal):
         d = Decimal(str(value))
         if not d.is_finite():
             raise ValueError("Price must be finite")
+
+        # Optional sanity check
+        if abs(d) > Decimal("1_000_000"):
+            raise ValueError(f"Unreasonable price: {value}")
+
+        print(f"d: {d}")
         return super().__new__(
             cls,
             d.quantize(cls.TICK_SIZE, rounding=ROUND_HALF_UP)

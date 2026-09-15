@@ -168,8 +168,9 @@ class Market:
                 newly_matched_orders += self.clear_market(current_time=current_time)
 
         # after all orders have been inserted into LOB the cleraing procedure should start in the "fixing" phase
-        newly_matched_orders += self.clear_market(current_time=current_time)
-        if newly_matched_orders:
+        newly_matched_orders_2 = self.clear_market(current_time=current_time)
+        newly_matched_orders += newly_matched_orders_2
+        if newly_matched_orders_2:
             #raise # currently we're in continuous only - so here no order should be matched
             # but it reaches this point :/
             self.logger.info(f"Should not reach this point, matched: {newly_matched_orders}")

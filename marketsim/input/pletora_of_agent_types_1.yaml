@@ -327,18 +327,18 @@ markets:
           lam: 0.6
           q_max: 20
           period: 15
-#      spoofers:
-#        agent_class: SpoofingAgent
-#        number: 1
-#        config:
-#          q_max: 100
-#          pv_var: 7.0e2
-#          order_size: 10
-#          spoofing_size: 1000
-#          normalizers:
-#            fundamental: 100
-#            reward: 10000
-#            min_order_val: 100
-#            invt: 10
-#            cash: 1000000
+      spoofers:
+        agent_class: SpoofingAgent
+        number: 1
+        config:
+          q_max: 100
+          pv_var: 0
+          order_size: 10
+          spoofing_size: 1000
+          normalizers:
+            fundamental: 100
+            reward: 1000
+            min_order_val: 100
+            invt: 10
+            cash: 100000
 
