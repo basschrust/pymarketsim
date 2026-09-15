@@ -13,7 +13,10 @@ class SpoofingAgent(Agent):
         self.group = "SP"
         self.agent_id = id_generator.next()
         self.market = market
-        self.pv = PrivateValues(q_max, pv_var)
+        if pv_var is not None:
+            self.pv = pv_var
+        else:
+            self.pv = PrivateValues(q_max, float(pv_var))
         self.position = 0
         self.spoofing_size = spoofing_size
         self.order_size = order_size
@@ -41,14 +44,16 @@ class SpoofingAgent(Agent):
         return estimate
 
     def take_action(self, current_time:int):
-        # TODO - calculate them
+        # TODO - calculate them - we can inspect LOB (just like WTs)!
         regular_order_price = self.market.last_traded_price + Price(0.4)
         spoofing_order_price = self.market.last_traded_price - Price(0.01)
 
+        # TODO: we can make it alittle more sophisticated! lol
         orders = []
         # Regular order.
+        # self.logger.info(f"Normalizers fundamental: {self.normalizers['fundamental'].__class__}")
         regular_order = Order(
-            price=Price(float(regular_order_price) * self.normalizers["fundamental"]),
+            price=Price(float(regular_order_price)), # * float(self.normalizers["fundamental"])),
             quantity=self.order_size,
             agent_id=self.get_id(),
             time=current_time,
@@ -58,8 +63,10 @@ class SpoofingAgent(Agent):
         orders.append(regular_order)
 
         # Spoofing Order
+        # TODO: we have to cancel the order very quickly, before it is executed!
+        # TODO: but the traders to be tricked are HBL - so they have to trade some reasonable volume!
         spoofing_order = Order(
-            price=Price(float(spoofing_order_price) * self.normalizers["fundamental"]),
+            price=Price(float(spoofing_order_price)), # * float(self.normalizers["fundamental"])),
             quantity=self.spoofing_size,
             agent_id=self.get_id(),
             time=current_time,
