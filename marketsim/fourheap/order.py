@@ -28,8 +28,10 @@ class Order:
     executed_mode: str | None = None # arrived - executed immediately after placing/waited - placed in the LOB and later crossed with an order which arrived later
     parent_id: int | None = None
     matched_with: int | None = None # order_id of the order that matched with this one
+    valid_until: int | None = None # order will be cancelled when time tick reaches this value. None means no cancelling by time
 
-    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, asset_id:int, parent_id: int | None = None, matched_with: int |None=None) -> None:
+    def __init__(self, price: Price, order_type: int, quantity: int, agent_id: int, time:int, asset_id:int,
+                 parent_id: int | None = None, matched_with: int |None=None, valid_until: int|None = None) -> None:
         validate_price(price)
         self.price = price
         self.order_type = order_type
@@ -40,6 +42,7 @@ class Order:
         self.order_id = id_generator.next()
         self.parent_id = parent_id # order_id of the original order when this one is created after partial execution
         self.matched_with = matched_with
+        self.valid_until = valid_until
 
     def update_quantity_filled(self, quantity: int) -> None:
         self.quantity -= quantity
@@ -83,4 +86,4 @@ class MatchedOrder:
     order: Order
     volume: int
     cash: Price
-    phase: str | None = None
+    phase: str | None = None  # continuous / fixing / otc - yet not used
