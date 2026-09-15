@@ -8,239 +8,239 @@ debug_logging: False
 # definitions of the securities
 markets:
   # WT + MM + Noise
-  # security_1: !include templates/markets/wt_pull_up_1000_2000_vol.yaml
+  security_1: !include templates/markets/wt_pull_up_1000_2000_vol.yaml
 
   ########################## second security ###################################################
 
   # WT + MM + Noise + HBL
-#  security_2:
-#    name: "WTs pulling up 1002-2000 + HBL"
-#    ticker: "AAB"
-#    market_type: continuous
-#    lam: 0.8 # does this have any effect? It's defined in each agent though
-#    agent_groups:
-#      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
-#      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
-#      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
-#      # manipulators:
-#      poolA:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: BUY
-#            manipulation_period:
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
-#      poolB:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: SELL
-#            manipulation_period: # could be more than 1 period
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
-#      hbl:
-#        agent_class: HBLAgent
-#        number: 1
-#        config:
-#          q_max: 200
-#          L: 13 # memory length
-#          shade:
-#            - 0.01
-#            - 0.03
-#          arrival_rate: 2
-#          pv_var: 0
-#      hbl2:
-#        agent_class: HBLAgent
-#        number: 1
-#        config:
-#          q_max: 100
-#          L: 25 # memory length
-#          shade:
-#            - 0.05
-#            - 0.1
-#          arrival_rate: 4
-#          pv_var: 0
+  security_2:
+    name: "WTs pulling up 1002-2000 + HBL"
+    ticker: "AAB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
+      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
+      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+      hbl:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 200
+          L: 13 # memory length
+          shade:
+            - 0.01
+            - 0.03
+          arrival_rate: 2
+          pv_var: 0
+      hbl2:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 100
+          L: 25 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 4
+          pv_var: 0
 
 
 ###################### third security #######################################
 
   # WT + MM + Noise + HBL + Momentum
-#  security_3:
-#    name: "WTs pulling up 1002-2000 + HBL + 2xMomentum"
-#    ticker: "AAC"
-#    market_type: continuous
-#    lam: 0.8 # does this have any effect? It's defined in each agent though
-#    agent_groups:
-#      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
-#      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
-#      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
-#      # manipulators:
-#      poolA:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: BUY
-#            manipulation_period:
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
-#      poolB:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: SELL
-#            manipulation_period: # could be more than 1 period
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
-#    hbl:
-#      agent_class: HBLAgent
-#      number: 1
-#      config:
-#        q_max: 200
-#        L: 13 # memory length
-#        shade:
-#          - 0.01
-#          - 0.03
-#        arrival_rate: 2
-#        pv_var: 0
-#    hbl2:
-#      agent_class: HBLAgent
-#      number: 1
-#      config:
-#        q_max: 100
-#        L: 25 # memory length
-#        shade:
-#          - 0.05
-#          - 0.1
-#        arrival_rate: 4
-#        pv_var: 0
-#    # momentum traders:
-#    momentum_1:
-#      agent_class: MomentumAgent
-#      number: 1
-#      config:
-#        lam: 0.6
-#        q_max: 5 # yet this is used as transaction volume instead of max engagement
-#        period: 55
-#    momentum_2:
-#      agent_class: MomentumAgent
-#      number: 1
-#      config:
-#        lam: 0.6
-#        q_max: 25
-#        period: 100
-#        threshold: 0.005
+  security_3:
+    name: "WTs pulling up 1002-2000 + HBL + 2xMomentum"
+    ticker: "AAC"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
+      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
+      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+    hbl:
+      agent_class: HBLAgent
+      number: 1
+      config:
+        q_max: 200
+        L: 13 # memory length
+        shade:
+          - 0.01
+          - 0.03
+        arrival_rate: 2
+        pv_var: 0
+    hbl2:
+      agent_class: HBLAgent
+      number: 1
+      config:
+        q_max: 100
+        L: 25 # memory length
+        shade:
+          - 0.05
+          - 0.1
+        arrival_rate: 4
+        pv_var: 0
+    # momentum traders:
+    momentum_1:
+      agent_class: MomentumAgent
+      number: 1
+      config:
+        lam: 0.6
+        q_max: 5 # yet this is used as transaction volume instead of max engagement
+        period: 55
+    momentum_2:
+      agent_class: MomentumAgent
+      number: 1
+      config:
+        lam: 0.6
+        q_max: 25
+        period: 100
+        threshold: 0.005
 
 ###################### fourth security #######################################
 
       # more momentum traders
-#  security_4:
-#    name: "WTs pulling up 1002-2000 + HBL + 3xMomentum"
-#    ticker: "AAD"
-#    market_type: continuous
-#    lam: 0.8 # does this have any effect? It's defined in each agent though
-#    agent_groups:
-#      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
-#      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
-#      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
-#      # manipulators:
-#      poolA:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: BUY
-#            manipulation_period:
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
-#      poolB:
-#        agent_class: WashTradingAgent
-#        number: 1
-#        config:
-#          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
-#          q_max: 11000
-#          manipulation_boundaries:
-#            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
-#            manipulation_side: SELL
-#            manipulation_period: # could be more than 1 period
-#              start: 1002
-#              end: 2000
-#            lam: 0.995
-#            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
-#      hbl:
-#        agent_class: HBLAgent
-#        number: 1
-#        config:
-#          q_max: 200
-#          L: 13 # memory length
-#          shade:
-#            - 0.01
-#            - 0.03
-#          arrival_rate: 2
-#          pv_var: 0
-#      hbl2:
-#        agent_class: HBLAgent
-#        number: 1
-#        config:
-#          q_max: 100
-#          L: 25 # memory length
-#          shade:
-#            - 0.05
-#            - 0.1
-#          arrival_rate: 4
-#          pv_var: 0
-#      # momentum traders:
-#      momentum_1:
-#        agent_class: MomentumAgent
-#        number: 1
-#        config:
-#          lam: 0.6
-#          q_max: 5 # yet this is used as transaction volume instead of max engagement
-#          period: 55
-#      momentum_2:
-#        agent_class: MomentumAgent
-#        number: 1
-#        config:
-#          lam: 0.6
-#          q_max: 25
-#          period: 100
-#          threshold: 0.005
-#      momentum_3:
-#        agent_class: MomentumAgent
-#        number: 1
-#        config:
-#          lam: 0.6
-#          q_max: 20
-#          period: 15
+  security_4:
+    name: "WTs pulling up 1002-2000 + HBL + 3xMomentum"
+    ticker: "AAD"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
+      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
+      mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
+      # manipulators:
+      poolA:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: BUY
+            manipulation_period:
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # check this - it highly affects rebalancing, 0.5 was probably too high
+      poolB:
+        agent_class: WashTradingAgent
+        number: 1
+        config:
+          lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
+          q_max: 11000
+          manipulation_boundaries:
+            manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
+            manipulation_side: SELL
+            manipulation_period: # could be more than 1 period
+              start: 1002
+              end: 2000
+            lam: 0.995
+            spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+      hbl:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 200
+          L: 13 # memory length
+          shade:
+            - 0.01
+            - 0.03
+          arrival_rate: 2
+          pv_var: 0
+      hbl2:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 100
+          L: 25 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 4
+          pv_var: 0
+      # momentum traders:
+      momentum_1:
+        agent_class: MomentumAgent
+        number: 1
+        config:
+          lam: 0.6
+          q_max: 5 # yet this is used as transaction volume instead of max engagement
+          period: 55
+      momentum_2:
+        agent_class: MomentumAgent
+        number: 1
+        config:
+          lam: 0.6
+          q_max: 25
+          period: 100
+          threshold: 0.005
+      momentum_3:
+        agent_class: MomentumAgent
+        number: 1
+        config:
+          lam: 0.6
+          q_max: 20
+          period: 15
 
 ###################### fifth security #######################################
 
