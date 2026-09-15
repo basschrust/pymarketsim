@@ -1,10 +1,13 @@
 from decimal import Decimal, ROUND_HALF_UP
+from decimal import getcontext
+
+# TODO: check precision, currently is 28 (default) print(getcontext().prec)
 
 def D(value):
     return Decimal(str(value))
 
 class Price(Decimal):
-    TICK_SIZE = Decimal("0.01")
+    TICK_SIZE = Decimal("0.01") # TODO: make it configurable on Market level
 
     def __new__(cls, value : Decimal|float|int):
 

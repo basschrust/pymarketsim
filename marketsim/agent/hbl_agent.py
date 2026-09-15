@@ -71,6 +71,7 @@ class HBLAgent(Agent):
         return self.agent_id
 
     def estimate_fundamental(self, current_time: int) -> Price:
+        return self.market.last_traded_price
         #raise # TODO: AK - not used any more as only last trade decides? still used...
         mean, r, T = self.market.get_info()
         val = self.market.get_fundamental_value(current_time=current_time)
@@ -149,7 +150,7 @@ class HBLAgent(Agent):
                     return False
                 if order.order_id in self.market.matched_orders_hashed:
                     matched_order = self.market.matched_orders_hashed[order.order_id]
-                    if matched_order["order_type"] == BUY and matched_order["price"] <= p:
+                    if matched_order.order.order_type == BUY and matched_order.price <= p:
                         tfb1 = perf_counter()
                         self.logger.debug(f"HBL timings - fast_belief_function BF: {tfb1 - tfb0:.6f}s")
                         return False
@@ -162,7 +163,7 @@ class HBLAgent(Agent):
                     return False
                 if order.order_id in self.market.matched_orders_hashed:
                     matched_order = self.market.matched_orders_hashed[order.order_id]
-                    if matched_order["order_type"] == SELL and matched_order["price"] >= p:
+                    if matched_order.order.order_type == SELL and matched_order.price >= p:
                         tfb1 = perf_counter()
                         self.logger.debug(f"HBL timings - fast_belief_function SF: {tfb1 - tfb0:.6f}s")
                         return False
@@ -192,8 +193,8 @@ class HBLAgent(Agent):
                     AL += order.quantity
                 found_matched = False
                 if order.order_id in self.market.matched_orders_hashed:
-                    if self.market.matched_orders_hashed[order.order_id]["order_type"] == BUY\
-                            and self.market.matched_orders_hashed[order.order_id]["price"] - p <= 0:
+                    if self.market.matched_orders_hashed[order.order_id].order.order_type == BUY \
+                            and self.market.matched_orders_hashed[order.order_id].price - p <= 0:
                         TBL += order.quantity
                     found_matched = True
                 if not found_matched: # TODO: after hash optimization else should suffice here
@@ -245,8 +246,8 @@ class HBLAgent(Agent):
             for ind, order in enumerate(orders):
                 found_matched = False
                 if order.order_id in self.market.matched_orders_hashed:
-                    if self.market.matched_orders_hashed[order.order_id]["order_type"] == SELL \
-                        and self.market.matched_orders_hashed[order.order_id]["price"] - p >= 0:
+                    if self.market.matched_orders_hashed[order.order_id].order.order_type == SELL \
+                        and self.market.matched_orders_hashed[order.order_id].price - p >= 0:
                             TAG += order.quantity
                     found_matched = True
                 if not found_matched: # TODO: is not else enough here?
@@ -374,7 +375,7 @@ class HBLAgent(Agent):
                         # There's a different interpolation function for each continuous partition of the domain. 
                         # (I.e. function is piecewise continuous)
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
-                            return -((estimate + private_value - price) * spline_interp_objects[0][i](price))
+                            return -((float(estimate) + private_value - price) * spline_interp_objects[0][i](price))
 
                     raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
@@ -492,8 +493,8 @@ class HBLAgent(Agent):
             # at least submit order that doesn't lose agent money in the edge case
             # that the order submits even if it has belief of 0.
             self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
-            if optimal_price[0] > estimate + private_value:
-                return estimate + private_value, -1
+            if optimal_price[0] > float(estimate) + float(private_value):
+                return estimate + Price(private_value), -1
             
             return optimal_price[0], optimal_price[1]
 
@@ -543,7 +544,7 @@ class HBLAgent(Agent):
                     """
                     for i in range(len(spline_interp_objects[0])):
                         if spline_interp_objects[1][i][0] <= price <= spline_interp_objects[1][i][1]:
-                            return -((price - (estimate + private_value)) * spline_interp_objects[0][i](price))
+                            return -((price - (float(estimate) + private_value)) * spline_interp_objects[0][i](price))
 
                     raise ValueError(f"Price {price} outside spline domain {spline_interp_objects[1]}")
 
@@ -659,8 +660,8 @@ class HBLAgent(Agent):
                 raise Exception("Error in finding optimal price on sell side.")
             
             #EDGE CASE (SAME AS ABOVE IN BUY)
-            if optimal_price[0] < estimate + private_value:
-                return estimate + private_value, 0
+            if optimal_price[0] < float(estimate) + float(private_value):
+                return estimate + Price(private_value), 0
 
             self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             return optimal_price[0], optimal_price[1]
@@ -680,8 +681,8 @@ class HBLAgent(Agent):
                 or time ticks passed?
         """
         try:
-            random.seed(current_time + seed) # AK why not save it somehow to recreate specific scenarios?
-            side = random.choice(["BUY", "SELL"])
+            random.seed(current_time + seed) # TODO: AK why not save it somehow to recreate specific scenarios?
+            side = random.choice(["BUY", "SELL"]) # TODO: why random?
             # TODO: estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
             estimate = self.market.last_traded_price
             spread = self.shade[1] - self.shade[0]
@@ -692,7 +693,7 @@ class HBLAgent(Agent):
 
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1, #AK well, let's make it bigger to make some profits (Poisson?)
+                    quantity=1, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
                     agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == 'BUY' else -1,

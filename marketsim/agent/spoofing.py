@@ -13,7 +13,10 @@ class SpoofingAgent(Agent):
         self.group = "SP"
         self.agent_id = id_generator.next()
         self.market = market
-        self.pv = PrivateValues(q_max, pv_var)
+        if pv_var is not None:
+            self.pv = pv_var
+        else:
+            self.pv = PrivateValues(q_max, float(pv_var))
         self.position = 0
         self.spoofing_size = spoofing_size
         self.order_size = order_size
@@ -47,8 +50,9 @@ class SpoofingAgent(Agent):
 
         orders = []
         # Regular order.
+        # self.logger.info(f"Normalizers fundamental: {self.normalizers['fundamental'].__class__}")
         regular_order = Order(
-            price=Price(float(regular_order_price) * self.normalizers["fundamental"]),
+            price=Price(float(regular_order_price) * float(self.normalizers["fundamental"])),
             quantity=self.order_size,
             agent_id=self.get_id(),
             time=current_time,
@@ -59,7 +63,7 @@ class SpoofingAgent(Agent):
 
         # Spoofing Order
         spoofing_order = Order(
-            price=Price(float(spoofing_order_price) * self.normalizers["fundamental"]),
+            price=Price(float(spoofing_order_price) * float(self.normalizers["fundamental"])),
             quantity=self.spoofing_size,
             agent_id=self.get_id(),
             time=current_time,
