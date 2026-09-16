@@ -595,7 +595,7 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
 
         axes[-1].set_xlabel("Time tick")
 
-        plt.tight_layout(rect=[0, 0, 1, 0.95])
+        plt.tight_layout(rect=[0, 0, 1, 0.98])
 
         output_file = output_file_tpl + agent_group + ".png"
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)
@@ -668,7 +668,7 @@ def plot_cash_transfers(df: pd.DataFrame, output_file_tpl: str):
 
         axes[-1].set_xlabel("Time tick")
 
-        plt.tight_layout(rect=[0, 0, 1, 0.95])
+        plt.tight_layout(rect=[0, 0, 1, 0.98])
 
         output_file = output_file_tpl + agent_group + ".png"
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)

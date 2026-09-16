@@ -693,9 +693,11 @@ class HBLAgent(Agent):
                 opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
                 self.logger.info(f"HBL opt_price, opt_price_est_surplus: {opt_price}, {opt_price_est_surplus}")
 
+                # TODO: add some special class for volume management?
+                quantity = max(int(self.q_max/10), 1)
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
+                    quantity=quantity, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
                     agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == BUY else -1,
