@@ -566,15 +566,19 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
 
         for ax, cp_group in zip(axes, cp_groups):
             cp_df = agent_df[agent_df["cpGroup"] == cp_group]
+
+            buy_total = cp_df["Volume_buy"].sum()
+            sell_total = cp_df["Volume_sell"].sum()
+
             ax.plot(
                 cp_df["timeTick"],
                 cp_df["Volume_buy"],
-                label="Volume_buy",
+                label=f"Volume_buy, total: {buy_total:g}",
             )
             ax.plot(
                 cp_df["timeTick"],
                 -cp_df["Volume_sell"],
-                label="Volume_sell",
+                label=f"Volume_sell, total: {sell_total:g}",
             )
             # Display absolute values on Y-axis
             ax.yaxis.set_major_formatter(
@@ -591,7 +595,80 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
 
         axes[-1].set_xlabel("Time tick")
 
-        plt.tight_layout()
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
+
+        output_file = output_file_tpl + agent_group + ".png"
+        Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(output_file, dpi=150)
+        plt.close(fig)
+
+def plot_cash_transfers(df: pd.DataFrame, output_file_tpl: str):
+    """
+    Plot buy/sell cash transfer history for each agent group.
+
+    For each unique agentGroup, create one figure.
+    The figure contains one subplot for each cpGroup
+    associated with that agentGroup.
+
+    X-axis: timeTick
+    Y-axis: cash
+    Lines: Cash_buy, Cash_sell
+    """
+
+    for agent_group in df["agentGroup"].unique():
+
+        agent_df = df[df["agentGroup"] == agent_group]
+        cp_groups = agent_df["cpGroup"].unique()
+        n_subplots = len(cp_groups)
+
+        fig, axes = plt.subplots(
+            n_subplots,
+            ncols=1,
+            figsize=(12, 4 * n_subplots),
+            sharex=True,
+        )
+
+        # When there is only one subplot, matplotlib doesn't return a list
+        if n_subplots == 1:
+            axes = [axes]
+
+        fig.suptitle(
+            f"Volume history - Agent Group: {agent_group}",
+            fontsize=14,
+        )
+
+        for ax, cp_group in zip(axes, cp_groups):
+            cp_df = agent_df[agent_df["cpGroup"] == cp_group]
+
+            buy_total = cp_df["Cash_buy"].sum()
+            sell_total = cp_df["Cash_sell"].sum()
+
+            ax.plot(
+                cp_df["timeTick"],
+                cp_df["Cash_buy"],
+                label=f"Cash_buy, total: {buy_total:g}",
+            )
+            ax.plot(
+                cp_df["timeTick"],
+                -cp_df["Cash_sell"],
+                label=f"Cash_sell, total: {sell_total:g}",
+            )
+            # Display absolute values on Y-axis
+            ax.yaxis.set_major_formatter(
+                lambda x, pos: f"{abs(x):g}"
+            )
+
+            # Put X-axis through y=0
+            ax.axhline(0, linewidth=1)
+
+            ax.set_title(f"CP Group: {cp_group}")
+            ax.set_ylabel("Cash transferred")
+            ax.grid(True)
+            ax.legend()
+
+        axes[-1].set_xlabel("Time tick")
+
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
 
         output_file = output_file_tpl + agent_group + ".png"
         Path(output_file).parent.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,7 @@ import math
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers
+from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers, plot_cash_transfers
 from marketsim.input import config
 from marketsim.market.price import Price
 from marketsim.fourheap.fourheap import FourHeap
@@ -118,10 +118,17 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
+    def cancel_invalid_orders(self, current_time: int):
+        # TODO: go to event_queue and delete the ones that should be cancelled due to time
+        self.order_book.cancel_invalid_orders(current_time=current_time)
+
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
-        # rolling the traded_prices first:
+        # first:cancel orders that are no longer valid
+        self.cancel_invalid_orders(current_time=current_time)
+
+        # second: rolling the traded_prices
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
             yesterday = self.traded_prices[current_time-1]
             self.traded_prices[current_time] = {"Open": yesterday["Close"],
@@ -135,8 +142,10 @@ class Market:
                     key = (current_time, g1, g2)
                     self.trade_stats[key] = {"Count_buy": 0,
                                          "Volume_buy": 0,
+                                         "Cash_buy": 0,
                                          "Count_sell": 0,
-                                         "Volume_sell": 0
+                                         "Volume_sell": 0,
+                                         "Cash_sell": 0,
                                          }
 
         # taking the orders from queue to LOB:
@@ -166,8 +175,9 @@ class Market:
                 newly_matched_orders += self.clear_market(current_time=current_time)
 
         # after all orders have been inserted into LOB the cleraing procedure should start in the "fixing" phase
-        newly_matched_orders += self.clear_market(current_time=current_time)
-        if newly_matched_orders:
+        newly_matched_orders_2 = self.clear_market(current_time=current_time)
+        newly_matched_orders += newly_matched_orders_2
+        if newly_matched_orders_2:
             #raise # currently we're in continuous only - so here no order should be matched
             # but it reaches this point :/
             self.logger.info(f"Should not reach this point, matched: {newly_matched_orders}")
@@ -233,12 +243,15 @@ class Market:
             if key not in self.trade_stats:
                 self.trade_stats[key] = {"Count_buy": 1,
                                          "Volume_buy": matched_order.order.quantity,
+                                         "Cash_buy": matched_order.order.quantity * matched_order.price,
                                          "Count_sell": 0,
-                                         "Volume_sell": 0
+                                         "Volume_sell": 0,
+                                         "Cash_sell": 0
                                          }
             else:
                 self.trade_stats[key]["Count_buy"] += 1
                 self.trade_stats[key]["Volume_buy"] += matched_order.order.quantity
+                self.trade_stats[key]["Cash_buy"] += matched_order.order.quantity * matched_order.price
 
         elif matched_order.order.order_type == -1:
             self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
@@ -255,11 +268,15 @@ class Market:
             if key not in self.trade_stats:
                 self.trade_stats[key] = {"Count_buy": 0,
                                          "Volume_buy": 0,
+                                         "Cash_buy": 0,
                                          "Count_sell": 1,
-                                         "Volume_sell": matched_order.order.quantity}
+                                         "Volume_sell": matched_order.order.quantity,
+                                         "Cash_sell": matched_order.order.quantity * matched_order.price,
+                                         }
             else:
                 self.trade_stats[key]["Count_sell"] += 1
                 self.trade_stats[key]["Volume_sell"] += matched_order.order.quantity
+                self.trade_stats[key]["Cash_sell"] += matched_order.order.quantity * matched_order.price
         else:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
@@ -364,4 +381,7 @@ class Market:
         )
 
         self.logger.info(f"Volume transfers: {self.trade_stats_df.head(30)}")
-        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_{str(self)}_")
+        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_vol_{str(self)}_")
+
+        # TODO: plot cash transfers
+        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_cash_{str(self)}_")

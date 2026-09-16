@@ -5,6 +5,7 @@ import math
 import numpy as np
 from typing import TYPE_CHECKING
 from loguru import logger
+
 from marketsim.fourheap.order_queue import OrderQueue
 from marketsim.fourheap import constants
 from marketsim.market.price import  Price
@@ -67,7 +68,7 @@ class FourHeap:
                     # order on the other side
 
     def handle_replace(self, order: Order) -> None:
-        #raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
+        raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026
         # now developing this for the opening/closing phase
         self.logger.info(f"handle_replace {order}")
         matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
@@ -147,7 +148,7 @@ class FourHeap:
         elif self.sell_unmatched.contains(order_id):
             self.sell_unmatched.remove(order_id)
         elif self.buy_matched.contains(order_id):
-            raise # this should not happen - order already executed (in continuous, but in closing it may)
+            raise # this should not happen - order already executed (in continuous, but in closing/fixing it may)
             order_q = self.buy_matched.order_dict[order_id].quantity
             self.buy_matched.remove(order_id)
             s = self.sell_matched.pop_best_order()
@@ -309,3 +310,13 @@ class FourHeap:
             s += f'Number of orders: {heap.count()}\n\n\n'
 
         return s
+
+    def cancel_invalid_orders(self, current_time: int) -> None:
+        # removes orders which are not yet matched and their allowed time for matching has passed
+        # TODO: check for performance as this might be heavy
+        for ord_id, order in self.sell_unmatched.order_dict.items():
+            if order.valid_until is not None and order.valid_until < current_time:
+                self.sell_unmatched.remove(order_id=ord_id)
+        for ord_id, order in self.buy_unmatched.order_dict.items():
+            if order.valid_until is not None and order.valid_until < current_time:
+                self.buy_unmatched.remove(order_id=ord_id)
