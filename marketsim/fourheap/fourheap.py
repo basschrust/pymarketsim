@@ -6,7 +6,6 @@ import numpy as np
 from typing import TYPE_CHECKING
 from loguru import logger
 
-from fourheap import Order
 from marketsim.fourheap.order_queue import OrderQueue
 from marketsim.fourheap import constants
 from marketsim.market.price import  Price
@@ -312,12 +311,12 @@ class FourHeap:
 
         return s
 
-    def cancel_invalid_orders(self, current_time=int) -> None:
+    def cancel_invalid_orders(self, current_time: int) -> None:
         # removes orders which are not yet matched and their allowed time for matching has passed
         # TODO: check for performance as this might be heavy
         for ord_id, order in self.sell_unmatched.order_dict.items():
-            if order.valid_until < current_time:
+            if order.valid_until is not None and order.valid_until < current_time:
                 self.sell_unmatched.remove(order_id=ord_id)
         for ord_id, order in self.buy_unmatched.order_dict.items():
-            if order.valid_until < current_time:
+            if order.valid_until is not None and order.valid_until < current_time:
                 self.buy_unmatched.remove(order_id=ord_id)
