@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 sim_time: 5000
-lob_plot_interval: 25
+lob_plot_interval: 267
 debug_logging: False
 
 # definitions of the securities
@@ -335,6 +335,12 @@ markets:
           pv_var: 0
           order_size: 10
           spoofing_size: 1000
+          spoofing_times:
+            - 67
+            - 1410
+            - 2354
+            - 3058
+            - 4232
           normalizers:
             fundamental: 100
             reward: 1000

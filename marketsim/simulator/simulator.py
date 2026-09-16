@@ -95,7 +95,7 @@ class Simulator:
     ######################### __init__ ends here   ###################
 
     def step(self) -> None:
-        self.logger.info(f'\nIt is time step {self.current_time}')
+        # TODO: not needed: self.logger.info(f'\nIt is time step {self.current_time}')
         for market in self.markets:
             cash_sum = 0
             for agent_id, agent in market.agents.items():

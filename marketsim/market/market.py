@@ -118,9 +118,9 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def cancel_invalid_orders(self):
-        # TODO: go to event_queue and delete the ones that should be cancelled
-        pass
+    def cancel_invalid_orders(self, current_time=int):
+        # TODO: go to event_queue and delete the ones that should be cancelled due to time
+        self.order_book.cancel_invalid_orders(current_time=current_time)
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?

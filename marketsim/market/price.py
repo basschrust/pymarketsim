@@ -19,7 +19,7 @@ class Price(Decimal):
         if abs(d) > Decimal("1_000_000"):
             raise ValueError(f"Unreasonable price: {value}")
 
-        print(f"d: {d}")
+        # TODO: this slows doowwwwwwnnnnn....   print(f"d: {d}")
         return super().__new__(
             cls,
             d.quantize(cls.TICK_SIZE, rounding=ROUND_HALF_UP)

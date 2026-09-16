@@ -11,7 +11,7 @@ class SpoofingAgent(Agent):
     def __init__(self, market: Market, q_max: int, pv_var: float, order_size:int, spoofing_size: int,
                  normalizers: dict, spoofing_times: list[int]|None):
         super().__init__(market=market)
-        self.group = "SP"
+        self.group = "Spoofers"
         self.agent_id = id_generator.next()
         self.market = market
         if pv_var is not None:
@@ -79,6 +79,7 @@ class SpoofingAgent(Agent):
                 time=current_time,
                 order_type=-1*spoof_side,
                 asset_id=self.market.asset_id,
+                valid_until=current_time+100,
             )
             orders.append(regular_order)
 
@@ -102,7 +103,7 @@ class SpoofingAgent(Agent):
         return f'SP{self.agent_id}'
 
     def get_pos_value(self) -> float:
-        return self.pv.value_at_position(self.position)
+        return 0 # TODO: check self.pv.value_at_position(self.position)
 
     def reset(self):
         self.pv = PrivateValues(self.q_max, self.pv_var)
