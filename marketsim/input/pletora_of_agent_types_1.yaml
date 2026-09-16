@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 sim_time: 5000
-lob_plot_interval: 267
+lob_plot_interval: 235
 debug_logging: False
 
 # definitions of the securities

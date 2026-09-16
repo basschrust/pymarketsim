@@ -493,7 +493,6 @@ class HBLAgent(Agent):
             # For edge case: If a lot of orders have expected surplus of 0 (meaning belief of 0),
             # at least submit order that doesn't lose agent money in the edge case
             # that the order submits even if it has belief of 0.
-            self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             if optimal_price[0] > float(estimate) + float(private_value):
                 return estimate + Price(private_value), -1
             
