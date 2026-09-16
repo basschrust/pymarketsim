@@ -311,7 +311,7 @@ class FourHeap:
 
         return s
 
-    def cancel_invalid_orders(self, current_time: int) -> None:
+    def cancel_outdated_orders(self, current_time: int) -> None:
         # removes orders which are not yet matched and their allowed time for matching has passed
         # TODO: check for performance as this might be heavy
         sell_to_remove = []

@@ -118,15 +118,15 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def cancel_invalid_orders(self, current_time: int):
+    def cancel_outdated_orders(self, current_time: int):
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
-        self.order_book.cancel_invalid_orders(current_time=current_time)
+        self.order_book.cancel_outdated_orders(current_time=current_time)
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # first:cancel orders that are no longer valid
-        self.cancel_invalid_orders(current_time=current_time)
+        self.cancel_outdated_orders(current_time=current_time)
 
         # second: rolling the traded_prices
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
