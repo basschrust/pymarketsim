@@ -93,18 +93,31 @@ class Simulator:
                         market.add_agents([agent])
 
             # TODO: resolve agent dependencies
-            for relationship in m_conf.get("agent_relationships", []):
+            for relationship in m_conf.get("agent_dependencies", []):
                 if relationship["type"] == "wash_trading_pool":
-                    buy_pool = relationship["buy_agents"],
-                    sell_pool = relationship["sell_agents"]
-                    pool = WashTradingPool(buy_pool=relationship["buy_agents"],
-                                           sell_pool=relationship["sell_agents"])
+                    terminal.write(f"Adding washtrading relationship:")
+                    buy_pool = relationship["buy_pool"]
+                    sell_pool = relationship["sell_pool"]
 
                     # TODO: now set the pool hook in the agents...
                     # check all agents with group name "buy_pool" or "sell_pool" ?
+                    buy_pool_agents = []
+                    sell_pool_agents = []
                     for agent in market.agents.values():
-                        if agent.group_name in [ buy_pool, sell_pool ]:
-                            agent.set_wt_pool(wt_pool=pool)
+                        if agent.group_name == buy_pool:
+                            terminal.write(f"\nFound buy agent {agent.agent_id}")
+                            buy_pool_agents.append(agent)
+                        elif agent.group_name == sell_pool:
+                            terminal.write(f"\nFound sell agent {agent.agent_id}")
+                            sell_pool_agents.append(agent)
+
+                    pool = WashTradingPool(buy_pool=buy_pool_agents, sell_pool=sell_pool_agents)
+                    for agent in buy_pool_agents:
+                        terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
+                        agent.set_wt_pool(wt_pool=pool)
+                    for agent in sell_pool_agents:
+                        terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
+                        agent.set_wt_pool(wt_pool=pool)
 
         return
 
