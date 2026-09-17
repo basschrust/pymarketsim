@@ -95,7 +95,7 @@ class Simulator:
             # TODO: resolve agent dependencies
             for relationship in m_conf.get("agent_dependencies", []):
                 if relationship["type"] == "wash_trading_pool":
-                    terminal.write(f"Adding washtrading relationship:")
+                    # terminal.write(f"Adding washtrading relationship:")
                     buy_pool = relationship["buy_pool"]
                     sell_pool = relationship["sell_pool"]
 
@@ -105,18 +105,18 @@ class Simulator:
                     sell_pool_agents = []
                     for agent in market.agents.values():
                         if agent.group_name == buy_pool:
-                            terminal.write(f"\nFound buy agent {agent.agent_id}")
+                            # terminal.write(f"\nFound buy agent {agent.agent_id}")
                             buy_pool_agents.append(agent)
                         elif agent.group_name == sell_pool:
-                            terminal.write(f"\nFound sell agent {agent.agent_id}")
+                            # terminal.write(f"\nFound sell agent {agent.agent_id}")
                             sell_pool_agents.append(agent)
 
                     pool = WashTradingPool(buy_pool=buy_pool_agents, sell_pool=sell_pool_agents)
                     for agent in buy_pool_agents:
-                        terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
+                        # terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
                         agent.set_wt_pool(wt_pool=pool)
                     for agent in sell_pool_agents:
-                        terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
+                        # terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
                         agent.set_wt_pool(wt_pool=pool)
 
         return
