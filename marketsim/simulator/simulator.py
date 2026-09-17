@@ -208,7 +208,7 @@ class Simulator:
                 market.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history}")
 
                 # plot it
-                agent_file = f"{config.output_dir}/by_agents/agent_{str(agent_key)}_{str(agent)}.png"
+                agent_file = f"{config.output_dir}/{str(market)}/by_agents/{str(market)}_agent_{str(agent)}.png"
 
                 plot_agent_history(
                     position_history=position_history,
@@ -229,20 +229,20 @@ class Simulator:
             plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=market.name)
 
             # plotting by type:
-            plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
+            plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/{str(market)}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
             plot_by_type(market.trades_by_agent_type,
-                                output_file=f"{config.output_dir}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
+                                output_file=f"{config.output_dir}/{str(market)}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
             plot_by_type(market.trades_by_agent_type_ext,
-                         output_file=f"{config.output_dir}/trades_by_type_ext_{str(market)}.png",
+                         output_file=f"{config.output_dir}/{str(market)}/trades_by_type_ext_{str(market)}.png",
                          title=f"Trades by extended type in {market.name}", mode="extended")
             plot_bid_ask(market.bid_ask_history,
-                         output_file=f"{config.output_dir}/bid_ask_history_{str(market)}.png",
+                         output_file=f"{config.output_dir}/{str(market)}/bid_ask_history_{str(market)}.png",
                          title=f"Bid ask spread history {str(market)}")
             #calculate and plot realized volatility:
             window = 50
             volatility = market.calculate_realized_volatility(window=window)
             plot_realized_volatility(volatility=volatility,
-                                     output_file=f"{config.output_dir}/realized_volatility_{str(market)}.png",
+                                     output_file=f"{config.output_dir}/{str(market)}/realized_volatility_{str(market)}.png",
                                      title=f"Realized volatility {str(market)} with window {window}")
 
             # plot the history of trading between agent groups:

@@ -316,7 +316,7 @@ class Market:
         plot_order_book(
             bids=bids,
             asks=asks,
-            output_file=f"{config.output_dir}/LOB/LOB_{self.asset_id}_{current_time}.png",
+            output_file=f"{config.output_dir}/{str(self)}/LOB/LOB_{self.asset_id}_{current_time}.png",
             title=f"Order book at {current_time}"
         )
 
@@ -381,7 +381,7 @@ class Market:
         )
 
         self.logger.info(f"Volume transfers: {self.trade_stats_df.head(30)}")
-        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_vol_{str(self)}_")
+        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_vol_{str(self)}_")
 
         # TODO: plot cash transfers
-        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_cash_{str(self)}_")
+        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
