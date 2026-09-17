@@ -14,6 +14,7 @@ from marketsim.input import config
 from marketsim.market import Price, Market
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent
+from marketsim.agent.washtrading import WashTradingPool
 
 
 class Simulator:
@@ -82,13 +83,28 @@ class Simulator:
 
                     # washtrading agents (tricking MMs)
                     if agent_group["agent_class"] == "WashTradingAgent":
-                        agent = WashTradingAgent(market=market, **agent_group["config"])
+                        agent = WashTradingAgent(market=market, group_name=group_name, **agent_group["config"])
                         market.add_agents([agent])
+                        # those will need the relationship...
 
                     # momentum
                     if agent_group["agent_class"] == "MomentumAgent":
                         agent = MomentumAgent(market=market, **agent_group["config"])
                         market.add_agents([agent])
+
+            # TODO: resolve agent dependencies
+            for relationship in m_conf.get("agent_relationships", []):
+                if relationship["type"] == "wash_trading_pool":
+                    buy_pool = relationship["buy_agents"],
+                    sell_pool = relationship["sell_agents"]
+                    pool = WashTradingPool(buy_pool=relationship["buy_agents"],
+                                           sell_pool=relationship["sell_agents"])
+
+                    # TODO: now set the pool hook in the agents...
+                    # check all agents with group name "buy_pool" or "sell_pool" ?
+                    for agent in market.agents.values():
+                        if agent.group_name in [ buy_pool, sell_pool ]:
+                            agent.set_wt_pool(wt_pool=pool)
 
         return
 

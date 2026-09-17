@@ -1,8 +1,8 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 100
-lob_plot_interval: 35
+sim_time: 5000
+lob_plot_interval: 135
 debug_logging: False
 
 # definitions of the securities
@@ -251,7 +251,7 @@ markets:
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
       noise: !include templates/agents/noise_25_agents_rather_lazy.yaml
-      #noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
+      noise_2: !include templates/agents/noise_25_agents_withdrawing.yaml
       mmzoh_1: !include templates/agents/MM_rebalance_by_vol.yaml
       # manipulators:
       poolA:
