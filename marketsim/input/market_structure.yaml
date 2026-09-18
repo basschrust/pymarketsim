@@ -114,7 +114,6 @@ markets:
           normalizers:
             fundamental: 1.0
 
-
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
@@ -138,6 +137,12 @@ markets:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
           period: 15
+
+    # dependencies
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 
   ########################## second security ###################################################
 
@@ -247,7 +252,6 @@ markets:
           normalizers:
             fundamental: 1.0
 
-
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
@@ -271,6 +275,12 @@ markets:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
           period: 15
+
+    # dependencies
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 
 ###################### third security #######################################
 
@@ -406,3 +416,9 @@ markets:
           lam: 0.6 # activation factor outside manipulation periods - should behave like ZI
           q_max: 20
           period: 15
+
+    # dependencies
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
