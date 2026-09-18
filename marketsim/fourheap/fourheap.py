@@ -311,12 +311,18 @@ class FourHeap:
 
         return s
 
-    def cancel_invalid_orders(self, current_time: int) -> None:
+    def cancel_outdated_orders(self, current_time: int) -> None:
         # removes orders which are not yet matched and their allowed time for matching has passed
         # TODO: check for performance as this might be heavy
+        sell_to_remove = []
         for ord_id, order in self.sell_unmatched.order_dict.items():
             if order.valid_until is not None and order.valid_until < current_time:
-                self.sell_unmatched.remove(order_id=ord_id)
+                sell_to_remove.append(ord_id)
+        for ord_id in sell_to_remove:
+            self.sell_unmatched.remove(order_id=ord_id)
+        buy_to_remove = []
         for ord_id, order in self.buy_unmatched.order_dict.items():
             if order.valid_until is not None and order.valid_until < current_time:
-                self.buy_unmatched.remove(order_id=ord_id)
+                buy_to_remove.append(ord_id)
+        for ord_id in buy_to_remove:
+            self.buy_unmatched.remove(order_id=ord_id)

@@ -84,4 +84,48 @@ markets:
               end: 50
             lam: 0.9
             spread: 0.2
- 
+
+    # dependencies
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
+
+  #####################33
+  security_2:
+    name: "Second security"
+    ticker: "AAB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      zi_agents_informed:
+        number: 0
+      zi_agents_not_informed:
+        agent_class: ZIAgentNotInformed
+        number: 10
+        config:
+          lam: 0.8
+          q_max: 20
+          shade:
+            - 0.1
+            - 0.3
+          pv_var: 5.0e2
+      mmzoh:
+        agent_class: MMZOHAgent
+        number: 1
+        config:
+          xi: 0.2
+          K: 4
+          omega: 0.2
+          rebalance_period: 5
+      hbl:
+        agent_class: HBLAgent
+        number: 2
+        config:
+          q_max: 10
+          L: 3 # memory length
+          shade:
+            - 0.1
+            - 0.3
+          arrival_rate: 2
+          pv_var: 3.0e2

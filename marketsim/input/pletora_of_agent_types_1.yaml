@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 sim_time: 5000
-lob_plot_interval: 267
+lob_plot_interval: 135
 debug_logging: False
 
 # definitions of the securities
@@ -73,6 +73,10 @@ markets:
             - 0.1
           arrival_rate: 4
           pv_var: 0
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 
 
 ###################### third security #######################################
@@ -116,44 +120,49 @@ markets:
               end: 2000
             lam: 0.995
             spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
-    hbl:
-      agent_class: HBLAgent
-      number: 1
-      config:
-        q_max: 200
-        L: 13 # memory length
-        shade:
-          - 0.01
-          - 0.03
-        arrival_rate: 2
-        pv_var: 0
-    hbl2:
-      agent_class: HBLAgent
-      number: 1
-      config:
-        q_max: 100
-        L: 25 # memory length
-        shade:
-          - 0.05
-          - 0.1
-        arrival_rate: 4
-        pv_var: 0
-    # momentum traders:
-    momentum_1:
-      agent_class: MomentumAgent
-      number: 1
-      config:
-        lam: 0.6
-        q_max: 5 # yet this is used as transaction volume instead of max engagement
-        period: 55
-    momentum_2:
-      agent_class: MomentumAgent
-      number: 1
-      config:
-        lam: 0.6
-        q_max: 25
-        period: 100
-        threshold: 0.005
+      hbl:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 200
+          L: 13 # memory length
+          shade:
+            - 0.01
+            - 0.03
+          arrival_rate: 2
+          pv_var: 0
+      hbl2:
+        agent_class: HBLAgent
+        number: 1
+        config:
+          q_max: 100
+          L: 25 # memory length
+          shade:
+            - 0.05
+            - 0.1
+          arrival_rate: 4
+          pv_var: 0
+      # momentum traders:
+      momentum_1:
+        agent_class: MomentumAgent
+        number: 1
+        config:
+          lam: 0.6
+          q_max: 5 # yet this is used as transaction volume instead of max engagement
+          period: 55
+      momentum_2:
+        agent_class: MomentumAgent
+        number: 1
+        config:
+          lam: 0.6
+          q_max: 25
+          period: 100
+          threshold: 0.005
+    # dep:
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 
 ###################### fourth security #######################################
 
@@ -241,6 +250,11 @@ markets:
           lam: 0.6
           q_max: 20
           period: 15
+    # dep:
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 
 ###################### fifth security #######################################
 
@@ -336,6 +350,9 @@ markets:
           order_size: 10
           spoofing_size: 1000
           spoofing_times:
+            - 12
+            - 34
+            - 44
             - 67
             - 1410
             - 2354
@@ -347,4 +364,9 @@ markets:
             min_order_val: 100
             invt: 10
             cash: 100000
+    # dep:
+    agent_dependencies:
+      - type: wash_trading_pool
+        buy_pool: poolA
+        sell_pool: poolB
 

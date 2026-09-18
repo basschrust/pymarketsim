@@ -29,7 +29,10 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, market: Market):
+    def __init__(self, market: Market, group_name: str | None = None):
+        self.market = market
+        self.group_name = group_name
+
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
         self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick

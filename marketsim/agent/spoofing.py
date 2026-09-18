@@ -56,7 +56,7 @@ class SpoofingAgent(Agent):
             spoof_side = random.choice([-1, 1])
 
             # TODO - calculate them - we can inspect LOB (just like WTs)!
-            if spoof_side == -1:
+            if spoof_side == 1:
                 regular_order_price = self.market.last_traded_price + Price(0.4)
                 spoofing_order_price = self.market.last_traded_price - Price(0.01)
             else:
