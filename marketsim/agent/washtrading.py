@@ -52,15 +52,10 @@ class WashTradingAgent(Agent):
 
         if period["start"] <= current_time <= period["end"]:
             # so act as designed
-            #length = max(period["end"] - current_time + 1, 50)  # how many days left in the manipulation period
-            # moved upper as the length is used also in else clause
-            # print(f"WASHTRADER: q_max: {self.q_max}, position: {self.position}, length: {length}, lambda: {self.lam}, price: {price}")
 
             # if q_max almost reached we could try to push more with spread?
             if self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
                 # but then this method is easy to find out
-                #withdraw his old orders if yet not exercised
-                #self.market.withdraw_all(agent_id=self.agent_id)
                 # TODO: if the position is heavily unbalanced set more aggressive price, too
                 if current_time % 3 == 1:
                     # in odd time ticks calculate volume & price and make order of one side

@@ -8,7 +8,7 @@ debug_logging: False
 # definitions of the securities
 markets:
   # WT + MM + Noise
-#  security_1: !include templates/markets/wt_pull_up_1000_2000_vol.yaml
+  security_1: !include templates/markets/wt_pull_up_1000_2000_vol.yaml
 
 
   ########################## second security ###################################################
