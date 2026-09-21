@@ -22,6 +22,6 @@ sim = Simulator(**kwargs_for(Simulator, CONFIG))
 sim.run()
 
 # Inspect market statistics once the run completes
-market = sim.markets[0]
-mid_prices = market.get_midprices()
-matched_orders = market.matched_orders
+#market = sim.markets[0]
+#mid_prices = market.get_midprices()
+#matched_orders = market.matched_orders

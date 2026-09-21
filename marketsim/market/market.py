@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
+    def __init__(self, time_steps: int, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
@@ -46,7 +46,7 @@ class Market:
         self.trade_stats_df = pd.DataFrame()
 
         # TODO: check if this fundamental (externally provided value) is needed here
-        self.fundamental = fundamental
+        # self.fundamental = fundamental
 
         self.event_queue = EventQueue()
         self.end_time = time_steps

@@ -11,7 +11,7 @@ from marketsim.plot.simple_plot import (simple_plot, plot_agent_history, plot_by
 , plot_realized_volatility, plot_volume_transfers)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
-from marketsim.market import Price, Market
+from marketsim.market import Price, Market, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent
 from marketsim.agent.washtrading import WashTradingPool
@@ -37,7 +37,7 @@ class Simulator:
         self.shock_var = shock_var # change probability of fundamental (market consensus) value
 
         self.current_time = 0 # TODO: needed in Market, here probably not?
-        self.markets = [] # each market serves single security
+        self.markets = {} # [] # each market serves single security
 
         self.agents = {} # but agents are now moved to markets
         self.lob_plot_interval = lob_plot_interval
@@ -45,13 +45,22 @@ class Simulator:
         self.bar_length = 40
 
         for m_key, m_conf in markets.items():
-            # TODO: take parameters from market conf
+            # TODO: do we need this fundamental at all?
             fundamental = GaussianMeanReverting(mean=self.mean, final_time=self.sim_time, r=self.r,
                                                 shock_var=self.shock_var)
 
-            market = Market(fundamental=fundamental, time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
+            # TODO: how to handle derivatives here?
+            instrument_class = m_conf.get("instrument_class", "stock")
+            if instrument_class == "option":
+                # let's rock with first option here!
+                underlying = self.markets.get(m_conf.get("underlying"))
+                market = Option(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"),
+                              underlying=underlying, strike=m_conf.get("strike"))
+            elif instrument_class == "stock":
+                market = Market(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
 
-            self.markets.append(market)
+            #self.markets.append(market)
+            self.markets[m_key] = market
 
             for group_name, agent_group in m_conf["agent_groups"].items():
                 for i in range(agent_group["number"]):
@@ -125,7 +134,7 @@ class Simulator:
 
     def step(self) -> None:
         # TODO: not needed: self.logger.info(f'\nIt is time step {self.current_time}')
-        for market in self.markets:
+        for market_key, market in self.markets.items():
             cash_sum = 0
             for agent_id, agent in market.agents.items():
                 cash_sum += agent.cash
@@ -170,33 +179,34 @@ class Simulator:
         self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
         market_steps = 0
-        for market in self.markets:
+        for market_key, market in self.markets.items():
             market.logger.info(f"Market {str(market)}:")
-            fundamental_val = Price(market.get_final_fundamental())
-            market.logger.info(f"Final fundamental: {fundamental_val}")
+            # fundamental_val = Price(market.get_final_fundamental())
+            # market.logger.info(f"Final fundamental: {fundamental_val}")
             market.logger.info(f"Orders matched: {len(market.matched_orders)}")
             market.logger.info(f"Last traded price: {market.last_traded_price}")
-            values_by_fundamental = {}
+            # values_by_fundamental = {}
             values_by_last_traded_price = {}
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
-                values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
+                # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
                 values_by_last_traded_price[agent_id] = agent.position * market.last_traded_price + agent.cash
             # TODO: put the results in separate, simple (CSV) files
-            market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
+            # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
             positions_sum = 0
             cash_sum = 0
             values_by_last_trade_sum = 0
             for i, agent in market.agents.items():
                 market.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
-                      f"\tvalue(by fund.): {values_by_fundamental[i]} \tvalue(by last trade): {values_by_last_traded_price[i]}")
+                      # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
+                                   f"value(by last trade): {values_by_last_traded_price[i]}")
                 positions_sum += agent.position
                 cash_sum += agent.cash
                 values_by_last_trade_sum += market.last_traded_price * agent.position
             market.logger.info(f"Positions sum: {positions_sum}")
             market.logger.info(f"Cash sum: {cash_sum}")
             market.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-            market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
+            # market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
             market.logger.info(f"Midprices: {market.get_midprices()}")
             market.logger.info(f"Traded prices {market.traded_prices}")
 
