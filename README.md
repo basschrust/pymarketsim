@@ -1,4 +1,4 @@
-# PyMarketSim
+# Deadalus - based on PyMarketSim
 
 PyMarketSim is a research-oriented sandbox for building and evaluating agent-based limit order book markets. The package provides reusable components for modeling fundamentals, simulating heterogeneous trading agents, and instrumenting the resulting market dynamics so that you can prototype new strategies or reinforcement-learning environments with minimal boilerplate.
 
@@ -12,7 +12,7 @@ PyMarketSim is a research-oriented sandbox for building and evaluating agent-bas
 
 ## Installation
 
-1. Create and activate a Python 3.10+ virtual environment.
+1. Create and activate a Python 3.10 virtual environment.
 2. Install the dependencies and package in editable mode:
 
 ```bash
@@ -24,7 +24,8 @@ This registers the `marketsim` package locally so you can import it from noteboo
 
 ## Quick start
 
-The snippet below runs a short background-agent simulation with a mean-reverting fundamental process. It demonstrates how to instantiate the core components and iterate the simulator.
+The snippet below runs a short simulation process with basic market structure (Market maker, noise traders, wash traders, momentum traders and spoofers). 
+It demonstrates how to instantiate the core components and iterate the simulator.
 
 ```python
 git clone https://github.com/basschrust/pymarketsim.git
@@ -40,6 +41,16 @@ pip install -e .
 python -m run.simulation_main
 ```
 
+To run one different market structures take a look into following directory: pymarketsim/marketsim/input and use one of the predefined structures or create your own, then run it as below:
+```python
+python -m run.simulation_main market_structure_WT_3_markets.yaml
+
+or
+
+python -m run.simulation_main pletora_of_agent_types_1.yaml
+```
+
+
 You can replace or augment the background agents with your own implementations by subclassing `marketsim.agent.agent.Agent` and registering instances in `sim.agents`. Fundamentals are swappable as long as they implement the `marketsim.fundamental.fundamental_abc.Fundamental` interface.
 
 ## Working with agents and markets
@@ -47,6 +58,11 @@ You can replace or augment the background agents with your own implementations b
 - **Agents:** Agent policies live under `marketsim/agent`. They encapsulate order submission logic via a `take_action` method and maintain inventory through helper utilities like `update_position`. Use the provided zero-intelligence and market-making agents as blueprints for new behaviors.
 - **Markets:** The `Market` class manages the event queue, order book, and matching process. At each step it ingests orders from agents, clears the book, and updates mid-prices so you can compute downstream metrics.
 - **Fundamentals:** Mean-reverting fundamentals offer a simple default latent value process. Implement `get_value_at` and `get_info` to introduce new information structures.
+
+## Important note on reference price used in Deadalus
+
+Unlike original PyMarketSim framework where fundamental value shared among market participants is used as a reference value, in Deadalus, during continuous trading, the last traded price is used a reference one.
+It is planned to make it configurable in the future so each of the approaches can be simulated and tested.
 
 ## Reinforcement learning workflows
 
@@ -58,10 +74,13 @@ Lightweight regression tests live under `marketsim/tests`, and exploratory noteb
 
 ## Contributing
 
+* You can contribute either to the original PyMarketSim framework:
 1. Fork the repository and create a feature branch.
 2. Install the development dependencies listed in `requirements.txt`.
 3. Ensure unit tests pass before submitting a pull request.
 4. Describe your changes clearly and include references to any new strategies or environments you add.
+
+* Or contribute to this repo - contact the repo owner, make a PR.  
 
 ## License
 

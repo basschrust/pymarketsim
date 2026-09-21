@@ -493,7 +493,6 @@ class HBLAgent(Agent):
             # For edge case: If a lot of orders have expected surplus of 0 (meaning belief of 0),
             # at least submit order that doesn't lose agent money in the edge case
             # that the order submits even if it has belief of 0.
-            self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             if optimal_price[0] > float(estimate) + float(private_value):
                 return estimate + Price(private_value), -1
             
@@ -693,9 +692,11 @@ class HBLAgent(Agent):
                 opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
                 self.logger.info(f"HBL opt_price, opt_price_est_surplus: {opt_price}, {opt_price_est_surplus}")
 
+                # TODO: add some special class for volume management?
+                quantity = max(int(self.q_max/10), 1)
                 order = Order(
                     price=Price(opt_price),
-                    quantity=1, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
+                    quantity=quantity, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
                     agent_id=self.agent_id,
                     time=current_time,
                     order_type=1 if side == BUY else -1,

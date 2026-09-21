@@ -35,3 +35,8 @@ agent_groups:
           end: 2000
         lam: 0.99
         spread: 0.00 # 0.1 seems like too small one, 0.4 seems to work fine but beware the other side!
+# the dependencies
+agent_dependencies:
+  - type: wash_trading_pool
+    buy_pool: poolA
+    sell_pool: poolB

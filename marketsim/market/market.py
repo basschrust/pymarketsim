@@ -118,15 +118,15 @@ class Market:
     def get_info(self):
         return self.fundamental.get_info()
 
-    def cancel_invalid_orders(self, current_time: int):
+    def cancel_outdated_orders(self, current_time: int):
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
-        self.order_book.cancel_invalid_orders(current_time=current_time)
+        self.order_book.cancel_outdated_orders(current_time=current_time)
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # first:cancel orders that are no longer valid
-        self.cancel_invalid_orders(current_time=current_time)
+        self.cancel_outdated_orders(current_time=current_time)
 
         # second: rolling the traded_prices
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
@@ -316,7 +316,7 @@ class Market:
         plot_order_book(
             bids=bids,
             asks=asks,
-            output_file=f"{config.output_dir}/LOB/LOB_{self.asset_id}_{current_time}.png",
+            output_file=f"{config.output_dir}/{str(self)}/LOB/LOB_{self.asset_id}_{current_time}.png",
             title=f"Order book at {current_time}"
         )
 
@@ -381,7 +381,7 @@ class Market:
         )
 
         self.logger.info(f"Volume transfers: {self.trade_stats_df.head(30)}")
-        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_vol_{str(self)}_")
+        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_vol_{str(self)}_")
 
         # TODO: plot cash transfers
-        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/Transfers_cash_{str(self)}_")
+        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
