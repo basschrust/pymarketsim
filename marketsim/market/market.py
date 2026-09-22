@@ -11,6 +11,7 @@ from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers, plot_cash_transfers
+from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market.price import Price
 from marketsim.fourheap.fourheap import FourHeap
@@ -385,3 +386,15 @@ class Market:
 
         # TODO: plot cash transfers
         plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
+
+    def plot_history(self):
+        traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
+                               for t, item in self.traded_prices.items()}
+        df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
+                                                orient="index"
+                                                )
+        df_candlestick.index.name = "time"
+        self.logger.info(df_candlestick.head())
+
+        candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
+        plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)

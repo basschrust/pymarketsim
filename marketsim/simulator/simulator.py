@@ -247,16 +247,7 @@ class Simulator:
                 )
 
             # plot the security values history:
-            traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
-                                   for t, item in market.traded_prices.items()}
-            df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
-                orient="index"
-            )
-            df_candlestick.index.name = "time"
-            market.logger.info(df_candlestick.head())
-
-            candlestick_filename = f"{config.output_dir}/candlestick_{str(market)}.png"
-            plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=market.name)
+            market.plot_history()
 
             # plotting by type:
             plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/{str(market)}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")

@@ -1,6 +1,6 @@
 from decimal import Decimal
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market import Market, Price, Option
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
@@ -11,27 +11,31 @@ class OptionMMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, market: Market, agent_id: int=None, xi: float= 0.1,
+    def __init__(self, *, option_markets: list[Option], underlying_market: Market, agent_id: int=None, xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
-        super().__init__(market=market)
+        all_markets = option_markets
+        all_markets.append(underlying_market)
+        super().__init__(market=option_markets[0]) # TODO: base should accept all the list
         self.group = "OptionsMMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
-        self.market = market # could agent serve multiple markets? YES, with Derivatives and underlying!
+        #self.market = option_market # could agent serve multiple markets? YES, with Derivatives and underlying!
+        self.option_market = option_markets[0]
         # and many derivatives, one underlying
+        self.underlying_market = underlying_market
 
-        self.position = 0
+        self.position = 0 #TODO dict { market_id: position } ?
         self.cash = 0
 
+        # Market Making parameters:
         self.xi = Decimal(xi) # step of the order ladder
         self.K = K # number of orders in the ladder
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
-        self.rebalance_by = rebalance_by # time or volume
+        self.rebalance_by = rebalance_by # time or volume or exposure (in derivatives markets!)
         self.rebalance_volume = rebalance_volume
-        self.last_rebalance_time = 0
+        self.last_rebalance_time = 0 # on each market!
         self.cum_volume = 0
-
         self.volume = volume
         self.q_max = q_max
 
@@ -60,24 +64,27 @@ class OptionMMZOHAgent(Agent):
                 return True
         return False
 
-    def take_action(self, current_time: int, market: Market):
+    def take_action(self, current_time: int):
         orders = []
         # add orders only in rebalance periods:
         if self.should_rebalance(current_time):
             # AK - clear previous orders (should we?)
             self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
-            self.market.withdraw_all(agent_id=self.agent_id)
+            self.option_market.withdraw_all(agent_id=self.agent_id)
             # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
             # that's basically the same to just withdraw all and create new, the problem might be with timing
             # - we could loose the slot in the queue of waiting orders
 
             # Get the best bid and best ask
-            best_ask = self.market.order_book.get_best_ask()
-            best_bid = self.market.order_book.get_best_bid()
+            best_ask = self.option_market.order_book.get_best_ask()
+            best_bid = self.option_market.order_book.get_best_bid()
 
             self.logger.info(f"Best bid {best_bid}, best ask: {best_ask}")
 
-            estimate = self.market.last_traded_price
+            #estimate = self.market.last_traded_price
+            # TODO: get the theoretical price
+            estimate = self.option_market.get_theoretical_price()
+
             self.logger.info(f"Last traded price: {estimate}")
             HALF = Decimal("0.5")
             st = max(estimate + HALF * self.omega, best_bid)
@@ -118,7 +125,7 @@ class OptionMMZOHAgent(Agent):
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=BUY,
-                            asset_id=self.market.asset_id,
+                            asset_id=self.option_market.asset_id,
                         )
                     )
                     orders.append(
@@ -128,11 +135,18 @@ class OptionMMZOHAgent(Agent):
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=SELL,
-                            asset_id=self.market.asset_id,
+                            asset_id=self.option_market.asset_id,
                         )
                     )
 
-        return orders
+        # return orders
+        # adding orders to the option market:
+        self.option_market.add_orders(orders)
+        # TODO: add orders to the underlying market
+        # calculate Greeks
+        # delta / gamma hedge
+        # either as adjusting MM orders or by paying spread
+
 
 
     def get_pos_value(self) -> float:
