@@ -14,7 +14,7 @@ class Option(Market):
         super().__init__(time_steps=time_steps, name=name,  market_type=market_type)
         self.underlying = underlying
         self.strike = strike
-        self.expiration = 1  if expiration == '1Y' else expiration # TODO: prepare mapper for this
+        self.expiration = 1.0  if expiration == '1Y' else expiration # TODO: prepare mapper for this
             # so that we can give relative time or precise dates or just take it from option series
         self.option_side = option_side
         self.option_type = option_type
@@ -47,7 +47,7 @@ class Option(Market):
             if "Theoretical" in price_row:
                 pass
             else:
-                call_option = BSCall(self.underlying.last_traded_price, self.strike, self.r, self.volatility,
+                call_option = BSCall(price_row.get("Close"), self.strike, self.r, self.volatility,
                                      self.expiration, 0.0)
                 price_row["Theoretical"] = call_option.get("price", 100)
 

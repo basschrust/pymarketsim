@@ -57,7 +57,7 @@ class Simulator:
                 # terminal.write(str(self.markets))
                 underlying = self.markets.get(m_conf.get("derivatives_config").get("underlying"))
                 market = Option(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"),
-                              underlying=underlying, strike=m_conf.get("strike"))
+                              underlying=underlying, strike=m_conf.get("derivatives_config").get("strike"))
             elif instrument_class == "stock":
                 market = Market(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
 
