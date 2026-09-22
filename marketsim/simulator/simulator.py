@@ -53,7 +53,9 @@ class Simulator:
             instrument_class = m_conf.get("instrument_class", "stock")
             if instrument_class == "option":
                 # let's rock with first option here!
-                underlying = self.markets.get(m_conf.get("underlying"))
+                # terminal.write(str(m_conf))
+                # terminal.write(str(self.markets))
+                underlying = self.markets.get(m_conf.get("derivatives_config").get("underlying"))
                 market = Option(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                               underlying=underlying, strike=m_conf.get("strike"))
             elif instrument_class == "stock":
