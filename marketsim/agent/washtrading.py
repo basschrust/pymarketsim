@@ -191,7 +191,8 @@ class WashTradingAgent(Agent):
                         order_type=side,
                     )
                     orders.append(order)
-        return orders
+        #return orders
+        self.market.add_orders(orders)
 
     def __str__(self):
         return f'WT_{self.pool_id}_{self.agent_id}'

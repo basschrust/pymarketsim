@@ -97,7 +97,8 @@ class SpoofingAgent(Agent):
             )
             orders.append(spoofing_order)
 
-        return orders
+        #return orders
+        self.market.add_orders(orders)
 
     def __str__(self):
         return f'SP{self.agent_id}'

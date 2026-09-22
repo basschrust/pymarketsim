@@ -6,8 +6,8 @@ from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
 
 
-class MMZOHAgent(Agent):
-    ### Market Maker Zero Order Hold Agent -
+class OptionMMZOHAgent(Agent):
+    ### Market Maker Zero Order Hold Agent for Options! -
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
@@ -15,9 +15,10 @@ class MMZOHAgent(Agent):
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
         super().__init__(market=market)
-        self.group = "MMZOH"
+        self.group = "OptionsMMZOH"
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
-        self.market = market # could agent serve multiple markets?
+        self.market = market # could agent serve multiple markets? YES, with Derivatives and underlying!
+        # and many derivatives, one underlying
 
         self.position = 0
         self.cash = 0
@@ -37,10 +38,6 @@ class MMZOHAgent(Agent):
 
     def get_id(self) -> int:
         return self.agent_id
-
-
-    def is_market_maker(self) -> bool:
-        return True
 
     def should_rebalance(self, current_time:int) -> bool:
         if current_time == 0:
@@ -63,7 +60,7 @@ class MMZOHAgent(Agent):
                 return True
         return False
 
-    def take_action(self, current_time: int):
+    def take_action(self, current_time: int, market: Market):
         orders = []
         # add orders only in rebalance periods:
         if self.should_rebalance(current_time):
@@ -135,13 +132,12 @@ class MMZOHAgent(Agent):
                         )
                     )
 
-        # return orders
-        self.market.add_orders(orders)
+        return orders
 
 
     def get_pos_value(self) -> float:
         return 0
 
     def __str__(self):
-        return f'MM_ZOH{self.agent_id}'
+        return f'Opt_MM_ZOH{self.agent_id}'
 

@@ -39,7 +39,7 @@ class Simulator:
         self.current_time = 0 # TODO: needed in Market, here probably not?
         self.markets = {} # [] # each market serves single security
 
-        self.agents = {} # but agents are now moved to markets
+        self.agents = {} # boys are back in town! agents here instead of markets, as one agents serves many markets
         self.lob_plot_interval = lob_plot_interval
         self.last_progress = -1
         self.bar_length = 40
@@ -68,38 +68,38 @@ class Simulator:
                     # ZI agents:
                     if agent_group["agent_class"] == "ZIAgentNotInformed":
                             agent = ZIAgentNotInformed(market=market, **agent_group["config"])
-                            market.add_agents([agent])
+                            self.add_agents([agent])
 
                     # Noise agents:
                     if agent_group["agent_class"] == "NoiseAgent":
                         agent = NoiseAgent(market=market, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
 
                     # MMs:
                     if agent_group["agent_class"] == "MMZOHAgent":
                         agent = MMZOHAgent(market=market, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
 
                     # HBL (Heuristic Belief)
                     if agent_group["agent_class"] == "HBLAgent":
                         agent = HBLAgent(market=market, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
 
                     # spoofers: (to trick HBL Agents)
                     if agent_group["agent_class"] == "SpoofingAgent":
                         agent = SpoofingAgent(market=market, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
 
                     # washtrading agents (tricking MMs)
                     if agent_group["agent_class"] == "WashTradingAgent":
                         agent = WashTradingAgent(market=market, group_name=group_name, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
                         # those will need the relationship...
 
                     # momentum
                     if agent_group["agent_class"] == "MomentumAgent":
                         agent = MomentumAgent(market=market, **agent_group["config"])
-                        market.add_agents([agent])
+                        self.add_agents([agent])
 
             # TODO: resolve agent dependencies
             for relationship in m_conf.get("agent_dependencies", []):
@@ -132,20 +132,39 @@ class Simulator:
 
     ######################### __init__ ends here   ###################
 
+    def add_agents(self, agents: list[Agent]) -> None:
+        for agent in agents:
+            self.logger.info(f"Adding agent {str(agent)} to the simulation")
+            self.agents[agent.get_id()] = agent
+            agent.market.add_agents([agent])
+            #for market in agent.markets # TODO: this will serve the multimarket agents soon
+        #     self.agent_groups.add(agent.group)
+        #     self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
+        #     self.trades_by_agent_type.setdefault(agent.group,
+        #                                          {"Count_buy": 0, "Volume_buy": 0, "Count_sell": 0, "Volume_sell": 0})
+        #     self.trades_by_agent_type_ext.setdefault(agent.group,
+        #                                          {"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
+        #                                              , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+        #     # this one is tricky as requires n-square combination
+        #     # TODO: but also with already existing groups!
+        #     # and then by time...
+        # for g1 in self.agent_groups:
+        #     for g2 in self.agent_groups:
+        #         self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
+        #                                              , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+
+
     def step(self) -> None:
-        # TODO: not needed: self.logger.info(f'\nIt is time step {self.current_time}')
+        # TODO: changing the architecture - fist agents, the markets
+        for agent_id, agent in self.agents.items():
+            agent.take_action(current_time=self.current_time)  #
+            # now agents decide which markets to enter on their own
+            #market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
+            #market.add_orders(orders)  # moved to agent
+
+
         for market_key, market in self.markets.items():
-            cash_sum = 0
-            for agent_id, agent in market.agents.items():
-                cash_sum += agent.cash
-            market.logger.info(f"Asserting initial cash sum: {cash_sum}")
-            assert cash_sum == 0
-            for agent_id in market.agents:
-                agent = market.agents[agent_id]
-                orders = agent.take_action(current_time=self.current_time) # but there should be different actions
-                            # in different markets, solved: agents are defined inside a single market
-                market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
-                market.add_orders(orders)
+
             # plot the LOB
             if self.current_time > 0 and self.current_time % self.lob_plot_interval == 0:
                 market.plot_lob(self.current_time)
@@ -153,6 +172,7 @@ class Simulator:
             market.logger.info(f"Starting orders execution, matched queues should be empty here: {len(market.order_book.buy_matched.heap)}"
                   f" {len(market.order_book.sell_matched.heap)}")
             new_orders_matched = market.step(current_time=self.current_time)
+
             market.logger.info(f"Starting to clear out orders.")
             # initiate market prices instance for the case of no trades: - moved to market.step
 

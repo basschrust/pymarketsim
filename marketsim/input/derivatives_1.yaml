@@ -41,8 +41,8 @@ markets:
       option_type: European
       underlying: security_1  # reference to one of above defined securities
       expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
-      strike: 100
-      option_side: CALL # CALL/ PUT
+      strike: 100 # maybe list of strikes?
+      option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
       quotation_type: price # price/ implied_volatility/ etc.
       settlement_type: cash # cash/ physical/ etc
     ticker: "O100Y092027ABB"
@@ -58,7 +58,7 @@ markets:
           mean_volume: 15
           mean_spread: 0.8
       mmzoh_1:
-        agent_class: MMZOHAgent
+        agent_class: OptionMMZOHAgent
         number: 1
         config:
           xi: 0.12

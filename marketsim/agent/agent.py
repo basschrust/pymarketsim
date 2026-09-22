@@ -55,7 +55,7 @@ class Agent(ABC):
         pass
 
     @abstractmethod
-    def take_action(self, current_time: int) -> List[Order]:
+    def take_action(self, current_time: int) -> None:
         pass
 
     @abstractmethod
@@ -72,6 +72,7 @@ class Agent(ABC):
         self.cash = 0
 
     def is_market_maker(self) -> bool:
+        raise # this is utterly deprecated
         return False
 
     def record_valuation(self, current_time: int, price: Price) -> None:

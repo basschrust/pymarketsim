@@ -666,7 +666,7 @@ class HBLAgent(Agent):
             self.logger.info(f"spline_interp_objects: {spline_interp_objects}")
             return optimal_price[0], optimal_price[1]
 
-    def take_action(self, current_time: int, seed: int = 0) -> list[Order]:
+    def take_action(self, current_time: int, seed: int = 0) -> None:
         """
         Submits orders to market for HBL.
 
@@ -674,7 +674,8 @@ class HBLAgent(Agent):
             current_time: current clock tick
 
         Returns:
-            order [Order]: order to be submitted
+            None
+             - order [Order]: order to be submitted - no, actively adds orders to the market
 
         Note:
             Behavior reverts to ZI agent if L > total num of trades executed. AK: executed or at least added to LOB?
@@ -702,7 +703,8 @@ class HBLAgent(Agent):
                     order_type=1 if side == BUY else -1,
                     asset_id=self.market.asset_id,
                 )
-                return [order]
+                #return [order]
+                self.market.add_orders([order])
 
             else:
                 # ZI Agent # AK - if there is not enough trades to fill the L memory then behavior the same as ZI
@@ -721,12 +723,13 @@ class HBLAgent(Agent):
                     order_type=1 if side == BUY else -1,
                     asset_id=self.market.asset_id,
                 )
-                return [order]
+                #return [order]
+                self.market.add_orders([order])
         except TypeError:
             self.logger.exception("TypeError in HBLAgent")
             self.logger.info("TypeError in HBLAgent catched!")
 
-        return []
+        # return []
 
     def __str__(self) -> str:
         return f'HBL{self.agent_id}'

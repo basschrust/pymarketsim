@@ -35,7 +35,7 @@ class NoiseAgent(Agent):
     def estimate_fundamental(self, current_time: int) -> Price:
         raise # should not be used for noise agent
 
-    def take_action(self, current_time: int):
+    def take_action(self, current_time: int) -> None:
         orders = []
         if random.random() < self.lam:
             if self.withdraw_old:
@@ -60,7 +60,8 @@ class NoiseAgent(Agent):
             else:
                 print(f"Order not placed as calculated price was negative: {price}, q: {quantity}")
 
-        return orders
+        #return orders
+        self.market.add_orders(orders)
 
 
     def __str__(self) -> str:

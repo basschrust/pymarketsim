@@ -80,7 +80,8 @@ class MomentumAgent(Agent):
                         )
                     )
 
-        return orders
+        #return orders
+        self.market.add_orders(orders)
 
 
     def get_pos_value(self) -> float:
