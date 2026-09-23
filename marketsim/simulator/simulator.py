@@ -60,8 +60,9 @@ class Simulator:
                               underlying=underlying, strike=m_conf.get("derivatives_config").get("strike"))
             elif instrument_class == "stock":
                 market = Market(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
+            else:
+                raise ValueError(f"Unknown instrument_class: {instrument_class}")
 
-            #self.markets.append(market)
             self.markets[m_key] = market
 
             for group_name, agent_group in m_conf["agent_groups"].items():

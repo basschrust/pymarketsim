@@ -1,9 +1,12 @@
 from decimal import Decimal
+
+import option
 from marketsim.agent.agent import Agent
 from marketsim.market import Market, Price, Option
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
+from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
 
 
 class OptionMMZOHAgent(Agent):
@@ -24,7 +27,8 @@ class OptionMMZOHAgent(Agent):
         # and many derivatives, one underlying
         self.underlying_market = underlying_market
 
-        self.position = 0 #TODO dict { market_id: position } ?
+        # self.position = 0 #TODO dict { market_id: position } ?
+        self.position = {x:0 for x in all_markets}
         self.cash = 0
 
         # Market Making parameters:
@@ -93,25 +97,25 @@ class OptionMMZOHAgent(Agent):
             buy_volume = self.volume
             sell_volume = self.volume
             # TODO: adjust the spread for position rebalancing
-            if abs(self.position) > self.q_max/2:
-                if self.position > 0:
-                    # the MM position is very long - needs to sell, so move the prices up
-                    st = st + HALF * self.omega
-                    bt = bt + HALF * self.omega
-                    if self.position > 3/4 * self.q_max:
-                        # if getting close to max we also limit the volume of buy orders:
-                        buy_volume = int(buy_volume /2)
-                        if self.position > self.q_max:
-                            # if we exceeded the q_max then volume should be only symbolic
-                            buy_volume = 1
-                else:
-                    # the MM position is very short - has to buy more, lower the prices
-                    st = st - HALF * self.omega
-                    bt = bt - HALF * self.omega
-                    if self.position < -3/4 * self.q_max:
-                        sell_volume = int(sell_volume /2)
-                        if self.position < - self.q_max:
-                            sell_volume = 1
+            # if abs(self.position) > self.q_max/2:
+            #     if self.position > 0:
+            #         # the MM position is very long - needs to sell, so move the prices up
+            #         st = st + HALF * self.omega
+            #         bt = bt + HALF * self.omega
+            #         if self.position > 3/4 * self.q_max:
+            #             # if getting close to max we also limit the volume of buy orders:
+            #             buy_volume = int(buy_volume /2)
+            #             if self.position > self.q_max:
+            #                 # if we exceeded the q_max then volume should be only symbolic
+            #                 buy_volume = 1
+            #     else:
+            #         # the MM position is very short - has to buy more, lower the prices
+            #         st = st - HALF * self.omega
+            #         bt = bt - HALF * self.omega
+            #         if self.position < -3/4 * self.q_max:
+            #             sell_volume = int(sell_volume /2)
+            #             if self.position < - self.q_max:
+            #                 sell_volume = 1
 
             self.logger.info(f"Basic spread adjusted to: {bt}, {st}")
 
@@ -146,7 +150,35 @@ class OptionMMZOHAgent(Agent):
         # calculate Greeks
         # delta / gamma hedge
         # either as adjusting MM orders or by paying spread
+        greeks = BSCall(self.underlying_market.last_traded_price, self.option_market.strike,
+                        self.option_market.r, self.option_market.volatility,
+               self.option_market.expiration, 0.0)
 
+        # simple delta hedge
+        delta = greeks.get("delta")
+        # check position and align, check minimum difference which leads to rebalance
+        delta_pos = delta * self.position.get(self.option_market.asset_id, 0)
+        required_adjustment = int(- delta_pos - self.position.get(self.underlying_market.asset_id, 0))
+        if required_adjustment >= 1:
+            order = Order(price=self.underlying_market.last_traded_price,
+                            quantity=required_adjustment,
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=BUY,
+                            asset_id=self.option_market.asset_id,
+                            valid_until=current_time+10,
+                          )
+            self.underlying_market.add_orders([order])
+        elif required_adjustment <= 1:
+            order = Order(price=self.underlying_market.last_traded_price,
+                            quantity=abs(required_adjustment),
+                            agent_id=self.agent_id,
+                            time=current_time,
+                            order_type=SELL,
+                            asset_id=self.option_market.asset_id,
+                            valid_until=current_time+10,
+                          )
+            self.underlying_market.add_orders([order])
 
 
     def get_pos_value(self) -> float:

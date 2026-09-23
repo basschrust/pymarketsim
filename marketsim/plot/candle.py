@@ -154,7 +154,7 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
         df["Theoretical"],
         label="Theoretical value",
         linewidth=1.5,
-        linestyle="--",
+        linestyle="-",
         color="black",
     )
 
