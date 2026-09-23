@@ -4,7 +4,7 @@ from .price import Price
 from .market import Market
 from marketsim.input import config
 from marketsim.fourheap import Order, MatchedOrder
-from .valuation_libs.BlackScholes import BSCall
+from .valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.plot.candle import plot_candlestick_derivative
 
 class Option(Market):
@@ -40,10 +40,18 @@ class Option(Market):
     def get_theoretical_price(self) -> Price:
         # TODO: is current_time needed as parameter?
         # returns theoretical price of the option, using BS formula
-        call_option = BSCall(S=self.underlying.last_traded_price, K=self.strike,
-                             r=self.r, volatility=self.volatility, Time=self.expiration, d=0.0)
-        # TODO: this gives us the option price along with its Greeks :)
-        return call_option["price"]
+        if self.option_side == "CALL":
+            call_option = BSCall(S=self.underlying.last_traded_price, K=self.strike,
+                                 r=self.r, volatility=self.volatility, Time=self.expiration, d=0.0)
+            # TODO: this gives us the option price along with its Greeks :)
+            return call_option["price"]
+        elif self.option_side == "PUT":
+            put_option = BSPut(S=self.underlying.last_traded_price, K=self.strike,
+                                 r=self.r, volatility=self.volatility, Time=self.expiration, d=0.0)
+            # TODO: this gives us the option price along with its Greeks :)
+            return put_option["price"]
+        else:
+            ValueError(f"Unknown option side: {self.option_side}")
 
     def fill_theoretical_price(self):
         for t, price_row in self.traded_prices.items():
