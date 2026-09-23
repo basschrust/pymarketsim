@@ -28,7 +28,11 @@ class Price(Decimal):
     def __mul__(self, other):
         if isinstance(other, float):
             other = Decimal(str(other))
-        return Price(super().__mul__(other))
+        result = Decimal(super().__mul__(other))
+        return Price(result)
 
     def __rmul__(self, other):
-        return self.__mul__(other)
+        if isinstance(other, float):
+            other = Decimal(str(other))
+
+        return Price(other * Decimal(self))

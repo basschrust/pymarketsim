@@ -13,7 +13,7 @@ from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market import Price, Market, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
-from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent
+from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
 from marketsim.agent.washtrading import WashTradingPool
 
 
@@ -37,7 +37,8 @@ class Simulator:
         self.shock_var = shock_var # change probability of fundamental (market consensus) value
 
         self.current_time = 0 # TODO: needed in Market, here probably not?
-        self.markets = {} # [] # each market serves single security
+        self.markets = {} # [] # each market serves single security, keys are asset_ids
+        self.market_map = {} # { yaml_id: asset_id }
 
         self.agents = {} # boys are back in town! agents here instead of markets, as one agents serves many markets
         self.lob_plot_interval = lob_plot_interval
@@ -55,15 +56,17 @@ class Simulator:
                 # let's rock with first option here!
                 # terminal.write(str(m_conf))
                 # terminal.write(str(self.markets))
-                underlying = self.markets.get(m_conf.get("derivatives_config").get("underlying"))
-                market = Option(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"),
-                              underlying=underlying, strike=m_conf.get("derivatives_config").get("strike"))
+                underlying = self.markets.get(self.market_map.get(m_conf.get("derivatives_config").get("underlying")))
+                market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
+                               derivatives_config=m_conf.get("derivatives_config")
+                                , underlying=underlying)
             elif instrument_class == "stock":
-                market = Market(time_steps=self.sim_time, market_type=m_conf.get("market_type"), name=m_conf.get("name"))
+                market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name"))
             else:
                 raise ValueError(f"Unknown instrument_class: {instrument_class}")
 
-            self.markets[m_key] = market
+            self.market_map[m_key] = market.asset_id
+            self.markets[market.asset_id] = market
 
             for group_name, agent_group in m_conf["agent_groups"].items():
                 for i in range(agent_group["number"]):
@@ -104,6 +107,14 @@ class Simulator:
                         agent = MomentumAgent(market=market, **agent_group["config"])
                         self.add_agents([agent])
 
+                    ########## Derivatives agents, complicated ones :)  ###############
+
+                    ## MM, simple delta hedger
+                    if agent_group["agent_class"] == "OptionMMZOHAgent":
+                        agent = OptionMMZOHAgent(option_markets=[market], underlying_market=market.underlying,
+                                                 **agent_group["config"])
+                        self.add_agents([agent])
+
             # TODO: resolve agent dependencies
             for relationship in m_conf.get("agent_dependencies", []):
                 if relationship["type"] == "wash_trading_pool":
@@ -139,8 +150,11 @@ class Simulator:
         for agent in agents:
             self.logger.info(f"Adding agent {str(agent)} to the simulation")
             self.agents[agent.get_id()] = agent
-            agent.market.add_agents([agent])
-            #for market in agent.markets # TODO: this will serve the multimarket agents soon
+            #    agent.market.add_agents([agent])
+            # terminal.write(f"Agent markets: {agent.markets}")
+            for asset_id, market in agent.markets.items(): # TODO: this will serve the multimarket agents soon
+                market.add_agents([agent]) # TODO: check performance
+            #if agent.underlying_market is not
         #     self.agent_groups.add(agent.group)
         #     self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
         #     self.trades_by_agent_type.setdefault(agent.group,
@@ -182,16 +196,11 @@ class Simulator:
             for matched_order in new_orders_matched:
                 market.logger.info(f"Matched order {str(matched_order)}")
                 market.record_trade(matched_order=matched_order)
-            cash_sum = 0
-            for agent_id, agent in market.agents.items():
-                cash_sum += agent.cash
-            market.logger.info(f"Asserting cash sum: {cash_sum}")
-            assert cash_sum == 0
             market.logger.info(f'After clearing the market the last traded price is: {market.last_traded_price}')
             market.logger.info(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
             # update value of each agent in each market:
             for k, agent in market.agents.items():
-                agent.record_valuation(current_time=self.current_time, price=market.last_traded_price)
+                agent.record_valuation(current_time=self.current_time) #, price=market.last_traded_price)
 
         self.current_time += 1
 
@@ -213,7 +222,7 @@ class Simulator:
             for agent_id in market.agents:
                 agent = market.agents[agent_id]
                 # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
-                values_by_last_traded_price[agent_id] = agent.position * market.last_traded_price + agent.cash
+                values_by_last_traded_price[agent_id] = agent.position[market.asset_id] * market.last_traded_price + agent.cash
             # TODO: put the results in separate, simple (CSV) files
             # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
             positions_sum = 0
@@ -223,9 +232,9 @@ class Simulator:
                 market.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
                       # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
                                    f"value(by last trade): {values_by_last_traded_price[i]}")
-                positions_sum += agent.position
+                positions_sum += agent.position[market.asset_id]
                 cash_sum += agent.cash
-                values_by_last_trade_sum += market.last_traded_price * agent.position
+                values_by_last_trade_sum += market.last_traded_price * agent.position[market.asset_id]
             market.logger.info(f"Positions sum: {positions_sum}")
             market.logger.info(f"Cash sum: {cash_sum}")
             market.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
@@ -244,7 +253,7 @@ class Simulator:
                 agent_file = f"{config.output_dir}/{str(market)}/by_agents/{str(market)}_agent_{str(agent)}.png"
 
                 plot_agent_history(
-                    position_history=position_history,
+                    position_history=position_history[market.asset_id], # TODO: yet only his first market
                     value_history=value_history,
                     output_file=agent_file,
                 )

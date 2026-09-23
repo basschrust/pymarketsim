@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class Market:
-    def __init__(self, time_steps: int, reference_price: Price |None = None, name: str|None=None,
+    def __init__(self, reference_price: Price |None = None, name: str|None=None,
                  market_type: str = "discrete"):
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
@@ -50,7 +50,7 @@ class Market:
         # self.fundamental = fundamental
 
         self.event_queue = EventQueue()
-        self.end_time = time_steps
+        # self.end_time = time_steps
         self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
         self.agents = {}
         self.name = name

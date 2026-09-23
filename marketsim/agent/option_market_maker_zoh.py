@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-import option
 from marketsim.agent.agent import Agent
 from marketsim.market import Market, Price, Option
 from marketsim.fourheap.order import Order
@@ -26,10 +25,12 @@ class OptionMMZOHAgent(Agent):
         self.option_market = option_markets[0]
         # and many derivatives, one underlying
         self.underlying_market = underlying_market
+        self.markets[underlying_market.asset_id] = underlying_market
 
         # self.position = 0 #TODO dict { market_id: position } ?
-        self.position = {x:0 for x in all_markets}
-        self.cash = 0
+        # self.position = {x:0 for x in all_markets}
+        self.position = {x:0 for x in self.markets}
+        # self.cash = 0
 
         # Market Making parameters:
         self.xi = Decimal(xi) # step of the order ladder
@@ -87,7 +88,7 @@ class OptionMMZOHAgent(Agent):
 
             #estimate = self.market.last_traded_price
             # TODO: get the theoretical price
-            estimate = self.option_market.get_theoretical_price()
+            estimate = Price(self.option_market.get_theoretical_price())
 
             self.logger.info(f"Last traded price: {estimate}")
             HALF = Decimal("0.5")
@@ -117,7 +118,7 @@ class OptionMMZOHAgent(Agent):
             #             if self.position < - self.q_max:
             #                 sell_volume = 1
 
-            self.logger.info(f"Basic spread adjusted to: {bt}, {st}")
+            self.logger.info(f"Basic spread (option market) adjusted to: {bt}, {st}")
 
             for k in range(self.K):
                 price_bid = Price(bt - (k + 1) * self.xi)
@@ -165,19 +166,21 @@ class OptionMMZOHAgent(Agent):
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=BUY,
-                            asset_id=self.option_market.asset_id,
+                            asset_id=self.underlying_market.asset_id,
                             valid_until=current_time+10,
                           )
+            self.logger.info(f"Adding order to underlying market: {order}")
             self.underlying_market.add_orders([order])
-        elif required_adjustment <= 1:
+        elif required_adjustment <= -1:
             order = Order(price=self.underlying_market.last_traded_price,
                             quantity=abs(required_adjustment),
                             agent_id=self.agent_id,
                             time=current_time,
                             order_type=SELL,
-                            asset_id=self.option_market.asset_id,
+                            asset_id=self.underlying_market.asset_id,
                             valid_until=current_time+10,
                           )
+            self.logger.info(f"Adding order to underlying market: {order}")
             self.underlying_market.add_orders([order])
 
 

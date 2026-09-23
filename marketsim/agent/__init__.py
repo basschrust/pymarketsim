@@ -7,6 +7,7 @@ from .spoofing import SpoofingAgent
 from .washtrading import WashTradingAgent
 from .momentum import MomentumAgent
 from .noise_agent import NoiseAgent
+from .option_market_maker_zoh import OptionMMZOHAgent
 
 __all__ = [
     "Agent",
@@ -18,4 +19,5 @@ __all__ = [
     "WashTradingAgent",
     "MomentumAgent",
     "NoiseAgent",
+    "OptionMMZOHAgent",
 ]

@@ -6,6 +6,8 @@ from typing import List
 from dataclasses import dataclass, field
 import traceback
 from typing import TYPE_CHECKING
+
+from marketsim.loggers.basic import terminal
 from marketsim.market.price import Price
 
 if TYPE_CHECKING:
@@ -31,12 +33,16 @@ class Agent(ABC):
 
     def __init__(self, market: Market, group_name: str | None = None):
         self.market = market
+        #self.markets = [self.market]
+        self.markets = { market.asset_id: market }
         self.group_name = group_name
 
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
-        self.position_history = {0:0}  # {time: number_of_shares} # at the end of tick
-        self.position = 0
+        # self.position = 0
+        self.position = { m_id: 0 for m_id, m  in self.markets.items()}
+        # self.position_history = {0: 0}  # {time: number_of_shares} # at the end of tick
+        self.position_history = { m_id: {0:0} for m_id, m  in self.markets.items() }  # {asset_id: {time: number_of_shares}} # at the end of tick
         self._cash = Price(0)
         self.logger = market.logger
 
@@ -62,29 +68,42 @@ class Agent(ABC):
     def get_pos_value(self) -> float:
         pass
 
-    def update_position(self, quantity: int, cash: Price) -> None:
+    def update_position(self, quantity: int, cash: Price, asset_id: int) -> None:
         validate_update(quantity=quantity, cash=cash)
-        self.position += quantity
+        self.position[asset_id] += quantity
         self.cash += cash
 
     def reset(self) -> None:
-        self.position = 0
-        self.cash = 0
+        self.position = { m_id: 0 for m_id, m  in self.markets.items()}
+        self.cash = Price(0)
 
     def is_market_maker(self) -> bool:
         raise # this is utterly deprecated
         return False
 
-    def record_valuation(self, current_time: int, price: Price) -> None:
+    def record_valuation(self, current_time: int) -> None:
+        # saving value of agents portfolio
         self.position_history[current_time] = self.position
-        self.position_value_history[current_time] = self.cash + self.position * price
+        # TODO: oops, while we have keys market,tick not tick, market
+        # self.position_history[]
+        self.logger.info(
+            f"VALUATION: cash={repr(self.cash)} position={repr(self.position)} position type={type(self.position)}")
+        # self.logger.info(f"price={repr(price)} price type ={type(price)}")
+
+        # valuation by last trade:
+        self.position_value_history[current_time] = self.cash
+        # terminal.write(f"position: {self.position}\n")
+        # terminal.write(f"Position_value_history: {self.position_value_history}\n")
+        # terminal.write(f"agent: {self.group_name}\n")
+        for asset_id, market in self.markets.items():
+            self.position_value_history[current_time] += int(self.position[asset_id]) * market.last_traded_price
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity
-        cash = -matched_order.price * matched_order.order.quantity * matched_order.order.order_type
+        cash = - Price(matched_order.price * matched_order.order.quantity * matched_order.order.order_type)
         # print(f"Updating cash: {cash}")
-        self.update_position(quantity=quantity, cash=cash)
-        self.position_history[matched_order.time] = self.position_history.get(matched_order.time, 0) + quantity
+        self.update_position(quantity=quantity, cash=cash, asset_id=matched_order.order.asset_id)
+        self.position_history[matched_order.order.asset_id][matched_order.time] = self.position_history.get(matched_order.order.asset_id, {}).get(matched_order.time, 0) + quantity
 
         if matched_order.time in self.trade_history:
             # just add info

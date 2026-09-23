@@ -19,8 +19,8 @@ class MMZOHAgent(Agent):
         self.agent_id = agent_id if agent_id is not None else id_generator.next()
         self.market = market # could agent serve multiple markets?
 
-        self.position = 0
-        self.cash = 0
+        # self.position = 0
+        # self.cash = 0
 
         self.xi = Decimal(xi) # step of the order ladder
         self.K = K # number of orders in the ladder
@@ -64,79 +64,80 @@ class MMZOHAgent(Agent):
         return False
 
     def take_action(self, current_time: int):
-        orders = []
-        # add orders only in rebalance periods:
-        if self.should_rebalance(current_time):
-            # AK - clear previous orders (should we?)
-            self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
-            self.market.withdraw_all(agent_id=self.agent_id)
-            # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
-            # that's basically the same to just withdraw all and create new, the problem might be with timing
-            # - we could loose the slot in the queue of waiting orders
+        for asset_id, market in self.markets.items():
+            orders = []
+            # add orders only in rebalance periods:
+            if self.should_rebalance(current_time):
+                # AK - clear previous orders (should we?)
+                self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
+                market.withdraw_all(agent_id=self.agent_id)
+                # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
+                # that's basically the same to just withdraw all and create new, the problem might be with timing
+                # - we could loose the slot in the queue of waiting orders
 
-            # Get the best bid and best ask
-            best_ask = self.market.order_book.get_best_ask()
-            best_bid = self.market.order_book.get_best_bid()
+                # Get the best bid and best ask
+                best_ask = market.order_book.get_best_ask()
+                best_bid = market.order_book.get_best_bid()
 
-            self.logger.info(f"Best bid {best_bid}, best ask: {best_ask}")
+                self.logger.info(f"Best bid {best_bid}, best ask: {best_ask}")
 
-            estimate = self.market.last_traded_price
-            self.logger.info(f"Last traded price: {estimate}")
-            HALF = Decimal("0.5")
-            st = max(estimate + HALF * self.omega, best_bid)
-            bt = min(estimate - HALF * self.omega, best_ask)
-            self.logger.info(f"Setting basic spread to: {bt}, {st}")
-            buy_volume = self.volume
-            sell_volume = self.volume
-            # TODO: adjust the spread for position rebalancing
-            if abs(self.position) > self.q_max/2:
-                if self.position > 0:
-                    # the MM position is very long - needs to sell, so move the prices up
-                    st = st + HALF * self.omega
-                    bt = bt + HALF * self.omega
-                    if self.position > 3/4 * self.q_max:
-                        # if getting close to max we also limit the volume of buy orders:
-                        buy_volume = int(buy_volume /2)
-                        if self.position > self.q_max:
-                            # if we exceeded the q_max then volume should be only symbolic
-                            buy_volume = 1
-                else:
-                    # the MM position is very short - has to buy more, lower the prices
-                    st = st - HALF * self.omega
-                    bt = bt - HALF * self.omega
-                    if self.position < -3/4 * self.q_max:
-                        sell_volume = int(sell_volume /2)
-                        if self.position < - self.q_max:
-                            sell_volume = 1
+                estimate = market.last_traded_price
+                self.logger.info(f"Last traded price: {estimate}")
+                HALF = Decimal("0.5")
+                st = max(estimate + HALF * self.omega, best_bid)
+                bt = min(estimate - HALF * self.omega, best_ask)
+                self.logger.info(f"Setting basic spread to: {bt}, {st}")
+                buy_volume = self.volume #TODO: per market!
+                sell_volume = self.volume
+                # TODO: adjust the spread for position rebalancing
+                if abs(self.position[asset_id]) > self.q_max/2:
+                    if self.position[asset_id] > 0:
+                        # the MM position is very long - needs to sell, so move the prices up
+                        st = st + HALF * self.omega
+                        bt = bt + HALF * self.omega
+                        if self.position[asset_id] > 3/4 * self.q_max:
+                            # if getting close to max we also limit the volume of buy orders:
+                            buy_volume = int(buy_volume /2)
+                            if self.position[asset_id] > self.q_max:
+                                # if we exceeded the q_max then volume should be only symbolic
+                                buy_volume = 1
+                    else:
+                        # the MM position is very short - has to buy more, lower the prices
+                        st = st - HALF * self.omega
+                        bt = bt - HALF * self.omega
+                        if self.position[asset_id] < -3/4 * self.q_max:
+                            sell_volume = int(sell_volume /2)
+                            if self.position[asset_id] < - self.q_max:
+                                sell_volume = 1
 
-            self.logger.info(f"Basic spread adjusted to: {bt}, {st}")
+                self.logger.info(f"Basic spread adjusted to: {bt}, {st}")
 
-            for k in range(self.K):
-                price_bid = Price(bt - (k + 1) * self.xi)
-                if price_bid > 0:
-                    orders.append(
-                        Order(
-                            price=price_bid,
-                            quantity=buy_volume, #7,#1, # we ćould raise the quantity in each ladder step...
-                            agent_id=self.agent_id,
-                            time=current_time,
-                            order_type=BUY,
-                            asset_id=self.market.asset_id,
+                for k in range(self.K):
+                    price_bid = Price(bt - (k + 1) * self.xi)
+                    if price_bid > 0:
+                        orders.append(
+                            Order(
+                                price=price_bid,
+                                quantity=buy_volume, #7,#1, # we ćould raise the quantity in each ladder step...
+                                agent_id=self.agent_id,
+                                time=current_time,
+                                order_type=BUY,
+                                asset_id=market.asset_id,
+                            )
                         )
-                    )
-                    orders.append(
-                        Order(
-                            price= Price(st + (k + 1)*self.xi),
-                            quantity=sell_volume, # 7,#1,
-                            agent_id=self.agent_id,
-                            time=current_time,
-                            order_type=SELL,
-                            asset_id=self.market.asset_id,
+                        orders.append(
+                            Order(
+                                price= Price(st + (k + 1)*self.xi),
+                                quantity=sell_volume, # 7,#1,
+                                agent_id=self.agent_id,
+                                time=current_time,
+                                order_type=SELL,
+                                asset_id=market.asset_id,
+                            )
                         )
-                    )
 
-        # return orders
-        self.market.add_orders(orders)
+            # return orders
+            market.add_orders(orders)
 
 
     def get_pos_value(self) -> float:

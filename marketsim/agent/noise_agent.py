@@ -21,8 +21,8 @@ class NoiseAgent(Agent):
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max # check if doesn't collide with mean_volume
-        self.position = 0
-        self.cash = 0
+        # self.position = 0
+        # self.cash = 0
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
         self.mean_spread = mean_spread
