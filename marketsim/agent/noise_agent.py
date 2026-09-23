@@ -18,8 +18,7 @@ class NoiseAgent(Agent):
                  , withdraw_old: bool = False):
         super().__init__(market=market)
         self.group = "Noise"
-        self.agent_id = id_generator.next()
-        self.market = market
+
         self.q_max = q_max # check if doesn't collide with mean_volume
         # self.position = 0
         # self.cash = 0

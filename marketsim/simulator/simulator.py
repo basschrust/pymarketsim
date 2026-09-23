@@ -198,9 +198,10 @@ class Simulator:
                 market.record_trade(matched_order=matched_order)
             market.logger.info(f'After clearing the market the last traded price is: {market.last_traded_price}')
             market.logger.info(f'And the spread: {market.order_book.buy_unmatched.peek()} {market.order_book.sell_unmatched.peek()}')
-            # update value of each agent in each market:
-            for k, agent in market.agents.items():
-                agent.record_valuation(current_time=self.current_time) #, price=market.last_traded_price)
+
+        # update value of each agent after each market has been cleared:
+        for agent_id, agent in self.agents.items():
+            agent.record_valuation(current_time=self.current_time) #, price=market.last_traded_price)
 
         self.current_time += 1
 

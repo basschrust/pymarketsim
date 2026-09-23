@@ -3,7 +3,7 @@ import pandas as pd
 from .price import Price
 from .market import Market
 from marketsim.input import config
-from marketsim.fourheap import Order
+from marketsim.fourheap import Order, MatchedOrder
 from .valuation_libs.BlackScholes import BSCall
 from marketsim.plot.candle import plot_candlestick_derivative
 
@@ -55,6 +55,38 @@ class Option(Market):
                                      Time=self.expiration, d=0.0)
                 price_row["Theoretical"] = call_option.get("price", 100)
 
+    def roll_traded_prices(self, current_time:int) -> None:
+        yesterday = self.traded_prices[current_time - 1]
+        self.traded_prices[current_time] = {"Open": yesterday["Close"],
+                                            "Low": yesterday["Close"],
+                                            "High": yesterday["Close"],
+                                            "Close": yesterday["Close"],
+                                            "Volume": 0,
+                                            "Theoretical": self.get_theoretical_price(), }
+
+    def record_volume_and_price(self, matched_order: MatchedOrder) -> None:
+        # overriden in derivatives to include theoretical
+        current_time = matched_order.time
+        price = matched_order.price
+        volume = matched_order.order.quantity
+        if current_time in self.traded_prices:
+            # update data
+            if price > self.traded_prices[current_time]["High"]:
+                self.traded_prices[current_time]["High"] = price
+            elif price < self.traded_prices[current_time]["Low"]:
+                self.traded_prices[current_time]["Low"] = price
+            old_volume = self.traded_prices[current_time]["Volume"]
+            self.traded_prices[current_time]["Volume"] = volume + old_volume
+            self.traded_prices[current_time]["Close"] = price
+            self.traded_prices[current_time]["Theoretical"] = self.get_theoretical_price()
+        else:
+            # enter as first day in this time tick
+            self.traded_prices[current_time] = { "Open": price,
+                                                 "Low": price,
+                                                 "High": price,
+                                                 "Close": price,
+                                                 "Volume": volume,
+                                                 "Theoretical": self.get_theoretical_price(),}
 
     def plot_history(self):
         # ensure that theoretical will be plotted, too:

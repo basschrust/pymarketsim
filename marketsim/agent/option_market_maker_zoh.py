@@ -20,7 +20,7 @@ class OptionMMZOHAgent(Agent):
         all_markets.append(underlying_market)
         super().__init__(market=option_markets[0]) # TODO: base should accept all the list
         self.group = "OptionsMMZOH"
-        self.agent_id = agent_id if agent_id is not None else id_generator.next()
+
         #self.market = option_market # could agent serve multiple markets? YES, with Derivatives and underlying!
         self.option_market = option_markets[0]
         # and many derivatives, one underlying
@@ -28,17 +28,16 @@ class OptionMMZOHAgent(Agent):
         self.markets[underlying_market.asset_id] = underlying_market
 
         # self.position = 0 #TODO dict { market_id: position } ?
-        # self.position = {x:0 for x in all_markets}
-        self.position = {x:0 for x in self.markets}
-        # self.cash = 0
+        # self.position = {x:0 for x in self.markets}
+        self.position = {m_id: 0 for m_id, m in self.markets.items()}
 
-        # Market Making parameters:
+        #  TODO: Market Making parameters - per each market:
         self.xi = Decimal(xi) # step of the order ladder
         self.K = K # number of orders in the ladder
         self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
         self.rebalance_period = rebalance_period
         self.rebalance_by = rebalance_by # time or volume or exposure (in derivatives markets!)
-        self.rebalance_volume = rebalance_volume
+        self.rebalance_volume = rebalance_volume # and this differs for derivatives, too!
         self.last_rebalance_time = 0 # on each market!
         self.cum_volume = 0
         self.volume = volume
@@ -169,7 +168,7 @@ class OptionMMZOHAgent(Agent):
                             asset_id=self.underlying_market.asset_id,
                             valid_until=current_time+10,
                           )
-            self.logger.info(f"Adding order to underlying market: {order}")
+            self.logger.info(f"Adding buy order to underlying market: {order}")
             self.underlying_market.add_orders([order])
         elif required_adjustment <= -1:
             order = Order(price=self.underlying_market.last_traded_price,
@@ -180,7 +179,7 @@ class OptionMMZOHAgent(Agent):
                             asset_id=self.underlying_market.asset_id,
                             valid_until=current_time+10,
                           )
-            self.logger.info(f"Adding order to underlying market: {order}")
+            self.logger.info(f"Adding sell order to underlying market: {order}")
             self.underlying_market.add_orders([order])
 
 

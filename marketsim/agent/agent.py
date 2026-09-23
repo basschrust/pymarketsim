@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import copy
 import math
 from typing import List
 from dataclasses import dataclass, field
 import traceback
 from typing import TYPE_CHECKING
 
+from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
 from marketsim.market.price import Price
 
@@ -33,6 +35,7 @@ class Agent(ABC):
 
     def __init__(self, market: Market, group_name: str | None = None):
         self.market = market
+        self.agent_id = id_generator.next()
         #self.markets = [self.market]
         self.markets = { market.asset_id: market }
         self.group_name = group_name
@@ -40,9 +43,10 @@ class Agent(ABC):
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
         # self.position = 0
-        self.position = { m_id: 0 for m_id, m  in self.markets.items()}
+        self.position = { m_id: 0 for m_id  in self.markets}
         # self.position_history = {0: 0}  # {time: number_of_shares} # at the end of tick
-        self.position_history = { m_id: {0:0} for m_id, m  in self.markets.items() }  # {asset_id: {time: number_of_shares}} # at the end of tick
+        self.position_history = { m_id: {0:0} for m_id  in self.markets }  # {asset_id: {time: number_of_shares}}
+        # at the end of tick
         self._cash = Price(0)
         self.logger = market.logger
 
@@ -58,7 +62,7 @@ class Agent(ABC):
 
     @abstractmethod
     def get_id(self) -> int:
-        pass
+        return self.agent_id
 
     @abstractmethod
     def take_action(self, current_time: int) -> None:
@@ -70,11 +74,13 @@ class Agent(ABC):
 
     def update_position(self, quantity: int, cash: Price, asset_id: int) -> None:
         validate_update(quantity=quantity, cash=cash)
+        self.logger.info(f"Update position, agent: {self.agent_id}, old: {self.position}")
         self.position[asset_id] += quantity
+        self.logger.info(f"New: {self.position}")
         self.cash += cash
 
     def reset(self) -> None:
-        self.position = { m_id: 0 for m_id, m  in self.markets.items()}
+        self.position = { m_id: 0 for m_id  in self.markets}
         self.cash = Price(0)
 
     def is_market_maker(self) -> bool:
@@ -83,11 +89,12 @@ class Agent(ABC):
 
     def record_valuation(self, current_time: int) -> None:
         # saving value of agents portfolio
-        self.position_history[current_time] = self.position
+        # TODO: copy value, not reference!
+        self.position_history[current_time] = copy.deepcopy(self.position)
         # TODO: oops, while we have keys market,tick not tick, market
         # self.position_history[]
-        self.logger.info(
-            f"VALUATION: cash={repr(self.cash)} position={repr(self.position)} position type={type(self.position)}")
+        # self.logger.info(
+        #     f"VALUATION: cash={repr(self.cash)} position={repr(self.position)} position type={type(self.position)}")
         # self.logger.info(f"price={repr(price)} price type ={type(price)}")
 
         # valuation by last trade:

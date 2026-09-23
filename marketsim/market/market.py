@@ -123,6 +123,14 @@ class Market:
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
         self.order_book.cancel_outdated_orders(current_time=current_time)
 
+    def roll_traded_prices(self, current_time:int) -> None:
+        yesterday = self.traded_prices[current_time - 1]
+        self.traded_prices[current_time] = {"Open": yesterday["Close"],
+                                            "Low": yesterday["Close"],
+                                            "High": yesterday["Close"],
+                                            "Close": yesterday["Close"],
+                                            "Volume": 0, }
+
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
@@ -131,12 +139,7 @@ class Market:
 
         # second: rolling the traded_prices
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
-            yesterday = self.traded_prices[current_time-1]
-            self.traded_prices[current_time] = {"Open": yesterday["Close"],
-                                                "Low": yesterday["Close"],
-                                                "High": yesterday["Close"],
-                                                "Close": yesterday["Close"],
-                                                "Volume": 0, }
+            self.roll_traded_prices(current_time=current_time)
 
             for g1 in self.agent_groups:
                 for g2 in self.agent_groups:
@@ -199,10 +202,8 @@ class Market:
                             # it may make sense for the ZI agents group, but probably should be kept out of here
                             # and belong to the groups
 
-    def record_trade(self, matched_order: MatchedOrder) -> None:
-        self.last_traded_price = matched_order.price
-
-        # record for plots and summary:
+    def record_volume_and_price(self, matched_order: MatchedOrder) -> None:
+        # overriden in derivatives to include theoretical
         current_time = matched_order.time
         price = matched_order.price
         volume = matched_order.order.quantity
@@ -222,6 +223,15 @@ class Market:
                                                  "High": price,
                                                  "Close": price,
                                                  "Volume": volume,}
+
+
+    def record_trade(self, matched_order: MatchedOrder) -> None:
+        self.last_traded_price = matched_order.price
+
+        # record for plots and summary:
+        current_time = matched_order.time
+        self.record_volume_and_price(matched_order=matched_order)
+
         # record for each agent:
         agent_id = matched_order.order.agent_id
         self.agents[agent_id].record_trade(matched_order=matched_order)
