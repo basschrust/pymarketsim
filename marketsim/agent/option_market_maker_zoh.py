@@ -150,10 +150,18 @@ class OptionMMZOHAgent(Agent):
         # calculate Greeks
         # delta / gamma hedge
         # either as adjusting MM orders or by paying spread
-        greeks = BSCall(self.underlying_market.last_traded_price, self.option_market.strike,
+        greeks = None
+        if self.option_market.option_side == "CALL":
+            greeks = BSCall(self.underlying_market.last_traded_price, self.option_market.strike,
                         self.option_market.r, self.option_market.volatility,
                self.option_market.expiration, 0.0)
+        elif self.option_market.option_side == "PUT":
+            greeks = BSPut(self.underlying_market.last_traded_price, self.option_market.strike,
+                            self.option_market.r, self.option_market.volatility,
+                            self.option_market.expiration, 0.0)
 
+        self.logger.info(f"Greeks: {greeks}")
+        self.logger.info(f"Position: {self.position}")
         # simple delta hedge
         delta = greeks.get("delta")
         # check position and align, check minimum difference which leads to rebalance
