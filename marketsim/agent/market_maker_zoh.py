@@ -58,7 +58,7 @@ class MMZOHAgent(Agent):
                 return True
             # TODO: make the calculation, but what about methods - own, global, side, cash?
             # TODO: per market!
-            for market in self.markets:
+            for asset_id, market in self.markets.items():
                 self.cum_volume += market.traded_prices.get(current_time-1, {}).get("Volume", 0)
             if self.cum_volume >= self.rebalance_volume:
                 self.last_rebalance_time = current_time

@@ -35,17 +35,14 @@ class Custom_cs:
         return ret
 
 class HBLAgent(Agent):
-    def __init__(self, market: Market, q_max: int, shade: List, L: int, pv_var: float,
-                 arrival_rate: float, pv = None, agent_id: int =None):
-        super().__init__(market=market)
+    def __init__(self, *, markets: list[Market], q_max: int, shade: List, L: int, pv_var: float,
+                 arrival_rate: float, pv = None):
+        super().__init__(markets=markets)
         self.group = "HBL"
-        self.agent_id = agent_id if agent_id is not None else id_generator.next()
-        self.market = market
         if pv is not None:
             self.pv = pv
         else:
             self.pv = PrivateValues(q_max, float(pv_var))
-        self.position = 0
         self.shade = shade
         self.cash = 0
         self.L = L
@@ -70,8 +67,8 @@ class HBLAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def estimate_fundamental(self, current_time: int) -> Price:
-        return self.market.last_traded_price
+    def estimate_fundamental(self, current_time: int, asset_id: int) -> Price:
+        return self.markets[asset_id].last_traded_price
         #raise # TODO: AK - not used any more as only last trade decides? still used...
         mean, r, T = self.market.get_info()
         val = self.market.get_fundamental_value(current_time=current_time)
@@ -302,7 +299,7 @@ class HBLAgent(Agent):
         return last_L_orders, buy_orders_memory, sell_orders_memory
 
     # @profile
-    def determine_optimal_price(self, side: int, current_time: int) -> (Price, Price):
+    def determine_optimal_price(self, side: int, current_time: int, asset_id: int) -> (Price, Price):
         """
         Determines optimal price for submission.
         Args:
@@ -319,14 +316,14 @@ class HBLAgent(Agent):
         t1 = perf_counter()
 
         last_L_orders = np.array(last_L_orders)
-        estimate = self.estimate_fundamental(current_time=current_time) # TODO: AK - maybe last traded?
+        estimate = self.estimate_fundamental(current_time=current_time, asset_id=asset_id) # TODO: AK - maybe last traded?
         # TODO: check if this sorting creates a bottleneck
         buy_orders_memory = sorted(buy_orders_memory, key = lambda order:order.price)
         sell_orders_memory = sorted(sell_orders_memory, key = lambda order:order.price)
         t2 = perf_counter()
 
-        best_ask = float(self.market.order_book.sell_unmatched.peek())
-        best_buy = float(self.market.order_book.buy_unmatched.peek())
+        best_ask = float(self.markets[asset_id].order_book.sell_unmatched.peek())
+        best_buy = float(self.markets[asset_id].order_book.buy_unmatched.peek())
 
         t3 = perf_counter()
 
@@ -682,61 +679,59 @@ class HBLAgent(Agent):
                 or time ticks passed?
         """
         try:
-            random.seed(current_time + seed) # TODO: AK why not save it somehow to recreate specific scenarios?
-            side = random.choice([BUY, SELL]) # TODO: why random?
-            # TODO: estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
-            estimate = self.market.last_traded_price
-            spread = self.shade[1] - self.shade[0]
-            price = estimate
-            if len(self.market.matched_orders) >= 2 * self.L and self.market.order_book.buy_unmatched.peek_order() != None and self.market.order_book.sell_unmatched.peek_order() != None:
-                # the HBL behavior
-                opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
-                self.logger.info(f"HBL opt_price, opt_price_est_surplus: {opt_price}, {opt_price_est_surplus}")
+            for asset_id, market in self.markets.items():
+                random.seed(current_time + seed) # TODO: AK why not save it somehow to recreate specific scenarios?
+                side = random.choice([BUY, SELL]) # TODO: why random?
+                # TODO: estimate = self.estimate_fundamental(current_time=current_time) # AK: last trade?
+                estimate = market.last_traded_price
+                spread = self.shade[1] - self.shade[0]
+                price = estimate
+                if len(market.matched_orders) >= 2 * self.L and market.order_book.buy_unmatched.peek_order() != None and market.order_book.sell_unmatched.peek_order() != None:
+                    # the HBL behavior
+                    opt_price, opt_price_est_surplus = self.determine_optimal_price(side=side, current_time=current_time)
+                    self.logger.info(f"HBL opt_price, opt_price_est_surplus: {opt_price}, {opt_price_est_surplus}")
 
-                # TODO: add some special class for volume management?
-                quantity = max(int(self.q_max/10), 1)
-                order = Order(
-                    price=Price(opt_price),
-                    quantity=quantity, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
-                    agent_id=self.agent_id,
-                    time=current_time,
-                    order_type=1 if side == BUY else -1,
-                    asset_id=self.market.asset_id,
-                )
-                #return [order]
-                self.market.add_orders([order])
+                    # TODO: add some special class for volume management?
+                    quantity = max(int(self.q_max/10), 1)
+                    order = Order(
+                        price=Price(opt_price),
+                        quantity=quantity, # TODO: AK well, let's make it bigger to make some profits (Poisson?)
+                        agent_id=self.agent_id,
+                        time=current_time,
+                        order_type=1 if side == BUY else -1,
+                        asset_id=asset_id,
+                    )
+                    #return [order]
+                    market.add_orders([order])
 
-            else:
-                # ZI Agent # AK - if there is not enough trades to fill the L memory then behavior the same as ZI
-                # AK - but we have changed their behavior already - so let's reuse, and rely on last traded price
-                valuation_offset = spread*random.random() + self.shade[0]
-                if side == BUY:
-                    price = estimate + Price(self.pv.value_for_exchange(self.position, BUY) - valuation_offset)
-                elif side == SELL:
-                    price = estimate + Price(self.pv.value_for_exchange(self.position, SELL) + valuation_offset)
+                else:
+                    # ZI Agent # AK - if there is not enough trades to fill the L memory then behavior the same as ZI
+                    # AK - but we have changed their behavior already - so let's reuse, and rely on last traded price
+                    valuation_offset = spread*random.random() + self.shade[0]
+                    if side == BUY:
+                        price = estimate + Price(self.pv.value_for_exchange(self.position, BUY) - valuation_offset)
+                    elif side == SELL:
+                        price = estimate + Price(self.pv.value_for_exchange(self.position, SELL) + valuation_offset)
 
-                order = Order(
-                    price=Price(price),
-                    quantity=1,
-                    agent_id=self.agent_id,
-                    time=current_time,
-                    order_type=1 if side == BUY else -1,
-                    asset_id=self.market.asset_id,
-                )
-                #return [order]
-                self.market.add_orders([order])
+                    order = Order(
+                        price=Price(price),
+                        quantity=1,
+                        agent_id=self.agent_id,
+                        time=current_time,
+                        order_type=1 if side == BUY else -1,
+                        asset_id=asset_id,
+                    )
+                    market.add_orders([order])
         except TypeError:
             self.logger.exception("TypeError in HBLAgent")
             self.logger.info("TypeError in HBLAgent catched!")
-
-        # return []
 
     def __str__(self) -> str:
         return f'HBL{self.agent_id}'
 
     def reset(self) -> None:
         self.position = 0
-        self.cash = 0
+        self._cash = 0
         self.pv = PrivateValues(self.q_max, self.pv_var)
 
     def get_pos_value(self) -> float:
