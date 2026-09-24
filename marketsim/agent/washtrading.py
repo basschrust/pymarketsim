@@ -60,7 +60,7 @@ class WashTradingAgent(Agent):
 
                         if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
                             self.quantity = int(
-                                (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                                (self.q_max - abs(self.position[asset_id])) / (length * self.manipulation_boundaries["lam"]))
                             # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
                             self.price_to_reach = market.order_book.get_ask_at_volume(
                                 self.quantity / 4)  # + Price(0.01)
@@ -166,14 +166,14 @@ class WashTradingAgent(Agent):
                             # till the end of the simulation, it should depend on the momentary liquidity
 
                         # taking into account the total position of the WT pool
-                        pool_position = self.wt_pool.get_position()
+                        pool_position = self.wt_pool.get_position(asset_id=asset_id)
                         quantity = 0
                         if pool_position > 10:
                             if side == SELL:
-                                quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 *random.random()) / length)
+                                quantity = int((self.q_max - abs(self.position[asset_id])) * (0.5 + 0.5 *random.random()) / length)
                         if pool_position < 10:
                             if side == BUY:
-                                quantity = int((self.q_max - abs(self.position)) * (0.5 + 0.5 * random.random()) / length)
+                                quantity = int((self.q_max - abs(self.position[asset_id])) * (0.5 + 0.5 * random.random()) / length)
 
                     spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
                     # TODO: some rebalance spread parameter?
@@ -206,7 +206,7 @@ class WashTradingAgent(Agent):
 
 
 class WashTradingPool:
-    def __init__(self, buy_pool: list, sell_pool: list):
+    def __init__(self, *, buy_pool: list, sell_pool: list):
                  # manipulation_type: str, manipulation_start: int, manipulation_end: int):
         # TODO: maybe we could store a reciprocal hook in each of those agents in the pool so that they can
         # check the balance of each other and push their position towards equilibrium?
@@ -225,12 +225,12 @@ class WashTradingPool:
         # send signal to all agents in the pool
         pass
 
-    def get_position(self):
+    def get_position(self, *, asset_id: int) -> int:
         position = 0
         for agent in self.buy_pool:
-            position += agent.position
+            position += agent.position[asset_id]
         for agent in self.sell_pool:
-            position += agent.position
+            position += agent.position[asset_id]
 
         return position
 
