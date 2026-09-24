@@ -23,7 +23,8 @@ if TYPE_CHECKING:
 
 class Market:
     def __init__(self, reference_price: Price |None = None, name: str|None=None,
-                 market_type: str = "discrete"):
+                 market_type: str = "discrete", instrument_class: str = "stock"):
+        self.instrument_class = instrument_class
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)

@@ -19,6 +19,7 @@ from marketsim.agent.washtrading import WashTradingPool
 
 class Simulator:
     def __init__(self,
+                 *,
                  sim_time: int,
                  lam: float = 0.1,
                  mean: float = 100.0,
@@ -26,6 +27,7 @@ class Simulator:
                  shock_var=10,
                  markets: dict = {},
                  lob_plot_interval: int = 10,
+                 agents: dict|None=None,
                  ):
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
@@ -68,52 +70,8 @@ class Simulator:
             self.market_map[m_key] = market.asset_id
             self.markets[market.asset_id] = market
 
-            for group_name, agent_group in m_conf["agent_groups"].items():
-                for i in range(agent_group["number"]):
-                    # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
-                    # ZI agents:
-                    if agent_group["agent_class"] == "ZIAgentNotInformed":
-                            agent = ZIAgentNotInformed(markets=[market], **agent_group["config"])
-                            self.add_agents([agent])
-
-                    # Noise agents:
-                    if agent_group["agent_class"] == "NoiseAgent":
-                        agent = NoiseAgent(markets=[market], **agent_group["config"])
-                        self.add_agents([agent])
-
-                    # MMs:
-                    if agent_group["agent_class"] == "MMZOHAgent":
-                        agent = MMZOHAgent(markets=[market], **agent_group["config"])
-                        self.add_agents([agent])
-
-                    # HBL (Heuristic Belief)
-                    if agent_group["agent_class"] == "HBLAgent":
-                        agent = HBLAgent(markets=[market], **agent_group["config"])
-                        self.add_agents([agent])
-
-                    # spoofers: (to trick HBL Agents)
-                    if agent_group["agent_class"] == "SpoofingAgent":
-                        agent = SpoofingAgent(markets=[market], **agent_group["config"])
-                        self.add_agents([agent])
-
-                    # washtrading agents (tricking MMs)
-                    if agent_group["agent_class"] == "WashTradingAgent":
-                        agent = WashTradingAgent(markets=[market], group_name=group_name, **agent_group["config"])
-                        self.add_agents([agent])
-                        # those will need the relationship...
-
-                    # momentum
-                    if agent_group["agent_class"] == "MomentumAgent":
-                        agent = MomentumAgent(markets=[market], **agent_group["config"])
-                        self.add_agents([agent])
-
-                    ########## Derivatives agents, complicated ones :)  ###############
-
-                    ## MM, simple delta hedger
-                    if agent_group["agent_class"] == "OptionMMZOHAgent":
-                        agent = OptionMMZOHAgent(option_markets=[market], underlying_market=market.underlying,
-                                                 **agent_group["config"])
-                        self.add_agents([agent])
+            for group_name, agent_group in m_conf.get("agent_groups", {}).items():
+                self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
 
             # TODO: resolve agent dependencies
             for relationship in m_conf.get("agent_dependencies", []):
@@ -142,9 +100,72 @@ class Simulator:
                         # terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
                         agent.set_wt_pool(wt_pool=pool)
 
+        for a_key, agent_gr_def in agents.items():
+            self.create_agents(agent_group=agent_gr_def, group_name=a_key)
         return
 
     ######################### __init__ ends here   ###################
+    #
+    # def create_defined_agent(self, *, agent_def: dict, markets: list[Market], number: int = 1) -> None:
+    #     for i in range(number):
+
+
+    def add_agent_group(self, *, agent_group:dict, markets: list[Market], group_name: str) -> None:
+        for i in range(agent_group["number"]):
+            # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
+            # ZI agents:
+            if agent_group["agent_class"] == "ZIAgentNotInformed":
+                agent = ZIAgentNotInformed(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            # Noise agents:
+            if agent_group["agent_class"] == "NoiseAgent":
+                agent = NoiseAgent(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            # MMs:
+            if agent_group["agent_class"] == "MMZOHAgent":
+                agent = MMZOHAgent(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            # HBL (Heuristic Belief)
+            if agent_group["agent_class"] == "HBLAgent":
+                agent = HBLAgent(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            # spoofers: (to trick HBL Agents)
+            if agent_group["agent_class"] == "SpoofingAgent":
+                agent = SpoofingAgent(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            # washtrading agents (tricking MMs)
+            if agent_group["agent_class"] == "WashTradingAgent":
+                agent = WashTradingAgent(markets=markets, group_name=group_name, **agent_group["config"])
+                self.add_agents([agent])
+                # those will need the relationship...
+
+            # momentum
+            if agent_group["agent_class"] == "MomentumAgent":
+                agent = MomentumAgent(markets=markets, **agent_group["config"])
+                self.add_agents([agent])
+
+            ########## Derivatives agents, complicated ones :)  ###############
+
+            ## MM, simple delta hedger
+            if agent_group["agent_class"] == "OptionMMZOHAgent":
+                # TODO - what with underlying?
+                agent = OptionMMZOHAgent(markets=markets, market_map=self.market_map, #underlying_market=market.underlying,
+                                         **agent_group["config"])
+                self.add_agents([agent])
+
+    def create_agents(self, *, agent_group: dict, group_name: str) -> None:
+        # processing the agents defined at the end of yaml
+        if agent_group.get("markets", "ALL") == "ALL":
+            markets = list(self.markets.values())
+        else:
+            markets = [self.markets[self.market_map[k]] for k in agent_group["markets"]]
+
+        self.add_agent_group(agent_group=agent_group, markets=markets, group_name=group_name)
 
     def add_agents(self, agents: list[Agent]) -> None:
         for agent in agents:
@@ -155,13 +176,10 @@ class Simulator:
                 market.add_agents([agent]) # TODO: check performance
 
     def step(self) -> None:
-        # TODO: changing the architecture - fist agents, the markets
+        # TODO: changing the architecture - first agents, then markets
         for agent_id, agent in self.agents.items():
             agent.take_action(current_time=self.current_time)  #
             # now agents decide which markets to enter on their own
-            #market.logger.info(f'Agent {agent.agent_id} is entering the market {str(market)} and makes orders {orders}')
-            #market.add_orders(orders)  # moved to agent
-
 
         for market_key, market in self.markets.items():
 
