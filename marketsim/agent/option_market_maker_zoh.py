@@ -18,7 +18,7 @@ class OptionMMZOHAgent(Agent):
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
         all_markets = option_markets
         all_markets.append(underlying_market)
-        super().__init__(market=option_markets[0]) # TODO: base should accept all the list
+        super().__init__(markets=option_markets) # TODO: base should accept all the list
         self.group = "OptionsMMZOH"
 
         #self.market = option_market # could agent serve multiple markets? YES, with Derivatives and underlying!

@@ -73,38 +73,38 @@ class Simulator:
                     # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
                     # ZI agents:
                     if agent_group["agent_class"] == "ZIAgentNotInformed":
-                            agent = ZIAgentNotInformed(market=market, **agent_group["config"])
+                            agent = ZIAgentNotInformed(markets=[market], **agent_group["config"])
                             self.add_agents([agent])
 
                     # Noise agents:
                     if agent_group["agent_class"] == "NoiseAgent":
-                        agent = NoiseAgent(market=market, **agent_group["config"])
+                        agent = NoiseAgent(markets=[market], **agent_group["config"])
                         self.add_agents([agent])
 
                     # MMs:
                     if agent_group["agent_class"] == "MMZOHAgent":
-                        agent = MMZOHAgent(market=market, **agent_group["config"])
+                        agent = MMZOHAgent(markets=[market], **agent_group["config"])
                         self.add_agents([agent])
 
                     # HBL (Heuristic Belief)
                     if agent_group["agent_class"] == "HBLAgent":
-                        agent = HBLAgent(market=market, **agent_group["config"])
+                        agent = HBLAgent(markets=[market], **agent_group["config"])
                         self.add_agents([agent])
 
                     # spoofers: (to trick HBL Agents)
                     if agent_group["agent_class"] == "SpoofingAgent":
-                        agent = SpoofingAgent(market=market, **agent_group["config"])
+                        agent = SpoofingAgent(markets=[market], **agent_group["config"])
                         self.add_agents([agent])
 
                     # washtrading agents (tricking MMs)
                     if agent_group["agent_class"] == "WashTradingAgent":
-                        agent = WashTradingAgent(market=market, group_name=group_name, **agent_group["config"])
+                        agent = WashTradingAgent(markets=[market], group_name=group_name, **agent_group["config"])
                         self.add_agents([agent])
                         # those will need the relationship...
 
                     # momentum
                     if agent_group["agent_class"] == "MomentumAgent":
-                        agent = MomentumAgent(market=market, **agent_group["config"])
+                        agent = MomentumAgent(markets=[market], **agent_group["config"])
                         self.add_agents([agent])
 
                     ########## Derivatives agents, complicated ones :)  ###############
@@ -150,26 +150,9 @@ class Simulator:
         for agent in agents:
             self.logger.info(f"Adding agent {str(agent)} to the simulation")
             self.agents[agent.get_id()] = agent
-            #    agent.market.add_agents([agent])
-            # terminal.write(f"Agent markets: {agent.markets}")
+
             for asset_id, market in agent.markets.items(): # TODO: this will serve the multimarket agents soon
                 market.add_agents([agent]) # TODO: check performance
-            #if agent.underlying_market is not
-        #     self.agent_groups.add(agent.group)
-        #     self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
-        #     self.trades_by_agent_type.setdefault(agent.group,
-        #                                          {"Count_buy": 0, "Volume_buy": 0, "Count_sell": 0, "Volume_sell": 0})
-        #     self.trades_by_agent_type_ext.setdefault(agent.group,
-        #                                          {"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
-        #                                              , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
-        #     # this one is tricky as requires n-square combination
-        #     # TODO: but also with already existing groups!
-        #     # and then by time...
-        # for g1 in self.agent_groups:
-        #     for g2 in self.agent_groups:
-        #         self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
-        #                                              , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
-
 
     def step(self) -> None:
         # TODO: changing the architecture - fist agents, the markets

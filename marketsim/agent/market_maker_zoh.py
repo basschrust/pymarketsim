@@ -11,10 +11,10 @@ class MMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, market: Market, xi: float= 0.1,
+    def __init__(self, *, markets: list[Market], xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
-        super().__init__(market=market)
+        super().__init__(markets=markets)
         self.group = "MMZOH"
         # self.market = market # could agent serve multiple markets?
 
@@ -43,6 +43,7 @@ class MMZOHAgent(Agent):
         return True
 
     def should_rebalance(self, current_time:int) -> bool:
+        # TODO: add market dimension?
         if current_time == 0:
             return True
         if self.rebalance_by == "time":
@@ -56,7 +57,9 @@ class MMZOHAgent(Agent):
                 self.cum_volume = 0
                 return True
             # TODO: make the calculation, but what about methods - own, global, side, cash?
-            self.cum_volume += self.market.traded_prices.get(current_time-1, {}).get("Volume", 0)
+            # TODO: per market!
+            for market in self.markets:
+                self.cum_volume += market.traded_prices.get(current_time-1, {}).get("Volume", 0)
             if self.cum_volume >= self.rebalance_volume:
                 self.last_rebalance_time = current_time
                 self.cum_volume = 0
