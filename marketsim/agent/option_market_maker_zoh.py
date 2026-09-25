@@ -1,4 +1,5 @@
 from decimal import Decimal
+from collections import defaultdict
 
 from marketsim.agent.agent import Agent
 from marketsim.market import Market, Price, Option
@@ -7,6 +8,7 @@ from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.loggers.basic import terminal
+
 
 
 class OptionMMZOHAgent(Agent):
@@ -18,8 +20,6 @@ class OptionMMZOHAgent(Agent):
                   xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
                  , rebalance_by: str = "time", rebalance_volume: int = 70) -> None:
-        # all_markets = option_markets
-        # all_markets.append(underlying_market)
         super().__init__(markets=markets) # TODO: base should accept all the list
         self.group = "OptionsMMZOH"
 
@@ -30,9 +30,8 @@ class OptionMMZOHAgent(Agent):
 
         self.derivatives_map  = { m_id: market.underlying.asset_id for m_id, market in self.option_markets.items() }
         self.markets = self.option_markets | self.underlying_markets
-        # terminal.write(f"Option_markets: {self.option_markets}\n")
-        # terminal.write(f"Underlying markets: {self.underlying_markets}\n")
-        # terminal.write(f"Derivatives map: {self.derivatives_map}\n")
+        self.greeks = defaultdict(dict) # per option, per unit,
+        self.greeks_agg = defaultdict(dict) # per underlying, per position
 
         self.position = { m_id: 0 for m_id in self.markets }
 
@@ -150,59 +149,84 @@ class OptionMMZOHAgent(Agent):
                             )
                         )
 
-            # return orders
             # adding orders to the option market:
             option_market.add_orders(orders)
 
+        # calculate Greeks
+        self.calculate_greeks()
+        # delta / gamma hedge
+        self.hedge(current_time=current_time)
+
             # TODO: add orders to the underlying market
-            # calculate Greeks
-            # delta / gamma hedge
-            # either as adjusting MM orders or by paying spread
-            greeks = None
+
+
+
+    def get_pos_value(self) -> float:
+        raise
+        return 0
+
+    def __str__(self):
+        return f'Opt_MM_ZOH{self.agent_id}'
+
+    ### the Derivative agent typical methods:
+    def calculate_greeks(self):
+        for asset_id, market in self.underlying_markets.items():
+            self.greeks_agg[asset_id] = {"delta": self.position[asset_id], "gamma": 0,
+                                         "theta": 0, "vega": 0, "rho": 0}
+
+        for option_id, option_market in self.option_market.items():
+            underlying_market = self.underlying_markets[self.derivatives_map[option_id]]
+            underlying_id = underlying_market.asset_id
             # TODO: the volatility should be taken calculated/estimated from underlying
             if option_market.option_side == "CALL":
-                greeks = BSCall(underlying_market.last_traded_price, option_market.strike,
+                self.greeks[option_id] = BSCall(underlying_market.last_traded_price, option_market.strike,
                             option_market.r, option_market.volatility,
                    option_market.expiration, 0.0)
             elif option_market.option_side == "PUT":
-                greeks = BSPut(underlying_market.last_traded_price, option_market.strike,
+                self.greeks[option_id] = BSPut(underlying_market.last_traded_price, option_market.strike,
                                 option_market.r, option_market.volatility,
                                 option_market.expiration, 0.0)
 
-            self.logger.info(f"Greeks: {greeks}")
-            self.logger.info(f"Position: {self.position}")
-            # simple delta hedge
-            delta = greeks.get("delta")
+            # now add and aggregate for the underlying
+            for greek_letter in self.greeks[option_id]:
+                self.greeks_agg[underlying_id][greek_letter] += (self.greeks[option_id][greek_letter]
+                                                                 * self.position[option_id])
+
+        self.logger.info(f"Greeks: {self.greeks}")
+        self.logger.info(f"Position: {self.position}")
+        self.logger.info(f"Greeks aggregated: {self.greeks_agg}")
+
+
+    def hedge(self, *, current_time: int) -> None:
+        # either as adjusting MM orders or by paying spread
+        # simple delta hedge
+        for asset_id, underlying_market in self.underlying_markets.items():
+            delta_pos = self.greeks_agg[asset_id].get("delta")
             # check position and align, check minimum difference which leads to rebalance
-            delta_pos = delta * self.position.get(option_id, 0)
-            required_adjustment = int(- delta_pos - self.position.get(underlying_market.asset_id, 0))
+
+            required_adjustment = - int(delta_pos)
+
             if required_adjustment >= 1:
                 order = Order(price=underlying_market.last_traded_price,
-                                quantity=required_adjustment,
-                                agent_id=self.agent_id,
-                                time=current_time,
-                                order_type=BUY,
-                                asset_id=underlying_market.asset_id,
-                                valid_until=current_time+10,
+                              quantity=required_adjustment,
+                              agent_id=self.agent_id,
+                              time=current_time,
+                              order_type=BUY,
+                              asset_id=underlying_market.asset_id,
+                              valid_until=current_time + 10,
                               )
                 self.logger.info(f"Adding buy order to underlying market: {order}")
                 underlying_market.add_orders([order])
             elif required_adjustment <= -1:
                 order = Order(price=underlying_market.last_traded_price,
-                                quantity=abs(required_adjustment),
-                                agent_id=self.agent_id,
-                                time=current_time,
-                                order_type=SELL,
-                                asset_id=underlying_market.asset_id,
-                                valid_until=current_time+10,
+                              quantity=abs(required_adjustment),
+                              agent_id=self.agent_id,
+                              time=current_time,
+                              order_type=SELL,
+                              asset_id=underlying_market.asset_id,
+                              valid_until=current_time + 10,
                               )
                 self.logger.info(f"Adding sell order to underlying market: {order}")
                 underlying_market.add_orders([order])
 
-
-    def get_pos_value(self) -> float:
-        return 0
-
-    def __str__(self):
-        return f'Opt_MM_ZOH{self.agent_id}'
 
