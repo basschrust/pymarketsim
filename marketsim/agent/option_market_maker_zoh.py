@@ -6,6 +6,7 @@ from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
+from marketsim.loggers.basic import terminal
 
 
 class OptionMMZOHAgent(Agent):
@@ -26,15 +27,19 @@ class OptionMMZOHAgent(Agent):
         # self.option_market = [markets]
         # and many derivatives, one underlying
         # TODO:
-        self.underlying_map = { market.asset_id : market_map[market.underlying] for market in markets if market.instrument_class == "option"}
         # self.underlying_markets = { : self.markets[] for m in markets if m.instrument_type=="option"}
         # self.markets[underlying_market.asset_id] = underlying_market
-        self.option_markets = {market.asset_id: market for market in markets if
-                               market.instrument_class == "option"}
+        self.option_markets = { market.asset_id: market for market in markets if
+                               market.instrument_class == "option" }
+
+        self.underlying_map = { market.asset_id: market.underlying for market in markets if
+                               market.instrument_class == "option" }
+        terminal.write(f"Option_markets: {self.option_markets}")
+        terminal.write(f"Underlying map: {self.underlying_map}\n")
 
         # self.position = 0 #TODO dict { market_id: position } ?
         # self.position = {x:0 for x in self.markets}
-        self.position = {m_id: 0 for m_id, m in self.markets.items()}
+        self.position = { m_id: 0 for m_id in self.markets }
 
         #  TODO: Market Making parameters - per each market:
         self.xi = Decimal(xi) # step of the order ladder
@@ -52,7 +57,7 @@ class OptionMMZOHAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-    def should_rebalance(self, current_time:int) -> bool:
+    def should_rebalance(self, *, current_time:int, market: Market) -> bool:
         if current_time == 0:
             return True
         if self.rebalance_by == "time":
@@ -66,7 +71,7 @@ class OptionMMZOHAgent(Agent):
                 self.cum_volume = 0
                 return True
             # TODO: make the calculation, but what about methods - own, global, side, cash?
-            self.cum_volume += self.market.traded_prices.get(current_time-1, {}).get("Volume", 0)
+            self.cum_volume += market.traded_prices.get(current_time-1, {}).get("Volume", 0)
             if self.cum_volume >= self.rebalance_volume:
                 self.last_rebalance_time = current_time
                 self.cum_volume = 0
@@ -74,26 +79,27 @@ class OptionMMZOHAgent(Agent):
         return False
 
     def take_action(self, current_time: int):
-        for asset_id, market in self.option_markets.items():
+        for option_id, option_market in self.option_markets.items():
+            underlying_market = self.underlying_map[option_id]
             orders = []
             # add orders only in rebalance periods:
-            if self.should_rebalance(current_time):
+            if self.should_rebalance(current_time=current_time, market=option_market):
                 # AK - clear previous orders (should we?)
                 self.logger.info(f"Withdrawing previous orders ()") # how to check number of orders of this agent?
-                self.option_market.withdraw_all(agent_id=self.agent_id)
+                option_market.withdraw_all(agent_id=self.agent_id)
                 # AK - don't withdraw, but also don't blindly add new orders - just ensure they are balanced
                 # that's basically the same to just withdraw all and create new, the problem might be with timing
                 # - we could loose the slot in the queue of waiting orders
 
                 # Get the best bid and best ask
-                best_ask = self.option_market.order_book.get_best_ask()
-                best_bid = self.option_market.order_book.get_best_bid()
+                best_ask = option_market.order_book.get_best_ask()
+                best_bid = option_market.order_book.get_best_bid()
 
                 self.logger.info(f"Best bid {best_bid}, best ask: {best_ask}")
 
                 #estimate = self.market.last_traded_price
                 # TODO: get the theoretical price
-                estimate = Price(self.option_market.get_theoretical_price())
+                estimate = Price(option_market.get_theoretical_price())
 
                 self.logger.info(f"Last traded price: {estimate}")
                 HALF = Decimal("0.5")
@@ -135,7 +141,7 @@ class OptionMMZOHAgent(Agent):
                                 agent_id=self.agent_id,
                                 time=current_time,
                                 order_type=BUY,
-                                asset_id=self.option_market.asset_id,
+                                asset_id=option_id,
                             )
                         )
                         orders.append(
@@ -145,57 +151,58 @@ class OptionMMZOHAgent(Agent):
                                 agent_id=self.agent_id,
                                 time=current_time,
                                 order_type=SELL,
-                                asset_id=self.option_market.asset_id,
+                                asset_id=option_id,
                             )
                         )
 
             # return orders
             # adding orders to the option market:
-            self.option_market.add_orders(orders)
+            option_market.add_orders(orders)
 
             # TODO: add orders to the underlying market
             # calculate Greeks
             # delta / gamma hedge
             # either as adjusting MM orders or by paying spread
             greeks = None
-            if self.option_market.option_side == "CALL":
-                greeks = BSCall(self.underlying_market.last_traded_price, self.option_market.strike,
-                            self.option_market.r, self.option_market.volatility,
-                   self.option_market.expiration, 0.0)
-            elif self.option_market.option_side == "PUT":
-                greeks = BSPut(self.underlying_market.last_traded_price, self.option_market.strike,
-                                self.option_market.r, self.option_market.volatility,
-                                self.option_market.expiration, 0.0)
+            # TODO: the volatility should be taken calculated/estimated from underlying
+            if option_market.option_side == "CALL":
+                greeks = BSCall(underlying_market.last_traded_price, option_market.strike,
+                            option_market.r, option_market.volatility,
+                   option_market.expiration, 0.0)
+            elif option_market.option_side == "PUT":
+                greeks = BSPut(underlying_market.last_traded_price, option_market.strike,
+                                option_market.r, option_market.volatility,
+                                option_market.expiration, 0.0)
 
             self.logger.info(f"Greeks: {greeks}")
             self.logger.info(f"Position: {self.position}")
             # simple delta hedge
             delta = greeks.get("delta")
             # check position and align, check minimum difference which leads to rebalance
-            delta_pos = delta * self.position.get(self.option_market.asset_id, 0)
-            required_adjustment = int(- delta_pos - self.position.get(self.underlying_market.asset_id, 0))
+            delta_pos = delta * self.position.get(option_id, 0)
+            required_adjustment = int(- delta_pos - self.position.get(underlying_market.asset_id, 0))
             if required_adjustment >= 1:
-                order = Order(price=self.underlying_market.last_traded_price,
+                order = Order(price=underlying_market.last_traded_price,
                                 quantity=required_adjustment,
                                 agent_id=self.agent_id,
                                 time=current_time,
                                 order_type=BUY,
-                                asset_id=self.underlying_market.asset_id,
+                                asset_id=underlying_market.asset_id,
                                 valid_until=current_time+10,
                               )
                 self.logger.info(f"Adding buy order to underlying market: {order}")
-                self.underlying_market.add_orders([order])
+                underlying_market.add_orders([order])
             elif required_adjustment <= -1:
-                order = Order(price=self.underlying_market.last_traded_price,
+                order = Order(price=underlying_market.last_traded_price,
                                 quantity=abs(required_adjustment),
                                 agent_id=self.agent_id,
                                 time=current_time,
                                 order_type=SELL,
-                                asset_id=self.underlying_market.asset_id,
+                                asset_id=underlying_market.asset_id,
                                 valid_until=current_time+10,
                               )
                 self.logger.info(f"Adding sell order to underlying market: {order}")
-                self.underlying_market.add_orders([order])
+                underlying_market.add_orders([order])
 
 
     def get_pos_value(self) -> float:

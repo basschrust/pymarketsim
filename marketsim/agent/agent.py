@@ -7,6 +7,7 @@ from typing import List
 from dataclasses import dataclass, field
 import traceback
 from typing import TYPE_CHECKING
+from collections import defaultdict
 
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
@@ -43,9 +44,10 @@ class Agent(ABC):
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         self.position_value_history = {} # {time: position_value}
         # self.position = 0
-        self.position = { m_id: 0 for m_id  in self.markets}
+        self.position = { m_id: 0 for m_id  in self.markets }
         # self.position_history = {0: 0}  # {time: number_of_shares} # at the end of tick
-        self.position_history = { m_id: {0:0} for m_id  in self.markets }  # {asset_id: {time: number_of_shares}}
+        self.position_history = defaultdict(dict)
+        self.position_history[0] = { m_id:0  for m_id  in self.markets }  # {time: {asset_id: number_of_shares}}
         # at the end of tick
         self._cash = Price(0)
         self.logger = markets[0].logger
@@ -76,6 +78,8 @@ class Agent(ABC):
     def update_position(self, quantity: int, cash: Price, asset_id: int) -> None:
         validate_update(quantity=quantity, cash=cash)
         # self.logger.info(f"Update position, agent: {self.agent_id}, old: {self.position}")
+        if asset_id not in self.position:
+            terminal.write(f"Position:  {self.position}. {asset_id} not in position")
         self.position[asset_id] += quantity
         # self.logger.info(f"New: {self.position}")
         self.cash += cash
@@ -91,6 +95,7 @@ class Agent(ABC):
     def record_valuation(self, current_time: int) -> None:
         # saving value of agents portfolio
         # TODO: copy value, not reference!
+        terminal.write(f"Position: {self.position}")
         self.position_history[current_time] = copy.deepcopy(self.position)
 
         # valuation by last trade:
@@ -103,7 +108,8 @@ class Agent(ABC):
         cash = - Price(matched_order.price * matched_order.order.quantity * matched_order.order.order_type)
         # print(f"Updating cash: {cash}")
         self.update_position(quantity=quantity, cash=cash, asset_id=matched_order.order.asset_id)
-        self.position_history[matched_order.order.asset_id][matched_order.time] = self.position_history.get(matched_order.order.asset_id, {}).get(matched_order.time, 0) + quantity
+        self.position_history[matched_order.time][matched_order.order.asset_id] = (
+                self.position_history.get(matched_order.time, {}).get(matched_order.order.asset_id, 0) + quantity)
 
         if matched_order.time in self.trade_history:
             # just add info

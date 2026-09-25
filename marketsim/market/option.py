@@ -14,6 +14,7 @@ class Option(Market):
                  # strike: Price=Price(100), expiration: str = "1Y"
                  # , option_side: str= "CALL", option_type: str= "European") -> None:
 
+        self.instrument_class = "option"
         self.underlying = underlying
         self.strike = derivatives_config["strike"]
         self.expiration = 1.0  if derivatives_config["expiration"] == '1Y' else derivatives_config["expiration"] # TODO: prepare mapper for this
@@ -24,7 +25,8 @@ class Option(Market):
         self.volatility = 0.157  # annualized volatility of the underlying security
         # TODO: reference price should be theoretical - what about calculating this and then calling super()?
         theoretical_price = self.get_theoretical_price()
-        super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price))
+        super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
+                         , instrument_class=self.instrument_class)
 
         # structures to be extended
         self.traded_prices = {0: {"Open": self.last_traded_price,
