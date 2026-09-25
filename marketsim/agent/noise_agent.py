@@ -14,14 +14,12 @@ class NoiseAgent(Agent):
     """
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
-    def __init__(self, markets: list[Market], q_max: int, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
+    def __init__(self, markets: list[Market], q_max: int = 1000, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
                  , withdraw_old: bool = False):
         super().__init__(markets=markets)
         self.group = "Noise"
 
         self.q_max = q_max # check if doesn't collide with mean_volume
-        # self.position = 0
-        # self.cash = 0
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
         self.mean_spread = mean_spread

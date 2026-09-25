@@ -42,7 +42,6 @@ def simple_plot(
     plt.close(fig)
 
 def plot_agent_history_single_market(
-    # position_history: dict,
     position_history: pd.DataFrame,
     value_history: dict,
     output_file: str,
@@ -57,8 +56,6 @@ def plot_agent_history_single_market(
 
     # Position subplot
     ax1.plot(
-        # list(position_history.keys()),
-        # list(position_history.values()),
         position_history.timeTick,
         position_history.position,
     )

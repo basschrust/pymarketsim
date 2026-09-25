@@ -1,7 +1,7 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 3000
+sim_time: 300
 lob_plot_interval: 25
 debug_logging: False
 
@@ -93,7 +93,7 @@ markets:
 ########################  agents for many markets:     ###########################
 
 agents:
-  noise:
+  noise_1:
     agent_class: NoiseAgent
     markets: ALL  #  * or ALL is default value - for all markets
     number: 15
@@ -102,11 +102,27 @@ agents:
       q_max: 1000
       mean_volume: 15
       mean_spread: 0.8
+  noise_2:
+    agent_class: NoiseAgent
+    number: 10
+    markets:
+     - stock_1
+    config:
+      lam: 0.08
   mmzoh_1:
     agent_class: MMZOHAgent
     number: 1
     config:
       xi: 0.1
+      K: 3
+      omega: 0.1
+      rebalance_period: 20
+      volume: 60
+  opt_mms:
+    agent_class: OptionMMZOHAgent
+    number: 1
+    config:
+      xi: 0.12
       K: 3
       omega: 0.1
       rebalance_period: 20

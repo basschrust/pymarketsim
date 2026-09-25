@@ -174,7 +174,7 @@ class OptionMMZOHAgent(Agent):
             self.greeks_agg[asset_id] = {"delta": self.position[asset_id], "gamma": 0,
                                          "theta": 0, "vega": 0, "rho": 0}
 
-        for option_id, option_market in self.option_market.items():
+        for option_id, option_market in self.option_markets.items():
             underlying_market = self.underlying_markets[self.derivatives_map[option_id]]
             underlying_id = underlying_market.asset_id
             # TODO: the volatility should be taken calculated/estimated from underlying
@@ -188,7 +188,7 @@ class OptionMMZOHAgent(Agent):
                                 option_market.expiration, 0.0)
 
             # now add and aggregate for the underlying
-            for greek_letter in self.greeks[option_id]:
+            for greek_letter in self.greeks_agg[underlying_id]:
                 self.greeks_agg[underlying_id][greek_letter] += (self.greeks[option_id][greek_letter]
                                                                  * self.position[option_id])
 
