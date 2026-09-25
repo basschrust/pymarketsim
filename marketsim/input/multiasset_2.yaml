@@ -111,6 +111,9 @@ agents:
       lam: 0.08
   mmzoh_1:
     agent_class: MMZOHAgent
+    markets:
+      - stock_1
+      - stock_2
     number: 1
     config:
       xi: 0.1
