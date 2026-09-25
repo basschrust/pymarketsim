@@ -11,7 +11,7 @@ from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import (plot_order_book, plot_volume_transfers, plot_cash_transfers
-    , plot_realized_volatility, plot_agent_history, plot_by_type, plot_bid_ask)
+    , plot_realized_volatility, plot_agent_history_single_market, plot_by_type, plot_bid_ask)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market.price import Price
@@ -64,6 +64,8 @@ class Market:
             record["extra"].get("market_id") == market_id,
         )
         self.logger = logger.bind(market_id=self.asset_id)
+
+        self.eod_status = "open"  # open/closed  to make eod procedure idempotent
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
@@ -434,7 +436,6 @@ class Market:
             self.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
                                # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
                                f"value(by last trade): {values_by_last_traded_price[i]}")
-            # TODO: dimensions!
             positions_sum += agent.position[self.asset_id]
             cash_sum += agent.cash
             values_by_last_trade_sum += self.last_traded_price * agent.position[self.asset_id]
@@ -445,19 +446,34 @@ class Market:
         self.logger.info(f"Midprices: {self.get_midprices()}")
         self.logger.info(f"Traded prices {self.traded_prices}")
 
+        self.eod() # End of Day for the Market
+
         # valuations by agent:
         for agent_key, agent in self.agents.items():
-            value_history = agent.position_value_history
-            position_history = agent.position_history
+            agent.eod()
+            value_history = agent.position_value_history # now includes also other assets!
+
+            position_history_df = agent.position_history_df[
+                agent.position_history_df["asset_id"]==self.asset_id].merge(
+                    self.traded_prices_df,
+                    on="timeTick",
+                    how="left",
+                )
+
+            position_history_df["positionValue"] = (
+                    position_history_df["position"] * position_history_df["Close"]
+            )
+
             self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history}")
+            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history_df}")
 
             # plot it
             agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
 
-            plot_agent_history(
+            plot_agent_history_single_market(
                 # TODO: dimensions in position_history have changed!
-                position_history=position_history[self.asset_id],  # TODO: yet only his first market
+                #position_history=position_history,  # TODO: yet only his first market
+                position_history=position_history_df,
                 value_history=value_history,
                 output_file=agent_file,
             )
@@ -487,3 +503,27 @@ class Market:
 
         # plot the history of trading between agent groups:
         self.plot_trade_stats()
+
+    def eod(self):
+        # End of Day process for the Market - create EoD DataFrames
+        # omnipotent, so once called, makes summaries of his all structures
+        # and makes a mark that it has been done
+        if self.eod_status == "closed":
+            return
+        elif self.eod_status == "open":
+            self.eod_status = "closed"
+            # run the EoD procedure
+            # make traded_price a DF to enable quick filtering and joining with agents' positions
+
+            self.traded_prices_df = (
+                pd.DataFrame.from_dict(self.traded_prices, orient="index")
+                .rename_axis("timeTick")
+                .reset_index()
+                [["timeTick", "Close"]]
+            )
+
+        else:
+            raise ValueError(f"Unknown eod status: {self.eod_status}")
+
+
+

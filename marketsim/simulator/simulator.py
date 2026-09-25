@@ -7,7 +7,7 @@ from marketsim.loggers.basic import terminal
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import (simple_plot, plot_agent_history, plot_by_type, plot_bid_ask
+from marketsim.plot.simple_plot import (simple_plot, plot_agent_history_single_market, plot_by_type, plot_bid_ask
 , plot_realized_volatility, plot_volume_transfers)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config

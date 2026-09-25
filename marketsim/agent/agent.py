@@ -9,6 +9,8 @@ import traceback
 from typing import TYPE_CHECKING
 from collections import defaultdict
 
+import pandas as pd
+
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
 from marketsim.market.price import Price
@@ -48,9 +50,13 @@ class Agent(ABC):
         # self.position_history = {0: 0}  # {time: number_of_shares} # at the end of tick
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id:0  for m_id  in self.markets }  # {time: {asset_id: number_of_shares}}
-        # at the end of tick
+                # at the end of tick
+        self.position_history_df = None
         self._cash = Price(0)
         self.logger = markets[0].logger
+
+        self.eod_status = "open" # open/closed  to make eod procedure idempotent
+
 
     @property
     def cash(self):
@@ -131,4 +137,32 @@ class Agent(ABC):
         # TODO: structure like: self.trade_history_by_groups =
         #  {"MM":{ timeTick1: { volumeBought: , volumeSold: , cashBalance: }, timeTick2: {} } }
         # TODO: reconcile it at the end
+
+    def eod(self) -> None:
+        # End Of Day procedure of the agent
+        # omnipotent, so once called by any market, makes summaries of his all structures
+        # and makes a mark that it has been done
+        if self.eod_status == "closed":
+            return
+        elif self.eod_status == "open":
+            self.eod_status = "closed"
+            # run the EoD procedure
+            # make position history a DF to enable quick filtering
+            # self.position_history
+            self.position_history_df = (
+                    pd.DataFrame.from_dict(self.position_history, orient="index")
+                        .rename_axis("timeTick")
+                        .reset_index()
+                        .melt(
+                            id_vars="timeTick",
+                            var_name="asset_id",
+                            value_name="position",
+                        )
+                    )
+            # terminal.write(f"\n\nPosition History:\n{self.position_history_df.head(10)}")
+
+
+
+        else:
+            raise ValueError(f"Unknown eod status: {self.eod_status}")
 

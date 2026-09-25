@@ -5,6 +5,7 @@ import mplfinance as mpf
 from pathlib import Path
 import math
 import numpy as np
+from pandas.core.interchange.dataframe_protocol import DataFrame
 
 
 def simple_plot_old(x: list, y: list, output_file: str) -> None:
@@ -40,8 +41,9 @@ def simple_plot(
     fig.savefig(output_file, dpi=150)
     plt.close(fig)
 
-def plot_agent_history(
-    position_history: dict,
+def plot_agent_history_single_market(
+    # position_history: dict,
+    position_history: pd.DataFrame,
     value_history: dict,
     output_file: str,
 ) -> None:
@@ -55,8 +57,10 @@ def plot_agent_history(
 
     # Position subplot
     ax1.plot(
-        list(position_history.keys()),
-        list(position_history.values()),
+        # list(position_history.keys()),
+        # list(position_history.values()),
+        position_history.timeTick,
+        position_history.position,
     )
     ax1.set_ylabel("Position")
     ax1.grid(True)
