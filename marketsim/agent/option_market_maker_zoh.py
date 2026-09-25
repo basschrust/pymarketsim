@@ -23,22 +23,17 @@ class OptionMMZOHAgent(Agent):
         super().__init__(markets=markets) # TODO: base should accept all the list
         self.group = "OptionsMMZOH"
 
-        #self.market = option_market # could agent serve multiple markets? YES, with Derivatives and underlying!
-        # self.option_market = [markets]
-        # and many derivatives, one underlying
-        # TODO:
-        # self.underlying_markets = { : self.markets[] for m in markets if m.instrument_type=="option"}
-        # self.markets[underlying_market.asset_id] = underlying_market
         self.option_markets = { market.asset_id: market for market in markets if
                                market.instrument_class == "option" }
 
-        self.underlying_map = { market.asset_id: market.underlying for market in markets if
-                               market.instrument_class == "option" }
-        terminal.write(f"Option_markets: {self.option_markets}")
-        terminal.write(f"Underlying map: {self.underlying_map}\n")
+        self.underlying_markets = { market.underlying.asset_id: market.underlying for m_id, market in self.option_markets.items() }
 
-        # self.position = 0 #TODO dict { market_id: position } ?
-        # self.position = {x:0 for x in self.markets}
+        self.derivatives_map  = { m_id: market.underlying.asset_id for m_id, market in self.option_markets.items() }
+        self.markets = self.option_markets | self.underlying_markets
+        # terminal.write(f"Option_markets: {self.option_markets}\n")
+        # terminal.write(f"Underlying markets: {self.underlying_markets}\n")
+        # terminal.write(f"Derivatives map: {self.derivatives_map}\n")
+
         self.position = { m_id: 0 for m_id in self.markets }
 
         #  TODO: Market Making parameters - per each market:
@@ -80,7 +75,7 @@ class OptionMMZOHAgent(Agent):
 
     def take_action(self, current_time: int):
         for option_id, option_market in self.option_markets.items():
-            underlying_market = self.underlying_map[option_id]
+            underlying_market = self.underlying_markets[self.derivatives_map[option_id]]
             orders = []
             # add orders only in rebalance periods:
             if self.should_rebalance(current_time=current_time, market=option_market):

@@ -95,7 +95,7 @@ class Agent(ABC):
     def record_valuation(self, current_time: int) -> None:
         # saving value of agents portfolio
         # TODO: copy value, not reference!
-        terminal.write(f"Position: {self.position}")
+        # terminal.write(f"Position: {self.position}")
         self.position_history[current_time] = copy.deepcopy(self.position)
 
         # valuation by last trade:
