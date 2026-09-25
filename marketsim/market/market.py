@@ -10,7 +10,8 @@ import math
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers, plot_cash_transfers
+from marketsim.plot.simple_plot import (plot_order_book, plot_volume_transfers, plot_cash_transfers
+    , plot_realized_volatility, plot_agent_history, plot_by_type, plot_bid_ask)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market.price import Price
@@ -409,3 +410,80 @@ class Market:
 
         candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
+
+    def show_summary(self):
+        self.logger.info(f"\n\nMarket {str(self)} summary:")
+        # fundamental_val = Price(market.get_final_fundamental())
+        # market.logger.info(f"Final fundamental: {fundamental_val}")
+        self.logger.info(f"Orders matched: {len(self.matched_orders)}")
+        self.logger.info(f"Last traded price: {self.last_traded_price}")
+        # values_by_fundamental = {}
+        values_by_last_traded_price = {}
+        for agent_id in self.agents:
+            agent = self.agents[agent_id]
+            # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
+            # TODO: dimensions!
+            values_by_last_traded_price[agent_id] = agent.position[
+                                                        self.asset_id] * self.last_traded_price + agent.cash
+        # TODO: put the results in separate, simple (CSV) files
+        # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
+        positions_sum = 0
+        cash_sum = 0
+        values_by_last_trade_sum = 0
+        for i, agent in self.agents.items():
+            self.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
+                               # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
+                               f"value(by last trade): {values_by_last_traded_price[i]}")
+            # TODO: dimensions!
+            positions_sum += agent.position[self.asset_id]
+            cash_sum += agent.cash
+            values_by_last_trade_sum += self.last_traded_price * agent.position[self.asset_id]
+        self.logger.info(f"Positions sum: {positions_sum}")
+        self.logger.info(f"Cash sum: {cash_sum}")
+        self.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
+        # market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
+        self.logger.info(f"Midprices: {self.get_midprices()}")
+        self.logger.info(f"Traded prices {self.traded_prices}")
+
+        # valuations by agent:
+        for agent_key, agent in self.agents.items():
+            value_history = agent.position_value_history
+            position_history = agent.position_history
+            self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history}")
+
+            # plot it
+            agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
+
+            plot_agent_history(
+                # TODO: dimensions in position_history have changed!
+                position_history=position_history[self.asset_id],  # TODO: yet only his first market
+                value_history=value_history,
+                output_file=agent_file,
+            )
+
+        # plot the security values history:
+        self.plot_history()
+
+        # plotting by type:
+        plot_by_type(self.orders_by_agent_type,
+                     output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
+                     title=f"Orders by type in {market.name}")
+        plot_by_type(self.trades_by_agent_type,
+                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_{str(self)}.png",
+                     title=f"Trades by type in {self.name}")
+        plot_by_type(self.trades_by_agent_type_ext,
+                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_ext_{str(self)}.png",
+                     title=f"Trades by extended type in {self.name}", mode="extended")
+        plot_bid_ask(self.bid_ask_history,
+                     output_file=f"{config.output_dir}/{str(self)}/bid_ask_history_{str(self)}.png",
+                     title=f"Bid ask spread history {str(self)}")
+        # calculate and plot realized volatility:
+        window = 50
+        volatility = self.calculate_realized_volatility(window=window)
+        plot_realized_volatility(volatility=volatility,
+                                 output_file=f"{config.output_dir}/{str(self)}/realized_volatility_{str(self)}.png",
+                                 title=f"Realized volatility {str(self)} with window {window}")
+
+        # plot the history of trading between agent groups:
+        self.plot_trade_stats()

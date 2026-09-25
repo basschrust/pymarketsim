@@ -214,74 +214,7 @@ class Simulator:
         self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
         market_steps = 0
         for market_key, market in self.markets.items():
-            market.logger.info(f"Market {str(market)}:")
-            # fundamental_val = Price(market.get_final_fundamental())
-            # market.logger.info(f"Final fundamental: {fundamental_val}")
-            market.logger.info(f"Orders matched: {len(market.matched_orders)}")
-            market.logger.info(f"Last traded price: {market.last_traded_price}")
-            # values_by_fundamental = {}
-            values_by_last_traded_price = {}
-            for agent_id in market.agents:
-                agent = market.agents[agent_id]
-                # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
-                values_by_last_traded_price[agent_id] = agent.position[market.asset_id] * market.last_traded_price + agent.cash
-            # TODO: put the results in separate, simple (CSV) files
-            # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
-            positions_sum = 0
-            cash_sum = 0
-            values_by_last_trade_sum = 0
-            for i, agent in market.agents.items():
-                market.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
-                      # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
-                                   f"value(by last trade): {values_by_last_traded_price[i]}")
-                positions_sum += agent.position[market.asset_id]
-                cash_sum += agent.cash
-                values_by_last_trade_sum += market.last_traded_price * agent.position[market.asset_id]
-            market.logger.info(f"Positions sum: {positions_sum}")
-            market.logger.info(f"Cash sum: {cash_sum}")
-            market.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-            # market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
-            market.logger.info(f"Midprices: {market.get_midprices()}")
-            market.logger.info(f"Traded prices {market.traded_prices}")
-
-            # valuations by agent:
-            for agent_key, agent in market.agents.items():
-                value_history = agent.position_value_history
-                position_history = agent.position_history
-                market.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-                market.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history}")
-
-                # plot it
-                agent_file = f"{config.output_dir}/{str(market)}/by_agents/{str(market)}_agent_{str(agent)}.png"
-
-                plot_agent_history(
-                    position_history=position_history[market.asset_id], # TODO: yet only his first market
-                    value_history=value_history,
-                    output_file=agent_file,
-                )
-
-            # plot the security values history:
-            market.plot_history()
-
-            # plotting by type:
-            plot_by_type(market.orders_by_agent_type, output_file=f"{config.output_dir}/{str(market)}/orders_by_type_{str(market)}.png", title=f"Orders by type in {market.name}")
-            plot_by_type(market.trades_by_agent_type,
-                                output_file=f"{config.output_dir}/{str(market)}/trades_by_type_{str(market)}.png", title=f"Trades by type in {market.name}")
-            plot_by_type(market.trades_by_agent_type_ext,
-                         output_file=f"{config.output_dir}/{str(market)}/trades_by_type_ext_{str(market)}.png",
-                         title=f"Trades by extended type in {market.name}", mode="extended")
-            plot_bid_ask(market.bid_ask_history,
-                         output_file=f"{config.output_dir}/{str(market)}/bid_ask_history_{str(market)}.png",
-                         title=f"Bid ask spread history {str(market)}")
-            #calculate and plot realized volatility:
-            window = 50
-            volatility = market.calculate_realized_volatility(window=window)
-            plot_realized_volatility(volatility=volatility,
-                                     output_file=f"{config.output_dir}/{str(market)}/realized_volatility_{str(market)}.png",
-                                     title=f"Realized volatility {str(market)} with window {window}")
-
-            # plot the history of trading between agent groups:
-            market.plot_trade_stats()
+            market.show_summary()
 
             self.show_progress_bar(step=market_steps, total=len(self.markets), step_name="Markets")
             market_steps += 1

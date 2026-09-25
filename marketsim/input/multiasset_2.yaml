@@ -40,24 +40,7 @@ markets:
     ticker: "CO100Y092027ABB"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
-    agent_groups:
-      noise:
-        agent_class: NoiseAgent
-        number: 15
-        config:
-          lam: 0.1
-          q_max: 1000
-          mean_volume: 15
-          mean_spread: 0.8
-      mmzoh_1:
-        agent_class: OptionMMZOHAgent
-        number: 1
-        config:
-          xi: 0.12
-          K: 3
-          omega: 0.1
-          rebalance_period: 20
-          volume: 60
+
 
   put_1:
     name: "Second derivative - European PUT option on AAA (security_1)"
@@ -73,24 +56,7 @@ markets:
     ticker: "PO100Y092027ABB"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
-    agent_groups:
-      noise:
-        agent_class: NoiseAgent
-        number: 15
-        config:
-          lam: 0.1
-          q_max: 1000
-          mean_volume: 15
-          mean_spread: 0.8
-      mmzoh_1:
-        agent_class: OptionMMZOHAgent
-        number: 1
-        config:
-          xi: 0.12
-          K: 3
-          omega: 0.1
-          rebalance_period: 20
-          volume: 60
+
 
   call_2:
     name: "Third derivative - European CALL option on AAA (security_1) strike 110"
@@ -106,24 +72,7 @@ markets:
     ticker: "CO110Y092027ABB"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
-    agent_groups:
-      noise:
-        agent_class: NoiseAgent
-        number: 15
-        config:
-          lam: 0.1
-          q_max: 1000
-          mean_volume: 15
-          mean_spread: 0.8
-      mmzoh_1:
-        agent_class: OptionMMZOHAgent
-        number: 1
-        config:
-          xi: 0.12
-          K: 3
-          omega: 0.1
-          rebalance_period: 20
-          volume: 60
+
 
   put_2:
     name: "Fourth derivative - European PUT option on AAA (security_1) strike 110"
@@ -139,24 +88,7 @@ markets:
     ticker: "PO110Y092027ABB"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
-    agent_groups:
-      noise:
-        agent_class: NoiseAgent
-        number: 15
-        config:
-          lam: 0.1
-          q_max: 1000
-          mean_volume: 15
-          mean_spread: 0.8
-      mmzoh_1:
-        agent_class: OptionMMZOHAgent
-        number: 1
-        config:
-          xi: 0.12
-          K: 3
-          omega: 0.1
-          rebalance_period: 20
-          volume: 60
+
 
 ########################  agents for many markets:     ###########################
 
