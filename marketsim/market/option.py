@@ -60,10 +60,16 @@ class Option(Market):
             if "Theoretical" in price_row:
                 pass
             else:
-                call_option = BSCall(S=price_row.get("Close"), K=self.strike, r=self.r,
-                                     volatility=self.volatility,
-                                     Time=self.expiration, d=0.0)
-                price_row["Theoretical"] = call_option.get("price", 100)
+                if self.option_side == "CALL":
+                    call_option = BSCall(S=price_row.get("Close"), K=self.strike, r=self.r,
+                                         volatility=self.volatility,
+                                         Time=self.expiration, d=0.0)
+                    price_row["Theoretical"] = call_option.get("price", 100)
+                elif self.option_side == "PUT":
+                    put_option = BSPut(S=price_row.get("Close"), K=self.strike, r=self.r,
+                                         volatility=self.volatility,
+                                         Time=self.expiration, d=0.0)
+                    price_row["Theoretical"] = put_option.get("price", 100)
 
     def roll_traded_prices(self, current_time:int) -> None:
         yesterday = self.traded_prices[current_time - 1]

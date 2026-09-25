@@ -468,7 +468,7 @@ class Market:
         # plotting by type:
         plot_by_type(self.orders_by_agent_type,
                      output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
-                     title=f"Orders by type in {market.name}")
+                     title=f"Orders by type in {self.name}")
         plot_by_type(self.trades_by_agent_type,
                      output_file=f"{config.output_dir}/{str(self)}/trades_by_type_{str(self)}.png",
                      title=f"Trades by type in {self.name}")
