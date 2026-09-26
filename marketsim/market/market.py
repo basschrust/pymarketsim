@@ -10,7 +10,9 @@ import math
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import plot_order_book, plot_volume_transfers, plot_cash_transfers
+from marketsim.plot.simple_plot import (plot_order_book, plot_volume_transfers, plot_cash_transfers
+    , plot_realized_volatility, plot_agent_history_single_market, plot_by_type, plot_bid_ask)
+from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market.price import Price
 from marketsim.fourheap.fourheap import FourHeap
@@ -21,8 +23,9 @@ if TYPE_CHECKING:
 
 
 class Market:
-    def __init__(self, fundamental: Fundamental, time_steps: int, reference_price: Price |None = None, name: str|None=None,
-                 market_type: str = "discrete"):
+    def __init__(self, reference_price: Price |None = None, name: str|None=None,
+                 market_type: str = "discrete", instrument_class: str = "stock"):
+        self.instrument_class = instrument_class
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)
@@ -46,10 +49,10 @@ class Market:
         self.trade_stats_df = pd.DataFrame()
 
         # TODO: check if this fundamental (externally provided value) is needed here
-        self.fundamental = fundamental
+        # self.fundamental = fundamental
 
         self.event_queue = EventQueue()
-        self.end_time = time_steps
+        # self.end_time = time_steps
         self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
         self.agents = {}
         self.name = name
@@ -61,6 +64,8 @@ class Market:
             record["extra"].get("market_id") == market_id,
         )
         self.logger = logger.bind(market_id=self.asset_id)
+
+        self.eod_status = "open"  # open/closed  to make eod procedure idempotent
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
@@ -122,6 +127,14 @@ class Market:
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
         self.order_book.cancel_outdated_orders(current_time=current_time)
 
+    def roll_traded_prices(self, current_time:int) -> None:
+        yesterday = self.traded_prices[current_time - 1]
+        self.traded_prices[current_time] = {"Open": yesterday["Close"],
+                                            "Low": yesterday["Close"],
+                                            "High": yesterday["Close"],
+                                            "Close": yesterday["Close"],
+                                            "Volume": 0, }
+
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
@@ -130,12 +143,7 @@ class Market:
 
         # second: rolling the traded_prices
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
-            yesterday = self.traded_prices[current_time-1]
-            self.traded_prices[current_time] = {"Open": yesterday["Close"],
-                                                "Low": yesterday["Close"],
-                                                "High": yesterday["Close"],
-                                                "Close": yesterday["Close"],
-                                                "Volume": 0, }
+            self.roll_traded_prices(current_time=current_time)
 
             for g1 in self.agent_groups:
                 for g2 in self.agent_groups:
@@ -198,10 +206,8 @@ class Market:
                             # it may make sense for the ZI agents group, but probably should be kept out of here
                             # and belong to the groups
 
-    def record_trade(self, matched_order: MatchedOrder) -> None:
-        self.last_traded_price = matched_order.price
-
-        # record for plots and summary:
+    def record_volume_and_price(self, matched_order: MatchedOrder) -> None:
+        # overriden in derivatives to include theoretical
         current_time = matched_order.time
         price = matched_order.price
         volume = matched_order.order.quantity
@@ -221,6 +227,15 @@ class Market:
                                                  "High": price,
                                                  "Close": price,
                                                  "Volume": volume,}
+
+
+    def record_trade(self, matched_order: MatchedOrder) -> None:
+        self.last_traded_price = matched_order.price
+
+        # record for plots and summary:
+        current_time = matched_order.time
+        self.record_volume_and_price(matched_order=matched_order)
+
         # record for each agent:
         agent_id = matched_order.order.agent_id
         self.agents[agent_id].record_trade(matched_order=matched_order)
@@ -385,3 +400,130 @@ class Market:
 
         # TODO: plot cash transfers
         plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
+
+    def plot_history(self):
+        traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
+                               for t, item in self.traded_prices.items()}
+        df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
+                                                orient="index"
+                                                )
+        df_candlestick.index.name = "time"
+        self.logger.info(df_candlestick.head())
+
+        candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
+        plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
+
+    def show_summary(self):
+        self.logger.info(f"\n\nMarket {str(self)} summary:")
+        # fundamental_val = Price(market.get_final_fundamental())
+        # market.logger.info(f"Final fundamental: {fundamental_val}")
+        self.logger.info(f"Orders matched: {len(self.matched_orders)}")
+        self.logger.info(f"Last traded price: {self.last_traded_price}")
+        # values_by_fundamental = {}
+        values_by_last_traded_price = {}
+        for agent_id in self.agents:
+            agent = self.agents[agent_id]
+            # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
+            # TODO: dimensions!
+            values_by_last_traded_price[agent_id] = agent.position[
+                                                        self.asset_id] * self.last_traded_price + agent.cash
+        # TODO: put the results in separate, simple (CSV) files
+        # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
+        positions_sum = 0
+        cash_sum = 0
+        values_by_last_trade_sum = 0
+        for i, agent in self.agents.items():
+            self.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
+                               # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
+                               f"value(by last trade): {values_by_last_traded_price[i]}")
+            positions_sum += agent.position[self.asset_id]
+            cash_sum += agent.cash
+            values_by_last_trade_sum += self.last_traded_price * agent.position[self.asset_id]
+        self.logger.info(f"Positions sum: {positions_sum}")
+        self.logger.info(f"Cash sum: {cash_sum}")
+        self.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
+        # market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
+        self.logger.info(f"Midprices: {self.get_midprices()}")
+        self.logger.info(f"Traded prices {self.traded_prices}")
+
+        self.eod() # End of Day for the Market
+
+        # valuations by agent:
+        for agent_key, agent in self.agents.items():
+            agent.eod()
+            value_history = agent.portfolio_value_history # now includes also other assets!
+
+            position_history_df = agent.position_history_df[
+                agent.position_history_df["asset_id"]==self.asset_id].merge(
+                    self.traded_prices_df,
+                    on="timeTick",
+                    how="left",
+                )
+
+            position_history_df["positionValue"] = (
+                    position_history_df["position"] * position_history_df["Close"]
+            )
+
+            self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history_df}")
+
+            # plot it
+            agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
+
+            plot_agent_history_single_market(
+                # TODO: dimensions in position_history have changed!
+                #position_history=position_history,  # TODO: yet only his first market
+                position_history=position_history_df,
+                value_history=value_history,
+                output_file=agent_file,
+            )
+
+        # plot the security values history:
+        self.plot_history()
+
+        # plotting by type:
+        plot_by_type(self.orders_by_agent_type,
+                     output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
+                     title=f"Orders by type in {self.name}")
+        plot_by_type(self.trades_by_agent_type,
+                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_{str(self)}.png",
+                     title=f"Trades by type in {self.name}")
+        plot_by_type(self.trades_by_agent_type_ext,
+                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_ext_{str(self)}.png",
+                     title=f"Trades by extended type in {self.name}", mode="extended")
+        plot_bid_ask(self.bid_ask_history,
+                     output_file=f"{config.output_dir}/{str(self)}/bid_ask_history_{str(self)}.png",
+                     title=f"Bid ask spread history {str(self)}")
+        # calculate and plot realized volatility:
+        window = 50
+        volatility = self.calculate_realized_volatility(window=window)
+        plot_realized_volatility(volatility=volatility,
+                                 output_file=f"{config.output_dir}/{str(self)}/realized_volatility_{str(self)}.png",
+                                 title=f"Realized volatility {str(self)} with window {window}")
+
+        # plot the history of trading between agent groups:
+        self.plot_trade_stats()
+
+    def eod(self):
+        # End of Day process for the Market - create EoD DataFrames
+        # omnipotent, so once called, makes summaries of his all structures
+        # and makes a mark that it has been done
+        if self.eod_status == "closed":
+            return
+        elif self.eod_status == "open":
+            self.eod_status = "closed"
+            # run the EoD procedure
+            # make traded_price a DF to enable quick filtering and joining with agents' positions
+
+            self.traded_prices_df = (
+                pd.DataFrame.from_dict(self.traded_prices, orient="index")
+                .rename_axis("timeTick")
+                .reset_index()
+                [["timeTick", "Close"]]
+            )
+
+        else:
+            raise ValueError(f"Unknown eod status: {self.eod_status}")
+
+
+

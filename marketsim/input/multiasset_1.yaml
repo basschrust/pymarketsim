@@ -1,0 +1,182 @@
+# market structure configuration file
+
+# generic simulation parameters
+sim_time: 300
+lob_plot_interval: 25
+debug_logging: False
+
+# definitions of the securities
+markets:
+  stock_1:
+    name: "Simple stock market as underlying"
+    instrument_class: stock # stock is default :)
+    ticker: "AAA"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+
+  ########################## second security ###################################################
+
+  stock_2:
+    name: "Simple stock market 2 as underlying"
+    instrument_class: stock # stock is default :)
+    ticker: "AAB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    #agent_groups: # now it can be empty - agent groups defined at the end, using many markets
+
+###################### derivatives  #####################################################
+
+  call_1:
+    name: "First derivative - European CALL option on AAA (stock_1)"
+    instrument_class: option
+    derivatives_config:
+      option_type: European
+      underlying: stock_1  # reference to one of above defined securities
+      expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+      strike: 100 # maybe list of strikes?
+      option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+      quotation_type: price # price/ implied_volatility/ etc.
+      settlement_type: cash # cash/ physical/ etc
+    ticker: "CO100Y092027ABB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
+      mmzoh_1:
+        agent_class: OptionMMZOHAgent
+        number: 1
+        config:
+          xi: 0.12
+          K: 3
+          omega: 0.1
+          rebalance_period: 20
+          volume: 60
+
+  put_1:
+    name: "Second derivative - European PUT option on AAA (security_1)"
+    instrument_class: option
+    derivatives_config:
+      option_type: European
+      underlying: stock_1  # reference to one of above defined securities
+      expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+      strike: 100 # maybe list of strikes?
+      option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+      quotation_type: price # price/ implied_volatility/ etc.
+      settlement_type: cash # cash/ physical/ etc
+    ticker: "PO100Y092027ABB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
+      mmzoh_1:
+        agent_class: OptionMMZOHAgent
+        number: 1
+        config:
+          xi: 0.12
+          K: 3
+          omega: 0.1
+          rebalance_period: 20
+          volume: 60
+
+  call_2:
+    name: "Third derivative - European CALL option on AAA (security_1) strike 110"
+    instrument_class: option
+    derivatives_config:
+      option_type: European
+      underlying: stock_1  # reference to one of above defined securities
+      expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+      strike: 110 # maybe list of strikes?
+      option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+      quotation_type: price # price/ implied_volatility/ etc.
+      settlement_type: cash # cash/ physical/ etc
+    ticker: "CO110Y092027ABB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
+      mmzoh_1:
+        agent_class: OptionMMZOHAgent
+        number: 1
+        config:
+          xi: 0.12
+          K: 3
+          omega: 0.1
+          rebalance_period: 20
+          volume: 60
+
+  put_2:
+    name: "Fourth derivative - European PUT option on AAA (security_1) strike 110"
+    instrument_class: option
+    derivatives_config:
+      option_type: European
+      underlying: stock_1  # reference to one of above defined securities
+      expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+      strike: 110 # maybe list of strikes?
+      option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+      quotation_type: price # price/ implied_volatility/ etc.
+      settlement_type: cash # cash/ physical/ etc
+    ticker: "PO110Y092027ABB"
+    market_type: continuous
+    lam: 0.8 # does this have any effect? It's defined in each agent though
+    agent_groups:
+      noise:
+        agent_class: NoiseAgent
+        number: 15
+        config:
+          lam: 0.1
+          q_max: 1000
+          mean_volume: 15
+          mean_spread: 0.8
+      mmzoh_1:
+        agent_class: OptionMMZOHAgent
+        number: 1
+        config:
+          xi: 0.12
+          K: 3
+          omega: 0.1
+          rebalance_period: 20
+          volume: 60
+
+########################  agents for many markets:     ###########################
+
+agents:
+  noise:
+    agent_class: NoiseAgent
+    markets: ALL  #  * or ALL is default value - for all markets
+    number: 15
+    config:
+      lam: 0.1
+      q_max: 1000
+      mean_volume: 15
+      mean_spread: 0.8
+  mmzoh_1:
+    agent_class: MMZOHAgent
+    number: 1
+    config:
+      xi: 0.1
+      K: 3
+      omega: 0.1
+      rebalance_period: 20
+      volume: 60
+
