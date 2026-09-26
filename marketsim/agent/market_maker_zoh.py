@@ -16,10 +16,6 @@ class MMZOHAgent(Agent):
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
         super().__init__(markets=markets)
         self.group = "MMZOH"
-        # self.market = market # could agent serve multiple markets?
-
-        # self.position = 0
-        # self.cash = 0
 
         ## TODO: MM parameters - should be defined per market
         self.xi = Decimal(xi) # step of the order ladder
@@ -37,7 +33,6 @@ class MMZOHAgent(Agent):
 
     def get_id(self) -> int:
         return self.agent_id
-
 
     def is_market_maker(self) -> bool:
         return True

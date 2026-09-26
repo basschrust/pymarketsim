@@ -39,9 +39,7 @@ class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self, markets: list[Market], group_name: str | None = None):
-        # self.market = market
         self.agent_id = id_generator.next()
-        #self.markets = [self.market]
         self.markets = { market.asset_id: market for market in markets } # converting to dict
         self.group_name = group_name
 
@@ -166,7 +164,6 @@ class Agent(ABC):
                             value_name="position",
                         )
                     )
-            # terminal.write(f"\n\nPosition History:\n{self.position_history_df.head(10)}")
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
