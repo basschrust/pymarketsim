@@ -124,6 +124,7 @@ def plot_agent_history_many_markets(
     ax_cash.plot(
         list(cash_history.keys()),
         list(cash_history.values()),
+        color="#2E8B57",
     )
 
     ax_cash.set_ylabel("Cash")
@@ -141,7 +142,7 @@ def plot_agent_history_many_markets(
     ax_value.set_ylabel("Portfolio value")
     ax_value.grid(True)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
+    fig.tight_layout(rect=[0, 0, 1, 0.98])
 
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_file, dpi=150)

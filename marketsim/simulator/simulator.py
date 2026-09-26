@@ -210,6 +210,7 @@ class Simulator:
     def end_sim(self) -> None:
         """ End the simulation and print summary """
         self.logger.info(f"\n\nSimulation ended. time: {self.current_time}")
+        terminal.write(f"\nPreparing agents summary...\n")
         self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.agents), step_name="Agents")
         agent_steps = 0
@@ -219,6 +220,7 @@ class Simulator:
             self.show_progress_bar(step=agent_steps, total=len(self.agents), step_name="Agents")
             agent_steps += 1
 
+        terminal.write(f"\nPreparing markets summary...\n")
         self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
         market_steps = 0

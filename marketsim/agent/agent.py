@@ -174,7 +174,7 @@ class Agent(ABC):
     def show_summary(self):
         self.eod()
 
-        agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}.png"
+        agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
 
         plot_agent_history_many_markets(position_history=self.position_history_df,
                                         cash_history=self.cash_history,
