@@ -79,6 +79,8 @@ class Simulator:
                                                                  # "short_name": market.short_name,
                                                                  # "ticker": market.ticker,
                                                                  }
+                        for group_name, agent_group in m_conf.get("agent_groups", {}).items():
+                            self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
                 else:
                     #single strike
                     market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
@@ -90,6 +92,8 @@ class Simulator:
                                                              # "short_name": market.short_name,
                                                              # "ticker": market.ticker,
                                                              }
+                    for group_name, agent_group in m_conf.get("agent_groups", {}).items():
+                        self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
             elif instrument_class == "stock":
                 market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name")
                                 , repository=self.repository)
@@ -99,13 +103,11 @@ class Simulator:
                                                          # "short_name": market.short_name,
                                                          # "ticker": market.ticker,
                                                          }
+                for group_name, agent_group in m_conf.get("agent_groups", {}).items():
+                    self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
             else:
                 raise ValueError(f"Unknown instrument_class: {instrument_class}")
 
-
-
-            for group_name, agent_group in m_conf.get("agent_groups", {}).items():
-                self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
 
             # TODO: resolve agent dependencies
             for relationship in m_conf.get("agent_dependencies", []):

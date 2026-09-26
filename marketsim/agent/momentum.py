@@ -39,7 +39,7 @@ class MomentumAgent(Agent):
             # amounts? and lambda? yet ignore, take into account in next iteration, price limit?
             if current_time >= self.period:
                 market.withdraw_all(agent_id=self.agent_id)
-                previous_price = market.traded_prices[current_time-self.period]["Close"]
+                previous_price = market.traded_prices[current_time-self.period]["close"]
                 limit = Price(float(market.last_traded_price) * (0.95 + 0.1*random.uniform(0, 1)))
                 # asymptotic approaching the q_max - but let it also reverse the trend when position is high...
                 if market.last_traded_price > float(previous_price) * (1+self.threshold):

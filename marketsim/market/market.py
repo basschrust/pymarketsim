@@ -424,39 +424,31 @@ class Market:
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def show_summary(self):
+        self.eod()  # End of Day for the Market
+
         self.logger.info(f"\n\nMarket {str(self)} summary:")
-        # fundamental_val = Price(market.get_final_fundamental())
-        # market.logger.info(f"Final fundamental: {fundamental_val}")
         self.logger.info(f"Orders matched: {len(self.matched_orders)}")
         self.logger.info(f"Last traded price: {self.last_traded_price}")
-        # values_by_fundamental = {}
         values_by_last_traded_price = {}
-        for agent_id in self.agents:
-            agent = self.agents[agent_id]
-            # values_by_fundamental[agent_id] = Price(agent.get_pos_value()) + agent.position * fundamental_val + agent.cash
-            # TODO: dimensions!
+        for agent_id, agent in self.agents.items():
             values_by_last_traded_price[agent_id] = agent.position[
                                                         self.asset_id] * self.last_traded_price + agent.cash
         # TODO: put the results in separate, simple (CSV) files
-        # market.logger.info(f'At the end of the simulation we get valuations by fundamental: {values_by_fundamental}')
         positions_sum = 0
         cash_sum = 0
         values_by_last_trade_sum = 0
         for i, agent in self.agents.items():
             self.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
-                               # f"\tvalue(by fund.): {values_by_fundamental[i]} \t"
                                f"value(by last trade): {values_by_last_traded_price[i]}")
             positions_sum += agent.position[self.asset_id]
             cash_sum += agent.cash
             values_by_last_trade_sum += self.last_traded_price * agent.position[self.asset_id]
         self.logger.info(f"Positions sum: {positions_sum}")
+        # TODO: positions should sum up to 0, but cash is affected by operations on other markets so not 0
         self.logger.info(f"Cash sum: {cash_sum}")
         self.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-        # market.logger.info(f"Sum of values by fundamental: {sum(values_by_fundamental.values())}")
         self.logger.info(f"Midprices: {self.get_midprices()}")
         self.logger.info(f"Traded prices {self.traded_prices}")
-
-        self.eod() # End of Day for the Market
 
         # valuations by agent:
         for agent_key, agent in self.agents.items():
@@ -473,8 +465,10 @@ class Market:
             position_history_df["position_value"] = (
                     position_history_df["position"] * position_history_df["close"]
             )
+            # now we have asset_id_x, asset_id_y as both merge sides had this
+            position_history_df["asset_id"] = position_history_df["asset_id_x"]
 
-            position_history_df["day"] = 0
+            position_history_df["day"] = 0 # TODO: but soon multiday simulations...
             position_history_df["agent_id"] = agent_key
 
             self.repository.save_position_history(position_history_df)
@@ -486,8 +480,6 @@ class Market:
             agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
 
             plot_agent_history_single_market(
-                # TODO: dimensions in position_history have changed!
-                #position_history=position_history,  # TODO: yet only his first market
                 position_history=position_history_df,
                 value_history=value_history,
                 output_file=agent_file,
@@ -537,11 +529,13 @@ class Market:
                 pd.DataFrame.from_dict(self.traded_prices, orient="index")
                 .rename_axis("time_tick")
                 .reset_index()
-                [["time_tick", "close"]]
+                [["time_tick", "open", "high", "low", "close", "volume"]]
             )
 
+            self.traded_prices_df["asset_id"] = self.asset_id
+            self.traded_prices_df["day"] = 0 # TODO: for now ;)
 
-
+            self.repository.save_traded_prices(self.traded_prices_df)
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

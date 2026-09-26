@@ -8,6 +8,7 @@ from time import perf_counter
 
 from scipy.interpolate import PchipInterpolator
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
@@ -35,9 +36,10 @@ class Custom_cs:
         return ret
 
 class HBLAgent(Agent):
-    def __init__(self, *, markets: list[Market], q_max: int, shade: List, L: int, pv_var: float,
+    def __init__(self, *, markets: list[Market], repository: Repository,
+                 q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None):
-        super().__init__(markets=markets)
+        super().__init__(markets=markets, repository=repository)
         self.group = "HBL"
         if pv is not None:
             self.pv = pv

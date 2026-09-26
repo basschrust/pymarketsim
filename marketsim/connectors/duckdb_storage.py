@@ -38,7 +38,6 @@ class Repository:
                         low       DOUBLE,
                         close     DOUBLE,
                         volume    DOUBLE,
-                        
                     )
                 """)
 
@@ -65,6 +64,20 @@ class Repository:
 
     def save_trades(self):
         pass
+
+    def save_traded_prices(self, traded_price_df: pd.DataFrame):
+        # TODO: add version for derivatives, including theoretical - needed?
+        conn = duckdb.connect(self.localdb)
+        conn.register("traded_prices_df", traded_price_df)
+
+        conn.execute("""
+            INSERT INTO traded_prices
+            SELECT day, time_tick, asset_id, open, high, low, close, volume
+            FROM traded_prices_df      
+        """)
+
+        conn.unregister("traded_prices_df")
+        conn.close()
 
 
     # methods for data extraction
