@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import duckdb
 from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
@@ -521,6 +522,19 @@ class Market:
                 .reset_index()
                 [["timeTick", "Close"]]
             )
+
+            # save the history to the DuckDB
+            # Create (or open) a persistent local database
+            con = duckdb.connect(f"{config.output_dir}/daedalus.duckdb")
+            # Store the DataFrame as a table
+            con.register("traded_prices_df", self.traded_prices_df)
+            con.execute("""
+                            CREATE OR REPLACE TABLE traded_prices AS
+                            SELECT * FROM traded_prices_df
+                        """)
+            con.unregister("traded_prices_df")
+
+            con.close()
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

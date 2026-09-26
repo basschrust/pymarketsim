@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 import traceback
 from typing import TYPE_CHECKING
 from collections import defaultdict
+import duckdb
 
 import pandas as pd
 
