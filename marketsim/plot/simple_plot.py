@@ -56,7 +56,7 @@ def plot_agent_history_single_market(
 
     # Position subplot
     ax1.plot(
-        position_history.timeTick,
+        position_history.time_tick,
         position_history.position,
     )
     ax1.set_ylabel("Position")
@@ -108,10 +108,10 @@ def plot_agent_history_many_markets(
 
         asset_history = position_history[
             position_history["asset_id"] == asset_id
-        ].sort_values("timeTick")
+        ].sort_values("time_tick")
 
         ax.plot(
-            asset_history["timeTick"],
+            asset_history["time_tick"],
             asset_history["position"],
         )
 
@@ -224,10 +224,10 @@ def plot_by_type(
     Simple input:
         {
             "MM": {
-                "Count_buy": 6,
-                "Volume_buy": 67,
-                "Count_sell": 7,
-                "Volume_sell": 89,
+                "count_buy": 6,
+                "volume_buy": 67,
+                "count_sell": 7,
+                "volume_sell": 89,
             },
             ...
         }
@@ -235,19 +235,19 @@ def plot_by_type(
     Extended input:
         {
             "group1": {
-                "Count_buy": {
+                "count_buy": {
                     "arrived": 60,
                     "waited": 40,
                 },
-                "Volume_buy": {
+                "volume_buy": {
                     "arrived": 20,
                     "waited": 0,
                 },
-                "Count_sell": {
+                "count_sell": {
                     "arrived": 10,
                     "waited": 20,
                 },
-                "Volume_sell": {
+                "volume_sell": {
                     "arrived": 20,
                     "waited": 20,
                 },
@@ -276,20 +276,20 @@ def plot_by_type(
     if mode == "simple":
 
         buy_counts = [
-            orders_by_type[order_type]["Count_buy"]
+            orders_by_type[order_type]["count_buy"]
             for order_type in order_types
         ]
         sell_counts = [
-            orders_by_type[order_type]["Count_sell"]
+            orders_by_type[order_type]["count_sell"]
             for order_type in order_types
         ]
 
         buy_volumes = [
-            orders_by_type[order_type]["Volume_buy"]
+            orders_by_type[order_type]["volume_buy"]
             for order_type in order_types
         ]
         sell_volumes = [
-            orders_by_type[order_type]["Volume_sell"]
+            orders_by_type[order_type]["volume_sell"]
             for order_type in order_types
         ]
 
@@ -330,38 +330,38 @@ def plot_by_type(
     else:
         # Extract extended data
         buy_count_arrived = [
-            orders_by_type[order_type]["Count_buy"]["arrived"]
+            orders_by_type[order_type]["count_buy"]["arrived"]
             for order_type in order_types
         ]
         buy_count_waited = [
-            orders_by_type[order_type]["Count_buy"]["waited"]
+            orders_by_type[order_type]["count_buy"]["waited"]
             for order_type in order_types
         ]
 
         sell_count_arrived = [
-            orders_by_type[order_type]["Count_sell"]["arrived"]
+            orders_by_type[order_type]["count_sell"]["arrived"]
             for order_type in order_types
         ]
         sell_count_waited = [
-            orders_by_type[order_type]["Count_sell"]["waited"]
+            orders_by_type[order_type]["count_sell"]["waited"]
             for order_type in order_types
         ]
 
         buy_volume_arrived = [
-            orders_by_type[order_type]["Volume_buy"]["arrived"]
+            orders_by_type[order_type]["volume_buy"]["arrived"]
             for order_type in order_types
         ]
         buy_volume_waited = [
-            orders_by_type[order_type]["Volume_buy"]["waited"]
+            orders_by_type[order_type]["volume_buy"]["waited"]
             for order_type in order_types
         ]
 
         sell_volume_arrived = [
-            orders_by_type[order_type]["Volume_sell"]["arrived"]
+            orders_by_type[order_type]["volume_sell"]["arrived"]
             for order_type in order_types
         ]
         sell_volume_waited = [
-            orders_by_type[order_type]["Volume_sell"]["waited"]
+            orders_by_type[order_type]["volume_sell"]["waited"]
             for order_type in order_types
         ]
 
@@ -608,16 +608,16 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
     The figure contains one subplot for each cpGroup
     associated with that agentGroup.
 
-    X-axis: timeTick
+    X-axis: time_tick
     Y-axis: volume
     Lines: Volume_buy, Volume_sell
     """
 
-    for agent_group in df["agentGroup"].unique():
+    for agent_group in df["agent_group"].unique():
 
-        agent_df = df[df["agentGroup"] == agent_group]
+        agent_df = df[df["agent_group"] == agent_group]
 
-        cp_groups = agent_df["cpGroup"].unique()
+        cp_groups = agent_df["cp_group"].unique()
         n_subplots = len(cp_groups)
 
         fig, axes = plt.subplots(
@@ -637,20 +637,20 @@ def plot_volume_transfers(df: pd.DataFrame, output_file_tpl: str):
         )
 
         for ax, cp_group in zip(axes, cp_groups):
-            cp_df = agent_df[agent_df["cpGroup"] == cp_group]
+            cp_df = agent_df[agent_df["cp_group"] == cp_group]
 
-            buy_total = cp_df["Volume_buy"].sum()
-            sell_total = cp_df["Volume_sell"].sum()
+            buy_total = cp_df["volume_buy"].sum()
+            sell_total = cp_df["volume_sell"].sum()
 
             ax.plot(
-                cp_df["timeTick"],
-                cp_df["Volume_buy"],
-                label=f"Volume_buy, total: {buy_total:g}",
+                cp_df["time_tick"],
+                cp_df["volume_buy"],
+                label=f"volume_buy, total: {buy_total:g}",
             )
             ax.plot(
-                cp_df["timeTick"],
-                -cp_df["Volume_sell"],
-                label=f"Volume_sell, total: {sell_total:g}",
+                cp_df["time_tick"],
+                -cp_df["volume_sell"],
+                label=f"volume_sell, total: {sell_total:g}",
             )
             # Display absolute values on Y-axis
             ax.yaxis.set_major_formatter(
@@ -682,15 +682,15 @@ def plot_cash_transfers(df: pd.DataFrame, output_file_tpl: str):
     The figure contains one subplot for each cpGroup
     associated with that agentGroup.
 
-    X-axis: timeTick
+    X-axis: time_tick
     Y-axis: cash
-    Lines: Cash_buy, Cash_sell
+    Lines: cash_buy, cash_sell
     """
 
-    for agent_group in df["agentGroup"].unique():
+    for agent_group in df["agent_group"].unique():
 
-        agent_df = df[df["agentGroup"] == agent_group]
-        cp_groups = agent_df["cpGroup"].unique()
+        agent_df = df[df["agent_group"] == agent_group]
+        cp_groups = agent_df["cp_group"].unique()
         n_subplots = len(cp_groups)
 
         fig, axes = plt.subplots(
@@ -710,20 +710,20 @@ def plot_cash_transfers(df: pd.DataFrame, output_file_tpl: str):
         )
 
         for ax, cp_group in zip(axes, cp_groups):
-            cp_df = agent_df[agent_df["cpGroup"] == cp_group]
+            cp_df = agent_df[agent_df["cp_group"] == cp_group]
 
-            buy_total = cp_df["Cash_buy"].sum()
-            sell_total = cp_df["Cash_sell"].sum()
+            buy_total = cp_df["cash_buy"].sum()
+            sell_total = cp_df["cash_sell"].sum()
 
             ax.plot(
-                cp_df["timeTick"],
-                cp_df["Cash_buy"],
-                label=f"Cash_buy, total: {buy_total:g}",
+                cp_df["time_tick"],
+                cp_df["cash_buy"],
+                label=f"cash_buy, total: {buy_total:g}",
             )
             ax.plot(
-                cp_df["timeTick"],
-                -cp_df["Cash_sell"],
-                label=f"Cash_sell, total: {sell_total:g}",
+                cp_df["time_tick"],
+                -cp_df["cash_sell"],
+                label=f"cash_sell, total: {sell_total:g}",
             )
             # Display absolute values on Y-axis
             ax.yaxis.set_major_formatter(

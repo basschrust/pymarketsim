@@ -1,5 +1,6 @@
 import random
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
@@ -11,8 +12,9 @@ class MomentumAgent(Agent):
     ### Momentum Agent -
     # Momentum Agent trades using moving average to catch the market trend
     ###
-    def __init__(self, *, markets: list[Market], period: int=7, lam: float= 0.5, q_max: int=100, threshold: float=0.01):
-        super().__init__(markets=markets)
+    def __init__(self, *, markets: list[Market], repository: Repository,
+                 period: int=7, lam: float= 0.5, q_max: int=100, threshold: float=0.01):
+        super().__init__(markets=markets, repository=repository)
         self.group = "MOMENTUM"
         self.period = period # the period for trend analyzing
         self.lam = lam # lambda, the activity parameter
@@ -37,7 +39,7 @@ class MomentumAgent(Agent):
             # amounts? and lambda? yet ignore, take into account in next iteration, price limit?
             if current_time >= self.period:
                 market.withdraw_all(agent_id=self.agent_id)
-                previous_price = market.traded_prices[current_time-self.period]["Close"]
+                previous_price = market.traded_prices[current_time-self.period]["close"]
                 limit = Price(float(market.last_traded_price) * (0.95 + 0.1*random.uniform(0, 1)))
                 # asymptotic approaching the q_max - but let it also reverse the trend when position is high...
                 if market.last_traded_price > float(previous_price) * (1+self.threshold):
