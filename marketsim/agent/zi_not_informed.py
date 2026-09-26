@@ -1,5 +1,7 @@
 import random
 from decimal import Decimal
+
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market
 from marketsim.fourheap.order import Order
@@ -12,20 +14,17 @@ from marketsim.market.price import Price
 
 
 class ZIAgentNotInformed(Agent):
-    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0
+    def __init__(self, *, markets: list[Market], repository: Repository,
+                 q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
-        super().__init__(market=market)
+        super().__init__(markets=markets, repository=repository)
         self.group = "ZINI"
-        self.agent_id = id_generator.next()
-        self.market = market
         self.q_max = q_max
         self.pv_var = pv_var
         # print(f"q_max: {self.q_max}, pv_var: {self.pv_var}")
         self.pv = PrivateValues(q_max, float(pv_var))
-        self.position = 0
         self.shade = shade
         # print(f"shade: {self.shade}")
-        self.cash = 0
         self.eta = eta
         self.lam = lam # activity parameter
         self.mean_volume = mean_volume
@@ -38,54 +37,56 @@ class ZIAgentNotInformed(Agent):
         print(f'ZINI - It is time {current_time} with final I observed last traded price {estimate}, so my estimate is {estimate}')
         return estimate
 
-    def take_action(self, current_time: int, estimate: Price = None):
-        orders = []
-        if random.random() < self.lam:
-            side = random.choice([BUY, SELL])
-            quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
-            # quantity = 3 if side == BUY else 5 # just for tests - use prime numbers to check splittings properly
+    def take_action(self, current_time: int):
+        for asset_id, market in self.markets.items():
+            orders = []
+            if random.random() < self.lam:
+                side = random.choice([BUY, SELL])
+                quantity = np.random.poisson(lam=self.mean_volume) # AK why not volume?
+                # quantity = 3 if side == BUY else 5 # just for tests - use prime numbers to check splittings properly
 
-            if estimate is None:
-                estimate = Price(self.estimate_fundamental(current_time=current_time))
-                #print(f"The estimate: {estimate}")
-                #print(f"Private values: {self.pv.values}")
-            spread = Decimal(self.shade[1] - self.shade[0])
-            valuation_offset = Price(spread*Decimal(random.random())+ Decimal(self.shade[0]))
+                # if estimate is None:
+                #     estimate = Price(self.estimate_fundamental(current_time=current_time))
+                    #print(f"The estimate: {estimate}")
+                    #print(f"Private values: {self.pv.values}")
+                estimate = market.last_traded_price
+                spread = Decimal(self.shade[1] - self.shade[0])
+                valuation_offset = Price(spread*Decimal(random.random())+ Decimal(self.shade[0]))
 
-            # Cache private value lookup (avoid duplicate computation when eta != 1.0)
-            pv_value = Price(self.pv.value_for_exchange(self.position, side))
+                # Cache private value lookup (avoid duplicate computation when eta != 1.0)
+                pv_value = Price(self.pv.value_for_exchange(self.position[asset_id], side))
 
-            if side == BUY:
-                price = estimate + pv_value - valuation_offset
-                #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
-            else:
-                price = estimate + pv_value + valuation_offset
-
-            if self.eta != 1.0:
-                base_price = estimate + pv_value
                 if side == BUY:
-                    best_price = self.market.order_book.get_best_ask()
-                    if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
-                        price = best_price
+                    price = estimate + pv_value - valuation_offset
+                    #AK: print(f"price: {price}, estimate: {estimate}, pv_value: {pv_value},  valuation_offset: {valuation_offset}")
                 else:
-                    best_price = self.market.order_book.get_best_bid()
-                    if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
-                        price = best_price
+                    price = estimate + pv_value + valuation_offset
 
-            if price > 0:
-                order = Order(
-                    price=Price(price),
-                    quantity=quantity,
-                    agent_id=self.agent_id,
-                    time=current_time,
-                    order_type=side,
-                    asset_id=self.market.asset_id,
-                )
-                orders.append(order)
-            else:
-                print(f"Order not placed as calculated price was negative: {price}, q: {quantity}")
+                if self.eta != 1.0:
+                    base_price = estimate + pv_value
+                    if side == BUY:
+                        best_price = market.order_book.get_best_ask()
+                        if (base_price - best_price) > self.eta*valuation_offset and best_price != np.inf:
+                            price = best_price
+                    else:
+                        best_price = market.order_book.get_best_bid()
+                        if (best_price - base_price) > self.eta*valuation_offset and best_price != np.inf:
+                            price = best_price
 
-        return orders
+                if price > 0:
+                    order = Order(
+                        price=Price(price),
+                        quantity=quantity,
+                        agent_id=self.agent_id,
+                        time=current_time,
+                        order_type=side,
+                        asset_id=asset_id,
+                    )
+                    orders.append(order)
+                else:
+                    print(f"Order not placed as calculated price was negative: {price}, q: {quantity}")
+
+            market.add_orders(orders)
 
 
     def __str__(self) -> str:
