@@ -22,7 +22,7 @@ def plot_candlestick(df: pd.DataFrame, output_file: str | None =None, title: str
     ----------
     df : pandas.DataFrame
         Index = integer simulation time.
-        Columns: Open, High, Low, Close, Volume.
+        Columns: open, high, low, close, volume.
     """
     fig, (ax_price, ax_volume) = plt.subplots(
         2,
@@ -35,10 +35,10 @@ def plot_candlestick(df: pd.DataFrame, output_file: str | None =None, title: str
     candle_width = 0.7
 
     for t, row in df.iterrows():
-        o = float(row["Open"])
-        h = float(row["High"])
-        l = float(row["Low"])
-        c = float(row["Close"])
+        o = float(row["open"])
+        h = float(row["high"])
+        l = float(row["low"])
+        c = float(row["close"])
 
         color = "#26a69a" if c >= o else "#ef5350"
 
@@ -67,7 +67,7 @@ def plot_candlestick(df: pd.DataFrame, output_file: str | None =None, title: str
         # Volume
         ax_volume.bar(
             t,
-            row["Volume"],
+            row["volume"],
             width=candle_width,
             color=color,
             align="center",
@@ -97,7 +97,7 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
     ----------
     df : pandas.DataFrame
         Index = integer simulation time.
-        Columns: Open, High, Low, Close, Volume, Theoretical.
+        Columns: open, high, low, close, volume, theoretical.
     """
     fig, (ax_price, ax_volume) = plt.subplots(
         2,
@@ -110,10 +110,10 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
     candle_width = 0.7
 
     for t, row in df.iterrows():
-        o = float(row["Open"])
-        h = float(row["High"])
-        l = float(row["Low"])
-        c = float(row["Close"])
+        o = float(row["open"])
+        h = float(row["high"])
+        l = float(row["low"])
+        c = float(row["close"])
 
         color = "#26a69a" if c >= o else "#ef5350"
 
@@ -142,7 +142,7 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
         # Volume
         ax_volume.bar(
             t,
-            row["Volume"],
+            row["volume"],
             width=candle_width,
             color=color,
             align="center",
@@ -151,8 +151,8 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
     # Theoretical value
     ax_price.plot(
         df.index,
-        df["Theoretical"],
-        label="Theoretical value",
+        df["theoretical"],
+        label="theoretical value",
         linewidth=1.5,
         linestyle="-",
         color="black",

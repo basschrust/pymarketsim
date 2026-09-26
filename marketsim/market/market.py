@@ -8,6 +8,7 @@ from loguru import logger
 from typing import TYPE_CHECKING
 import math
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
@@ -24,7 +25,8 @@ if TYPE_CHECKING:
 
 
 class Market:
-    def __init__(self, reference_price: Price |None = None, name: str|None=None,
+    def __init__(self, *, reference_price: Price |None = None, name: str|None=None,
+                 repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock"):
         self.instrument_class = instrument_class
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
@@ -32,11 +34,11 @@ class Market:
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
-        self.traded_prices = {0:{"Open": self.last_traded_price,
-                                                "Low": self.last_traded_price,
-                                                "High": self.last_traded_price,
-                                                "Close": self.last_traded_price,
-                                                "Volume": 0, }}
+        self.traded_prices = {0:{"open": self.last_traded_price,
+                                                "low": self.last_traded_price,
+                                                "high": self.last_traded_price,
+                                                "close": self.last_traded_price,
+                                                "volume": 0, }}
         self.bid_ask_history = {}
         self.realized_volatility = {0:0}
         self.orders_by_agent_type = {}
@@ -67,25 +69,31 @@ class Market:
         self.logger = logger.bind(market_id=self.asset_id)
 
         self.eod_status = "open"  # open/closed  to make eod procedure idempotent
+        self.repository = repository
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
             self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
             self.agent_groups.add(agent.group)
-            self.orders_by_agent_type.setdefault(agent.group, {"Count_buy":0, "Volume_buy":0, "Count_sell":0, "Volume_sell":0})
+            self.orders_by_agent_type.setdefault(agent.group, {"count_buy":0, "volume_buy":0, "count_sell":0,
+                                                               "volume_sell":0})
             self.trades_by_agent_type.setdefault(agent.group,
-                                                 {"Count_buy": 0, "Volume_buy": 0, "Count_sell": 0, "Volume_sell": 0})
+                                                 {"count_buy": 0, "volume_buy": 0,
+                                                  "count_sell": 0, "volume_sell": 0})
             self.trades_by_agent_type_ext.setdefault(agent.group,
-                                                 {"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
-                                                     , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+                                                 {"count_buy": {"arrived":0, "waited":0}, "volume_buy":
+                                                     {"arrived":0, "waited":0}
+                                                     , "count_sell": {"arrived":0, "waited":0}, "volume_sell":
+                                                      {"arrived":0, "waited":0}})
             # this one is tricky as requires n-square combination
             # TODO: but also with already existing groups!
             # and then by time...
         for g1 in self.agent_groups:
             for g2 in self.agent_groups:
-                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"Count_buy": {"arrived":0, "waited":0}, "Volume_buy": {"arrived":0, "waited":0}
-                                                     , "Count_sell": {"arrived":0, "waited":0}, "Volume_sell": {"arrived":0, "waited":0}})
+                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"count_buy": {"arrived":0
+                    , "waited":0}, "volume_buy": {"arrived":0, "waited":0}
+                    , "count_sell": {"arrived":0, "waited":0}, "volume_sell": {"arrived":0, "waited":0}})
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -111,11 +119,11 @@ class Market:
         for order in orders:
             self.event_queue.schedule_activity(order)
             if order.order_type == 1:
-                self.orders_by_agent_type[self.agents[order.agent_id].group]["Count_buy"] += 1
-                self.orders_by_agent_type[self.agents[order.agent_id].group]["Volume_buy"] += order.quantity
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["count_buy"] += 1
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["volume_buy"] += order.quantity
             elif order.order_type == -1:
-                self.orders_by_agent_type[self.agents[order.agent_id].group]["Count_sell"] += 1
-                self.orders_by_agent_type[self.agents[order.agent_id].group]["Volume_sell"] += order.quantity
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["count_sell"] += 1
+                self.orders_by_agent_type[self.agents[order.agent_id].group]["volume_sell"] += order.quantity
 
     def get_time(self):
         raise # to make sure it is not used
@@ -128,13 +136,14 @@ class Market:
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
         self.order_book.cancel_outdated_orders(current_time=current_time)
 
+    # TODO: move to sod()
     def roll_traded_prices(self, current_time:int) -> None:
         yesterday = self.traded_prices[current_time - 1]
-        self.traded_prices[current_time] = {"Open": yesterday["Close"],
-                                            "Low": yesterday["Close"],
-                                            "High": yesterday["Close"],
-                                            "Close": yesterday["Close"],
-                                            "Volume": 0, }
+        self.traded_prices[current_time] = {"open": yesterday["close"],
+                                            "low": yesterday["close"],
+                                            "high": yesterday["close"],
+                                            "close": yesterday["close"],
+                                            "volume": 0, }
 
     def step(self, current_time: int) -> list[MatchedOrder]:
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
@@ -149,12 +158,12 @@ class Market:
             for g1 in self.agent_groups:
                 for g2 in self.agent_groups:
                     key = (current_time, g1, g2)
-                    self.trade_stats[key] = {"Count_buy": 0,
-                                         "Volume_buy": 0,
-                                         "Cash_buy": 0,
-                                         "Count_sell": 0,
-                                         "Volume_sell": 0,
-                                         "Cash_sell": 0,
+                    self.trade_stats[key] = {"count_buy": 0,
+                                         "volume_buy": 0,
+                                         "cash_buy": 0,
+                                         "count_sell": 0,
+                                         "volume_sell": 0,
+                                         "cash_sell": 0,
                                          }
 
         # taking the orders from queue to LOB:
@@ -214,20 +223,20 @@ class Market:
         volume = matched_order.order.quantity
         if current_time in self.traded_prices:
             # update data
-            if price > self.traded_prices[current_time]["High"]:
-                self.traded_prices[current_time]["High"] = price
-            elif price < self.traded_prices[current_time]["Low"]:
-                self.traded_prices[current_time]["Low"] = price
-            old_volume = self.traded_prices[current_time]["Volume"]
-            self.traded_prices[current_time]["Volume"] = volume + old_volume
-            self.traded_prices[current_time]["Close"] = price
+            if price > self.traded_prices[current_time]["high"]:
+                self.traded_prices[current_time]["high"] = price
+            elif price < self.traded_prices[current_time]["low"]:
+                self.traded_prices[current_time]["low"] = price
+            old_volume = self.traded_prices[current_time]["volume"]
+            self.traded_prices[current_time]["volume"] = volume + old_volume
+            self.traded_prices[current_time]["close"] = price
         else:
             # enter as first day in this time tick
-            self.traded_prices[current_time] = { "Open": price,
-                                                 "Low": price,
-                                                 "High": price,
-                                                 "Close": price,
-                                                 "Volume": volume,}
+            self.traded_prices[current_time] = { "open": price,
+                                                 "low": price,
+                                                 "high": price,
+                                                 "close": price,
+                                                 "volume": volume,}
 
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
@@ -246,53 +255,53 @@ class Market:
         key = (current_time, self.agents[matched_order.order.agent_id].group, cp_group)
 
         if matched_order.order.order_type == 1:
-            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_buy"] += 1
-            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_buy"] += matched_order.order.quantity
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["count_buy"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["volume_buy"] += matched_order.order.quantity
             # and the ext version - filling the waited/arrived value - why not use a pandas DF?
-            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_buy"][matched_order.order.executed_mode] += 1
-            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["count_buy"][matched_order.order.executed_mode] += 1
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
             # and with information about counterparty group:
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Count_buy"][matched_order.order.executed_mode] += 1
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["count_buy"][matched_order.order.executed_mode] += 1
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["volume_buy"][matched_order.order.executed_mode] += matched_order.order.quantity
 
             # use the power of Pandas DFs (later in conversion:) ):
             if key not in self.trade_stats:
-                self.trade_stats[key] = {"Count_buy": 1,
-                                         "Volume_buy": matched_order.order.quantity,
-                                         "Cash_buy": matched_order.order.quantity * matched_order.price,
-                                         "Count_sell": 0,
-                                         "Volume_sell": 0,
-                                         "Cash_sell": 0
+                self.trade_stats[key] = {"count_buy": 1,
+                                         "volume_buy": matched_order.order.quantity,
+                                         "cash_buy": matched_order.order.quantity * matched_order.price,
+                                         "count_sell": 0,
+                                         "volume_sell": 0,
+                                         "cash_sell": 0
                                          }
             else:
-                self.trade_stats[key]["Count_buy"] += 1
-                self.trade_stats[key]["Volume_buy"] += matched_order.order.quantity
-                self.trade_stats[key]["Cash_buy"] += matched_order.order.quantity * matched_order.price
+                self.trade_stats[key]["count_buy"] += 1
+                self.trade_stats[key]["volume_buy"] += matched_order.order.quantity
+                self.trade_stats[key]["cash_buy"] += matched_order.order.quantity * matched_order.price
 
         elif matched_order.order.order_type == -1:
-            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Count_sell"] += 1
-            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["Volume_sell"] += matched_order.order.quantity
-            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Count_sell"][matched_order.order.executed_mode] += 1
-            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["Volume_sell"][matched_order.order.executed_mode] += matched_order.order.quantity
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["count_sell"] += 1
+            self.trades_by_agent_type[self.agents[matched_order.order.agent_id].group]["volume_sell"] += matched_order.order.quantity
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["count_sell"][matched_order.order.executed_mode] += 1
+            self.trades_by_agent_type_ext[self.agents[matched_order.order.agent_id].group]["volume_sell"][matched_order.order.executed_mode] += matched_order.order.quantity
             # split by ccp:
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Count_sell"][
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["count_sell"][
                 matched_order.order.executed_mode] += 1
-            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["Volume_sell"][
+            self.trade_history_by_groups[self.agents[matched_order.order.agent_id].group][cp_group]["volume_sell"][
                 matched_order.order.executed_mode] += matched_order.order.quantity
 
             # use the power of Pandas DFs (later in conversion:) ):
             if key not in self.trade_stats:
-                self.trade_stats[key] = {"Count_buy": 0,
-                                         "Volume_buy": 0,
-                                         "Cash_buy": 0,
-                                         "Count_sell": 1,
-                                         "Volume_sell": matched_order.order.quantity,
-                                         "Cash_sell": matched_order.order.quantity * matched_order.price,
+                self.trade_stats[key] = {"count_buy": 0,
+                                         "volume_buy": 0,
+                                         "cash_buy": 0,
+                                         "count_sell": 1,
+                                         "volume_sell": matched_order.order.quantity,
+                                         "cash_sell": matched_order.order.quantity * matched_order.price,
                                          }
             else:
-                self.trade_stats[key]["Count_sell"] += 1
-                self.trade_stats[key]["Volume_sell"] += matched_order.order.quantity
-                self.trade_stats[key]["Cash_sell"] += matched_order.order.quantity * matched_order.price
+                self.trade_stats[key]["count_sell"] += 1
+                self.trade_stats[key]["volume_sell"] += matched_order.order.quantity
+                self.trade_stats[key]["cash_sell"] += matched_order.order.quantity * matched_order.price
         else:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
@@ -350,7 +359,7 @@ class Market:
 
         # Close price for each tick
         closes = {
-            t: float(self.traded_prices[t]["Close"])
+            t: float(self.traded_prices[t]["close"])
             for t in times
         }
 
@@ -387,9 +396,9 @@ class Market:
         self.trade_stats_df = pd.DataFrame(
             [
                 {
-                    "timeTick": timeTick,
-                    "agentGroup": agentGroup,
-                    "cpGroup": cpGroup,
+                    "time_tick": timeTick,
+                    "agent_group": agentGroup,
+                    "cp_group": cpGroup,
                     **values,
                 }
                 for (timeTick, agentGroup, cpGroup), values in self.trade_stats.items()
@@ -457,12 +466,12 @@ class Market:
             position_history_df = agent.position_history_df[
                 agent.position_history_df["asset_id"]==self.asset_id].merge(
                     self.traded_prices_df,
-                    on="timeTick",
+                    on="time_tick",
                     how="left",
                 )
 
-            position_history_df["positionValue"] = (
-                    position_history_df["position"] * position_history_df["Close"]
+            position_history_df["position_value"] = (
+                    position_history_df["position"] * position_history_df["close"]
             )
 
             self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
@@ -505,6 +514,9 @@ class Market:
         # plot the history of trading between agent groups:
         self.plot_trade_stats()
 
+    def sod(self):
+        self.eod_status = "open"
+
     def eod(self):
         # End of Day process for the Market - create EoD DataFrames
         # omnipotent, so once called, makes summaries of his all structures
@@ -518,23 +530,12 @@ class Market:
 
             self.traded_prices_df = (
                 pd.DataFrame.from_dict(self.traded_prices, orient="index")
-                .rename_axis("timeTick")
+                .rename_axis("time_tick")
                 .reset_index()
-                [["timeTick", "Close"]]
+                [["time_tick", "close"]]
             )
 
-            # save the history to the DuckDB
-            # Create (or open) a persistent local database
-            con = duckdb.connect(f"{config.output_dir}/daedalus.duckdb")
-            # Store the DataFrame as a table
-            con.register("traded_prices_df", self.traded_prices_df)
-            con.execute("""
-                            CREATE OR REPLACE TABLE traded_prices AS
-                            SELECT * FROM traded_prices_df
-                        """)
-            con.unregister("traded_prices_df")
 
-            con.close()
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

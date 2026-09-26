@@ -12,6 +12,7 @@ import duckdb
 
 import pandas as pd
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.input import config
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
@@ -39,7 +40,7 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, markets: list[Market], group_name: str | None = None):
+    def __init__(self, *, markets: list[Market], repository: Repository, group_name: str | None = None):
         self.agent_id = id_generator.next()
         self.markets = { market.asset_id: market for market in markets } # converting to dict
         self.group_name = group_name
@@ -58,6 +59,7 @@ class Agent(ABC):
         self.cash = Price(0)
         self.cash_history = defaultdict(Price)
         self.logger = markets[0].logger
+        self.repository = repository
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
 
@@ -131,18 +133,23 @@ class Agent(ABC):
                                                                "volume": old["volume"] + abs(matched_order.order.quantity),}
             else:
                 # first trade on this security on this date:
-                self.trade_history[matched_order.time][matched_order.order.asset_id] = {"trades": 1, "volume": abs(matched_order.order.quantity),
+                self.trade_history[matched_order.time][matched_order.order.asset_id] =\
+                            {"trades": 1, "volume": abs(matched_order.order.quantity),
                                                 }
         else:
             # first trade this day
-            self.trade_history[matched_order.time] = { matched_order.order.asset_id: {"trades": 1, "volume": abs(matched_order.order.quantity),
-                                                    } }# side, volume bought/sold, ...
+            self.trade_history[matched_order.time] = { matched_order.order.asset_id:
+                                                {"trades": 1, "volume": abs(matched_order.order.quantity),
+                                                 } }# side, volume bought/sold, ...
 
         # TODO: record also with what kind of agent the capital was exchanged with.
         # and record it also per group...
         # TODO: structure like: self.trade_history_by_groups =
         #  {"MM":{ timeTick1: { volumeBought: , volumeSold: , cashBalance: }, timeTick2: {} } }
         # TODO: reconcile it at the end
+
+    def sod(self):
+        self.eod_status = "open"
 
     def eod(self) -> None:
         # End Of Day procedure of the agent
@@ -157,14 +164,30 @@ class Agent(ABC):
             # self.position_history
             self.position_history_df = (
                     pd.DataFrame.from_dict(self.position_history, orient="index")
-                        .rename_axis("timeTick")
+                        .rename_axis("time_tick")
                         .reset_index()
                         .melt(
-                            id_vars="timeTick",
+                            id_vars="time_tick",
                             var_name="asset_id",
                             value_name="position",
                         )
                     )
+
+            # position_history(
+            #     day
+            # INTEGER,
+            # time_tick
+            # INTEGER,
+            # agent_id
+            # INTEGER,
+            # asset_id
+            # INTEGER,
+            # position
+            # INTEGER,
+            # position_value
+            # DOUBLE
+
+            self.repository.save_position_history(self.position_history_df)
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

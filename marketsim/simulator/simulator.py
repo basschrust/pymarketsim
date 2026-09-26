@@ -1,9 +1,10 @@
 import pandas as pd
 from loguru import logger
 from typing import TYPE_CHECKING
+import duckdb
+from marketsim.connectors.duckdb_storage import Repository
 
 from marketsim.loggers.basic import terminal
-
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.utils.id_generator import id_generator
@@ -47,6 +48,9 @@ class Simulator:
         self.lob_plot_interval = lob_plot_interval
         self.last_progress = -1
         self.bar_length = 40
+        self.day = 0 # day counter for SoD and EoD procedures
+        # to save and load data:
+        self.repository = Repository()
 
         for m_key, m_conf in markets.items():
             # TODO: do we need this fundamental at all?
@@ -62,9 +66,10 @@ class Simulator:
                 underlying = self.markets.get(self.market_map.get(m_conf.get("derivatives_config").get("underlying")))
                 market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                                derivatives_config=m_conf.get("derivatives_config")
-                                , underlying=underlying)
+                                , underlying=underlying, repository=self.repository)
             elif instrument_class == "stock":
-                market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name"))
+                market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name")
+                                , repository=self.repository)
             else:
                 raise ValueError(f"Unknown instrument_class: {instrument_class}")
 
@@ -120,38 +125,38 @@ class Simulator:
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:
             if agent_group["agent_class"] == "ZIAgentNotInformed":
-                agent = ZIAgentNotInformed(markets=markets, **agent_group["config"])
+                agent = ZIAgentNotInformed(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
-                agent = NoiseAgent(markets=markets, **agent_group["config"])
+                agent = NoiseAgent(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # MMs:
             if agent_group["agent_class"] == "MMZOHAgent":
-                agent = MMZOHAgent(markets=markets, **agent_group["config"])
+                agent = MMZOHAgent(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # HBL (Heuristic Belief)
             if agent_group["agent_class"] == "HBLAgent":
-                agent = HBLAgent(markets=markets, **agent_group["config"])
+                agent = HBLAgent(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # spoofers: (to trick HBL Agents)
             if agent_group["agent_class"] == "SpoofingAgent":
-                agent = SpoofingAgent(markets=markets, **agent_group["config"])
+                agent = SpoofingAgent(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
-                agent = WashTradingAgent(markets=markets, group_name=group_name, **agent_group["config"])
+                agent = WashTradingAgent(markets=markets, group_name=group_name, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
                 # those will need the relationship...
 
             # momentum
             if agent_group["agent_class"] == "MomentumAgent":
-                agent = MomentumAgent(markets=markets, **agent_group["config"])
+                agent = MomentumAgent(markets=markets, **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             ########## Derivatives agents, complicated ones :)  ###############
@@ -160,7 +165,7 @@ class Simulator:
             if agent_group["agent_class"] == "OptionMMZOHAgent":
                 # TODO - what with underlying?
                 agent = OptionMMZOHAgent(markets=markets, market_map=self.market_map, #underlying_market=market.underlying,
-                                         **agent_group["config"])
+                                         **agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
     def create_agents(self, *, agent_group: dict, group_name: str) -> None:
@@ -252,9 +257,21 @@ class Simulator:
 
             self.last_progress = percentage
 
+    def sod(self):
+        self.logger.info(f"\nStarting Start-of-Day procedure day: 0 ...")
+        for agent_id, agent in self.agents.items():
+            agent.sod()
+
+        for market_key, market in self.markets.items():
+            market.sod()
+
+        self.logger.info("Start-of-Day day: 0 procedure completed.")
+
 
     def run(self) -> None:
         terminal.write("\nStarting simulation...\n")
+
+        self.sod() # start of day
 
         for step in range(self.sim_time):
             self.logger.info(f"Simulation step start: {step}.", end='')
