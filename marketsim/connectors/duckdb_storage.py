@@ -1,16 +1,18 @@
 import duckdb
-from marketsim.input import config
+import pandas as pd
 
+from marketsim.input import config
+from marketsim.loggers.basic import terminal
 
 # TODO: create some base class with abstract methods, use instances depending on the configuration
 class Repository:
     def __init__(self):
-
+        self.localdb = f"{config.output_dir}/daedalus.duckdb"
         self.prepare_tables()
 
 
     def prepare_tables(self):
-        conn = duckdb.connect(f"{config.output_dir}/daedalus.duckdb")
+        conn = duckdb.connect(self.localdb)
 
         # EoD position (portfolio) of each agent, lowercase columns please!
         conn.execute("""
@@ -48,8 +50,18 @@ class Repository:
 
         conn.close()
 
-    def save_position_history(self, agent):
-        pass
+    def save_position_history(self, position_history_df: pd.DataFrame):
+        conn = duckdb.connect(self.localdb)
+        conn.register("position_history_df", position_history_df)
+
+        conn.execute("""
+            INSERT INTO position_history
+            SELECT day, agent_id, time_tick, asset_id, position, position_value
+            FROM position_history_df
+        """)
+
+        conn.unregister("position_history_df")
+        conn.close()
 
     def save_trades(self):
         pass

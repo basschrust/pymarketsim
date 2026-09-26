@@ -13,8 +13,6 @@ class Option(Market):
     def __init__(self, *, derivatives_config: dict, underlying: Market,
                  market_type: str = "continuous", repository: Repository,
                  name: str| None = None) -> None:
-                 # strike: Price=Price(100), expiration: str = "1Y"
-                 # , option_side: str= "CALL", option_type: str= "European") -> None:
 
         self.instrument_class = "option"
         self.underlying = underlying

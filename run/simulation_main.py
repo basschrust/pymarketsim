@@ -14,8 +14,9 @@ from marketsim.simulator import Simulator
 if TYPE_CHECKING:
     from marketsim.market import Price
 
-random.seed(CONFIG["seed"])
-np.random.seed(CONFIG["seed"])
+random.seed(CONFIG.get("seed", 67))
+np.random.seed(CONFIG.get("seed", 67))
+# TODO: save seed in DB
 
 
 def kwargs_for(func: Callable, config: dict) -> dict:

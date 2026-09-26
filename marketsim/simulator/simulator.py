@@ -63,22 +63,46 @@ class Simulator:
                 # let's rock with first option here!
                 # terminal.write(str(m_conf))
                 # terminal.write(str(self.markets))
+                derivatives_config = m_conf.get("derivatives_config")
                 underlying = self.markets.get(self.market_map.get(m_conf.get("derivatives_config").get("underlying")))
-                market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
-                               derivatives_config=m_conf.get("derivatives_config")
-                                , underlying=underlying, repository=self.repository)
+                strikes = m_conf.get("derivatives_config").get("strikes", [])
+                if strikes:
+                    #series
+                    for strike in strikes:
+                        derivatives_config["strike"] = strike
+                        market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
+                                   derivatives_config=derivatives_config
+                                    , underlying=underlying, repository=self.repository)
+                        self.market_map[m_key] = market.asset_id
+                        self.markets[market.asset_id] = market
+                        self.asset_names_map[market.asset_id] = {"name": market.name,
+                                                                 # "short_name": market.short_name,
+                                                                 # "ticker": market.ticker,
+                                                                 }
+                else:
+                    #single strike
+                    market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
+                                   derivatives_config=derivatives_config
+                                    , underlying=underlying, repository=self.repository)
+                    self.market_map[m_key] = market.asset_id
+                    self.markets[market.asset_id] = market
+                    self.asset_names_map[market.asset_id] = {"name": market.name,
+                                                             # "short_name": market.short_name,
+                                                             # "ticker": market.ticker,
+                                                             }
             elif instrument_class == "stock":
                 market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name")
                                 , repository=self.repository)
+                self.market_map[m_key] = market.asset_id
+                self.markets[market.asset_id] = market
+                self.asset_names_map[market.asset_id] = {"name": market.name,
+                                                         # "short_name": market.short_name,
+                                                         # "ticker": market.ticker,
+                                                         }
             else:
                 raise ValueError(f"Unknown instrument_class: {instrument_class}")
 
-            self.market_map[m_key] = market.asset_id
-            self.markets[market.asset_id] = market
-            self.asset_names_map[market.asset_id] = { "name": market.name,
-                                                      #"short_name": market.short_name,
-                                                      #"ticker": market.ticker,
-                                                      }
+
 
             for group_name, agent_group in m_conf.get("agent_groups", {}).items():
                 self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
@@ -110,8 +134,9 @@ class Simulator:
                         # terminal.write(f"\nsetting pool for agent  {agent.agent_id}...")
                         agent.set_wt_pool(wt_pool=pool)
 
-        for a_key, agent_gr_def in agents.items():
-            self.create_agents(agent_group=agent_gr_def, group_name=a_key)
+        if agents is not None:
+            for a_key, agent_gr_def in agents.items():
+                self.create_agents(agent_group=agent_gr_def, group_name=a_key)
         return
 
     ######################### __init__ ends here   ###################

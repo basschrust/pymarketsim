@@ -42,7 +42,13 @@ markets:
       option_type: European
       underlying: security_1  # reference to one of above defined securities
       expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
-      strike: 100 # maybe list of strikes?
+#      strike: 100 # maybe list of strikes?
+      strikes:
+        - 80
+        - 90
+        - 100
+        - 110
+        - 120
       option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
       quotation_type: price # price/ implied_volatility/ etc.
       settlement_type: cash # cash/ physical/ etc
@@ -75,7 +81,13 @@ markets:
       option_type: European
       underlying: security_1  # reference to one of above defined securities
       expiration: 1Y   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
-      strike: 100 # maybe list of strikes?
+#      strike: 100 # maybe list of strikes?
+      strikes:
+        - 80
+        - 90
+        - 100
+        - 110
+        - 120
       option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
       quotation_type: price # price/ implied_volatility/ etc.
       settlement_type: cash # cash/ physical/ etc

@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from networkx.algorithms.community import quality
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.market import Market, Price
 from marketsim.fourheap.order import Order
@@ -17,9 +18,10 @@ from marketsim.utils.id_generator import id_generator
 
 
 class WashTradingAgent(Agent):
-    def __init__(self, *, markets: list[Market],  q_max: int, lam: float = 0.5, pool_id: int = 0,
+    def __init__(self, *, markets: list[Market], repository: Repository,
+                 q_max: int, lam: float = 0.5, pool_id: int = 0,
                  manipulation_boundaries: dict | None = None, mean_volume: float = 5.0, group_name: str | None = None):
-        super().__init__(markets=markets, group_name=group_name)
+        super().__init__(markets=markets, group_name=group_name, repository=repository)
         self.group = "WashTraders"
 
         self.q_max = q_max
@@ -86,7 +88,7 @@ class WashTradingAgent(Agent):
 
                         elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
                             self.quantity = int(
-                                (self.q_max - abs(self.position)) / (length * self.manipulation_boundaries["lam"]))
+                                (self.q_max - abs(self.position[asset_id])) / (length * self.manipulation_boundaries["lam"]))
                             self.price_to_reach = market.order_book.get_bid_at_volume(self.quantity / 4)
                             # TODO: add also a memory what price we set in the previous step (and was the order executed?)
                             # TODO: and matched with the other side of the WT or just MM or Noise?

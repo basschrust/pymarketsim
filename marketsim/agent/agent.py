@@ -187,7 +187,7 @@ class Agent(ABC):
             # position_value
             # DOUBLE
 
-            self.repository.save_position_history(self.position_history_df)
+            # self.repository.save_position_history(self.position_history_df)
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

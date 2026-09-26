@@ -474,6 +474,11 @@ class Market:
                     position_history_df["position"] * position_history_df["close"]
             )
 
+            position_history_df["day"] = 0
+            position_history_df["agent_id"] = agent_key
+
+            self.repository.save_position_history(position_history_df)
+
             self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
             self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history_df}")
 
@@ -534,6 +539,7 @@ class Market:
                 .reset_index()
                 [["time_tick", "close"]]
             )
+
 
 
 
