@@ -41,6 +41,7 @@ class Simulator:
         self.current_time = 0 # TODO: needed in Market, here probably not?
         self.markets = {} # [] # each market serves single security, keys are asset_ids
         self.market_map = {} # { yaml_id: asset_id }
+        self.asset_names_map = {} # { asset_id: {"name": name, "short_name": short_name, "ticker": ticker }
 
         self.agents = {} # boys are back in town! agents here instead of markets, as one agents serves many markets
         self.lob_plot_interval = lob_plot_interval
@@ -69,6 +70,10 @@ class Simulator:
 
             self.market_map[m_key] = market.asset_id
             self.markets[market.asset_id] = market
+            self.asset_names_map[market.asset_id] = { "name": market.name,
+                                                      #"short_name": market.short_name,
+                                                      #"ticker": market.ticker,
+                                                      }
 
             for group_name, agent_group in m_conf.get("agent_groups", {}).items():
                 self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
@@ -210,7 +215,7 @@ class Simulator:
     def end_sim(self) -> None:
         """ End the simulation and print summary """
         self.logger.info(f"\n\nSimulation ended. time: {self.current_time}")
-        terminal.write(f"\nPreparing agents summary...\n")
+        terminal.write(f"Preparing agents summary...\n")
         self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.agents), step_name="Agents")
         agent_steps = 0
@@ -220,7 +225,7 @@ class Simulator:
             self.show_progress_bar(step=agent_steps, total=len(self.agents), step_name="Agents")
             agent_steps += 1
 
-        terminal.write(f"\nPreparing markets summary...\n")
+        terminal.write(f"\n\nPreparing markets summary...\n")
         self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
         market_steps = 0

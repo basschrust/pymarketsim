@@ -5,7 +5,7 @@ import mplfinance as mpf
 from pathlib import Path
 import math
 import numpy as np
-from pandas.core.interchange.dataframe_protocol import DataFrame
+
 
 
 def simple_plot_old(x: list, y: list, output_file: str) -> None:
@@ -142,7 +142,7 @@ def plot_agent_history_many_markets(
     ax_value.set_ylabel("Portfolio value")
     ax_value.grid(True)
 
-    fig.tight_layout(rect=[0, 0, 1, 0.98])
+    fig.tight_layout(rect=[0, 0, 1, 0.985])
 
     Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_file, dpi=150)
