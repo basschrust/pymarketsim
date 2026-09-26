@@ -211,6 +211,15 @@ class Simulator:
         """ End the simulation and print summary """
         self.logger.info(f"\n\nSimulation ended. time: {self.current_time}")
         self.last_progress = -1
+        self.show_progress_bar(step=0, total=len(self.agents), step_name="Agents")
+        agent_steps = 0
+        for agent_key, agent in self.agents.items():
+            agent.show_summary()
+
+            self.show_progress_bar(step=agent_steps, total=len(self.agents), step_name="Agents")
+            agent_steps += 1
+
+        self.last_progress = -1
         self.show_progress_bar(step=0, total=len(self.markets), step_name="Markets")
         market_steps = 0
         for market_key, market in self.markets.items():

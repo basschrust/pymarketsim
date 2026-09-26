@@ -451,7 +451,7 @@ class Market:
         # valuations by agent:
         for agent_key, agent in self.agents.items():
             agent.eod()
-            value_history = agent.position_value_history # now includes also other assets!
+            value_history = agent.portfolio_value_history # now includes also other assets!
 
             position_history_df = agent.position_history_df[
                 agent.position_history_df["asset_id"]==self.asset_id].merge(

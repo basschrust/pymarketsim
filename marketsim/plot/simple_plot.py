@@ -78,6 +78,76 @@ def plot_agent_history_single_market(
     plt.close(fig)
 
 
+def plot_agent_history_many_markets(
+    position_history: pd.DataFrame,
+    cash_history: dict,
+    value_history: dict,
+    output_file: str,
+    title: str = "Agent Portfolio history",
+) -> None:
+
+    asset_ids = sorted(position_history["asset_id"].unique())
+    n_assets = len(asset_ids)
+
+    fig, axes = plt.subplots(
+        n_assets + 2,
+        1,
+        figsize=(10, 3 * (n_assets + 2)),
+        sharex=True,
+    )
+
+    # Make sure axes is always iterable
+    if n_assets + 2 == 1:
+        axes = [axes]
+
+    fig.suptitle(title, fontsize=14)
+
+    # Position subplots
+    for i, asset_id in enumerate(asset_ids):
+        ax = axes[i]
+
+        asset_history = position_history[
+            position_history["asset_id"] == asset_id
+        ].sort_values("timeTick")
+
+        ax.plot(
+            asset_history["timeTick"],
+            asset_history["position"],
+        )
+
+        ax.set_ylabel(f"Asset {asset_id}")
+        ax.grid(True)
+
+    # Cash subplot
+    ax_cash = axes[n_assets]
+
+    ax_cash.plot(
+        list(cash_history.keys()),
+        list(cash_history.values()),
+    )
+
+    ax_cash.set_ylabel("Cash")
+    ax_cash.grid(True)
+
+    # Total portfolio value subplot
+    ax_value = axes[n_assets + 1]
+
+    ax_value.plot(
+        list(value_history.keys()),
+        list(value_history.values()),
+    )
+
+    ax_value.set_xlabel("Simulation time")
+    ax_value.set_ylabel("Portfolio value")
+    ax_value.grid(True)
+
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
+
+    Path(output_file).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_file, dpi=150)
+    plt.close(fig)
+
+
 def plot_order_book(
     bids: dict,
     asks: dict,
@@ -471,7 +541,7 @@ def plot_agent_profitability_vs_volatility(
     groups = defaultdict(list)
 
     for agent in agents:
-        history = agent.position_value_history
+        history = agent.portfolio_value_history
 
         if len(history) < 2:
             continue

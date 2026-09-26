@@ -11,9 +11,11 @@ from collections import defaultdict
 
 import pandas as pd
 
+from marketsim.input import config
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
 from marketsim.market.price import Price
+from marketsim.plot.simple_plot import plot_agent_history_many_markets
 
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
@@ -44,15 +46,18 @@ class Agent(ABC):
         self.group_name = group_name
 
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
-        self.position_value_history = {} # {time: position_value}
-        # self.position = 0
+        #self.position_value_history = {} # {time: position_value} # TODO: portfolio_value_history!
+        self.portfolio_value = Price(0)
+        self.portfolio_value_history = defaultdict(Price)
+
         self.position = { m_id: 0 for m_id  in self.markets }
-        # self.position_history = {0: 0}  # {time: number_of_shares} # at the end of tick
+
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id:0  for m_id  in self.markets }  # {time: {asset_id: number_of_shares}}
                 # at the end of tick
         self.position_history_df = None
-        self._cash = Price(0)
+        self.cash = Price(0)
+        self.cash_history = defaultdict(Price)
         self.logger = markets[0].logger
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
@@ -100,14 +105,16 @@ class Agent(ABC):
 
     def record_valuation(self, current_time: int) -> None:
         # saving value of agents portfolio
-        # TODO: copy value, not reference!
-        # terminal.write(f"Position: {self.position}")
-        self.position_history[current_time] = copy.deepcopy(self.position)
 
         # valuation by last trade:
-        self.position_value_history[current_time] = self.cash
+        self.portfolio_value = self.cash
         for asset_id, market in self.markets.items():
-            self.position_value_history[current_time] += int(self.position[asset_id]) * market.last_traded_price
+            self.portfolio_value += int(self.position[asset_id]) * market.last_traded_price
+
+        # save valuation:
+        self.portfolio_value_history[current_time] = self.portfolio_value
+        self.position_history[current_time] = copy.deepcopy(self.position)
+        self.cash_history[current_time] = self.cash
 
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity
@@ -161,8 +168,17 @@ class Agent(ABC):
                     )
             # terminal.write(f"\n\nPosition History:\n{self.position_history_df.head(10)}")
 
-
-
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
+
+    def show_summary(self):
+        self.eod()
+
+        agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}.png"
+
+        plot_agent_history_many_markets(position_history=self.position_history_df,
+                                        cash_history=self.cash_history,
+                                        value_history=self.portfolio_value_history,
+                                        output_file=agent_output_file,
+                                        title=f"Agent {self.agent_id} {str(self)} summary")
 
