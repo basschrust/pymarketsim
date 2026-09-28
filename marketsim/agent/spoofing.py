@@ -7,11 +7,9 @@ from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
-from marketsim.fourheap.constants import BUY, SELL
-from marketsim.utils.id_generator import id_generator
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 class SpoofingAgent(Agent):
     def __init__(self, *, markets: [Security], repository: Repository,

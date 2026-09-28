@@ -5,15 +5,13 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from marketsim.agent.agent import Agent
-from marketsim.market import Security, Price, Option
+from marketsim.market import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
-from marketsim.utils.id_generator import id_generator
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
-from marketsim.loggers.basic import terminal
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class OptionMMZOHAgent(Agent):

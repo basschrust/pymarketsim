@@ -11,11 +11,10 @@ from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 import numpy as np
-from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 class ZIAgentNotInformed(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pandas as pd
-import duckdb
 from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
@@ -21,7 +20,7 @@ from marketsim.fourheap.fourheap import FourHeap
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
     from marketsim.agent import Agent
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class Security:

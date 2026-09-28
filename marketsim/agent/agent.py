@@ -3,12 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import copy
 import math
-from typing import List
-from dataclasses import dataclass, field
-import traceback
 from typing import TYPE_CHECKING
 from collections import defaultdict
-import duckdb
 
 import pandas as pd
 
@@ -19,9 +15,9 @@ from marketsim.market.price import Price
 from marketsim.plot.simple_plot import plot_agent_history_many_markets
 
 if TYPE_CHECKING:
-    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.fourheap import MatchedOrder
     from marketsim.market import Security
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 def validate_update(quantity: int, cash: Price) -> None:
