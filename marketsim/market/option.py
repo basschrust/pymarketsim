@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import pandas as pd
 
-from marketsim.connectors.duckdb_storage import Repository
+from typing_extensions import TYPE_CHECKING
+
 from .price import Price
 from .security import Security
 from marketsim.input import config
 from marketsim.fourheap import Order, MatchedOrder
 from .valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.plot.candle import plot_candlestick_derivative
+
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 
 class Option(Security):

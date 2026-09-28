@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import duckdb
 import pandas as pd
 
+from marketsim.market import Security
 from marketsim.input import config
 from marketsim.loggers.basic import terminal
 
@@ -13,6 +16,18 @@ class Repository:
 
     def prepare_tables(self):
         conn = duckdb.connect(self.localdb)
+
+        # securities
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS securities (
+                    asset_id INTEGER,
+                    instrument_class STRING,
+                    market_type STRING,
+                    name STRING,
+                    eod_status STRING,
+                    reference_price DOUBLE,
+            )
+        """)
 
         # EoD position (portfolio) of each agent, lowercase columns please!
         conn.execute("""
@@ -49,6 +64,30 @@ class Repository:
 
         conn.close()
 
+    ##### methods for making data persistent
+
+    def save_security(self, security: Security) -> None:
+        with duckdb.connect(self.localdb) as conn:
+            conn.execute("""
+                INSERT INTO securities (
+                    asset_id,
+                    instrument_class,
+                    market_type,
+                    name,
+                    eod_status,
+                    reference_price
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, [
+                security.asset_id,
+                security.instrument_class,
+                security.market_type,
+                security.name,
+                security.eod_status,
+                security.reference_price,
+            ])
+
+
     def save_position_history(self, position_history_df: pd.DataFrame):
         conn = duckdb.connect(self.localdb)
         conn.register("position_history_df", position_history_df)
@@ -78,6 +117,10 @@ class Repository:
 
         conn.unregister("traded_prices_df")
         conn.close()
+
+
+
+
 
 
     # methods for data extraction

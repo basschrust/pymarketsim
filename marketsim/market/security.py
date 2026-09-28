@@ -8,7 +8,6 @@ from loguru import logger
 from typing import TYPE_CHECKING
 import math
 
-from marketsim.connectors.duckdb_storage import Repository
 from marketsim.event import EventQueue
 from marketsim.fundamental.fundamental_abc import Fundamental
 from marketsim.utils.id_generator import id_generator
@@ -22,6 +21,7 @@ from marketsim.fourheap.fourheap import FourHeap
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
     from marketsim.agent import Agent
+    from marketsim.connectors.duckdb_storage import Repository
 
 
 class Security:
@@ -29,6 +29,7 @@ class Security:
                  repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock"):
         self.instrument_class = instrument_class
+        self.reference_price = reference_price
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
         self.order_book = FourHeap(plus_one=True, market=self)
@@ -70,6 +71,11 @@ class Security:
 
         self.eod_status = "open"  # open/closed  to make eod procedure idempotent
         self.repository = repository
+
+        #### end of __init__
+
+    def save(self):
+        self.repository.save_security(self)
 
     def add_agents(self, agents: list[Agent] | None) -> None:
         for agent in agents:
@@ -512,6 +518,7 @@ class Security:
         self.plot_trade_stats()
 
     def sod(self):
+        self.save()
         self.eod_status = "open"
 
     def eod(self):

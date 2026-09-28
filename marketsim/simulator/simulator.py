@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import pandas as pd
 from loguru import logger
 from typing import TYPE_CHECKING
 import duckdb
-from marketsim.connectors.duckdb_storage import Repository
 
+from marketsim.connectors.duckdb_storage import Repository
 from marketsim.loggers.basic import terminal
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
