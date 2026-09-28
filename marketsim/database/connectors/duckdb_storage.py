@@ -68,6 +68,7 @@ class Repository:
                         low       DOUBLE,
                         close     DOUBLE,
                         volume    DOUBLE,
+                        theoretical DOUBLE,
                     )
                 """)
 
@@ -165,11 +166,18 @@ class Repository:
         conn = duckdb.connect(self.localdb)
         conn.register("traded_prices_df", traded_price_df)
 
-        conn.execute("""
-            INSERT INTO traded_prices
-            SELECT day, time_tick, asset_id, open, high, low, close, volume
-            FROM traded_prices_df      
-        """)
+        if "theoretical" in traded_price_df.columns:
+            conn.execute("""
+                            INSERT INTO traded_prices
+                            SELECT day, time_tick, asset_id, open, high, low, close, volume, theoretical
+                            FROM traded_prices_df      
+                        """)
+        else:
+            conn.execute("""
+                INSERT INTO traded_prices
+                SELECT day, time_tick, asset_id, open, high, low, close, volume, NULL
+                FROM traded_prices_df      
+            """)
 
         conn.unregister("traded_prices_df")
         conn.close()
