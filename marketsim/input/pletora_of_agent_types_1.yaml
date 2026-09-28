@@ -1,7 +1,7 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 5000
+sim_time: 500
 lob_plot_interval: 135
 debug_logging: False
 

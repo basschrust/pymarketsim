@@ -4,6 +4,7 @@
 sim_time: 300
 lob_plot_interval: 25
 debug_logging: False
+seed: 67
 
 # definitions of the securities
 markets:

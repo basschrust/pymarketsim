@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 import sys
 import scipy as sp
@@ -5,11 +7,12 @@ import numpy as np
 from loguru import logger
 from bisect import bisect_left
 from time import perf_counter
+from typing import TYPE_CHECKING
 
 from scipy.interpolate import PchipInterpolator
 
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -17,6 +20,8 @@ from typing import List
 #from fastcubicspline import FCS
 from marketsim.utils.id_generator import id_generator
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 class Custom_cs:
     # custom function object to implement linear interpolation instead of computationally demanding cubic spline
@@ -35,9 +40,10 @@ class Custom_cs:
         return ret
 
 class HBLAgent(Agent):
-    def __init__(self, *, markets: list[Market], q_max: int, shade: List, L: int, pv_var: float,
+    def __init__(self, *, markets: list[Security], repository: Repository,
+                 q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None):
-        super().__init__(markets=markets)
+        super().__init__(markets=markets, repository=repository)
         self.group = "HBL"
         if pv is not None:
             self.pv = pv

@@ -1,16 +1,23 @@
+from __future__ import annotations
+
 import random
+from typing import TYPE_CHECKING
+
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 class SpoofingAgent(Agent):
-    def __init__(self, *, markets: [Market], q_max: int, pv_var: float, order_size:int, spoofing_size: int,
+    def __init__(self, *, markets: [Security], repository: Repository,
+                 q_max: int, pv_var: float, order_size:int, spoofing_size: int,
                  normalizers: dict, spoofing_times: list[int]|None):
-        super().__init__(markets=markets)
+        super().__init__(markets=markets, repository=repository)
         self.group = "Spoofers"
         if pv_var is not None:
             self.pv = pv_var

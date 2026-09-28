@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import random
 from decimal import Decimal
+from typing import TYPE_CHECKING
+
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
@@ -9,14 +13,18 @@ import numpy as np
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
+
 
 class NoiseAgent(Agent):
     """
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
-    def __init__(self, markets: list[Market], q_max: int = 1000, lam=1.0, mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
-                 , withdraw_old: bool = False):
-        super().__init__(markets=markets)
+    def __init__(self, *, markets: list[Security], q_max: int = 1000, lam=1.0,
+                 mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
+                 , withdraw_old: bool = False, repository: Repository) -> None:
+        super().__init__(markets=markets, repository=repository)
         self.group = "Noise"
 
         self.q_max = q_max # check if doesn't collide with mean_volume

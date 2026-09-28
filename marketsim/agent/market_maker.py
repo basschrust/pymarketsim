@@ -1,6 +1,6 @@
 import random
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -9,7 +9,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class MMAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, xi: float, K: int, omega: float, rebalance_period: int=2):
+    def __init__(self, agent_id: int, market: Security, xi: float, K: int, omega: float, rebalance_period: int=2):
         self.agent_id = agent_id
         self.market = market
 
