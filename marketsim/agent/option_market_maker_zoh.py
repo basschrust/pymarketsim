@@ -19,11 +19,17 @@ class OptionMMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, markets: list[Security], repository: Repository, market_map: dict,
-                 xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
-                 , rebalance_by: str = "time", rebalance_volume: int = 70) -> None:
-        super().__init__(markets=markets, repository=repository) # TODO: base should accept all the list
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict|None=None) -> None:
+        default_configuration = {"xi": 0.1,
+                                 "K": 3,
+                                 "omega": 0.1,
+                                 "rebalance_period": 5,
+                                 "volume": 7,
+                                 "q_max": 1000,
+                                 "rebalance_by": "time",
+                                 "rebalance_volume": 70}
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
         self.group = "OptionsMMZOH"
 
         self.option_markets = { market.asset_id: market for market in markets if
@@ -39,16 +45,17 @@ class OptionMMZOHAgent(Agent):
         self.position = { m_id: 0 for m_id in self.markets }
 
         #  TODO: Market Making parameters - per each market:
-        self.xi = Decimal(xi) # step of the order ladder
-        self.K = K # number of orders in the ladder
-        self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
-        self.rebalance_period = rebalance_period
-        self.rebalance_by = rebalance_by # time or volume or exposure (in derivatives markets!)
-        self.rebalance_volume = rebalance_volume # and this differs for derivatives, too!
-        self.last_rebalance_time = 0 # on each market!
+        self.xi = Decimal(final_configuration["xi"])  # step of the order ladder
+        self.K = final_configuration["K"]  # number of orders in the ladder
+        self.omega = Decimal(final_configuration["omega"])  # bid ask spread between two closest MM quotations
+        self.rebalance_period = final_configuration["rebalance_period"]
+        self.rebalance_by = final_configuration["rebalance_by"]  # time or volume
+        self.rebalance_volume = final_configuration["rebalance_volume"]
+        self.last_rebalance_time = 0
         self.cum_volume = 0
-        self.volume = volume
-        self.q_max = q_max
+
+        self.volume = final_configuration["volume"]
+        self.q_max = final_configuration["q_max"]
 
 
     def get_id(self) -> int:

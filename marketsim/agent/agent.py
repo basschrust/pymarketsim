@@ -5,7 +5,7 @@ import copy
 import math
 from typing import TYPE_CHECKING
 from collections import defaultdict
-
+from loguru import logger
 import pandas as pd
 
 from marketsim.input import config
@@ -37,10 +37,11 @@ class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None,
-                 name: str | None = None):
+                 name: str | None = None, configuration: dict|None):
         self.agent_id = id_generator.next()
         self.group_name = group_name
-        self.name = name if name is not None else f"{self.group_name}_{self.agent_id}"
+        self.name = name if name is not None else f"{self.agent_id}_{self.group_name}"
+        self.configuration = configuration
 
         self.markets = { market.asset_id: market for market in markets }  # converting to dict
 
@@ -57,11 +58,19 @@ class Agent(ABC):
         self.position_history_df = None
         self.cash = Price(0)
         self.cash_history = defaultdict(Price)
-        self.logger = markets[0].logger
+
         self.repository = repository
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
+        logger.add(
+            f"{config.output_dir}/agent_{self.agent_id}_{self.group_name}.log",
+            format="{elapsed} | {message}",
+            level="DEBUG" if config.debug_logging else "INFO",
+            filter=lambda record, agent_id=self.agent_id:
+            record["extra"].get("agent_id") == agent_id,
+        )
+        self.logger = logger.bind(market_id=self.agent_id)
 
         self.repository.save_agent(self)
 
@@ -206,3 +215,5 @@ class Agent(ABC):
                                         output_file=agent_output_file,
                                         title=f"Agent {self.agent_id} {str(self)} summary")
 
+    def __str__(self) -> str:
+        return f"{self.agent_id}_{self.group_name}"

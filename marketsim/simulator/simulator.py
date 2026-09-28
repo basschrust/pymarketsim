@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from loguru import logger
+from pip._internal.commands import configuration
 
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.loggers.basic import terminal
@@ -147,38 +148,38 @@ class Simulator:
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:
             if agent_group["agent_class"] == "ZIAgentNotInformed":
-                agent = ZIAgentNotInformed(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = ZIAgentNotInformed(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
-                agent = NoiseAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = NoiseAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # MMs:
             if agent_group["agent_class"] == "MMZOHAgent":
-                agent = MMZOHAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = MMZOHAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # HBL (Heuristic Belief)
             if agent_group["agent_class"] == "HBLAgent":
-                agent = HBLAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = HBLAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # spoofers: (to trick HBL Agents)
             if agent_group["agent_class"] == "SpoofingAgent":
-                agent = SpoofingAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = SpoofingAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
-                agent = WashTradingAgent(markets=markets, group_name=group_name, **agent_group["config"], repository=self.repository)
+                agent = WashTradingAgent(markets=markets, group_name=group_name, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
                 # those will need the relationship...
 
             # momentum
             if agent_group["agent_class"] == "MomentumAgent":
-                agent = MomentumAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = MomentumAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             ########## Derivatives agents, complicated ones :)  ###############
@@ -186,8 +187,8 @@ class Simulator:
             ## MM, simple delta hedger
             if agent_group["agent_class"] == "OptionMMZOHAgent":
                 # TODO - what with underlying?
-                agent = OptionMMZOHAgent(markets=markets, market_map=self.market_map, #underlying_market=market.underlying,
-                                         **agent_group["config"], repository=self.repository)
+                agent = OptionMMZOHAgent(markets=markets, #market_map=self.market_map, #underlying_market=market.underlying,
+                                         configuration=agent_group.get("config", None), repository=self.repository)
                 self.add_agents([agent])
 
     def create_agents(self, *, agent_group: dict, group_name: str) -> None:

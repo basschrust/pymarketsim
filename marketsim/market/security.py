@@ -28,14 +28,11 @@ class Security:
                  repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock"):
         self.instrument_class = instrument_class
-        self.reference_price = reference_price
-        self.last_traded_price = reference_price if reference_price is not None else Price(100)
+        self.reference_price = reference_price if reference_price is not None else Price(100)
+        self.last_traded_price = self.reference_price
         self.asset_id = id_generator.next()
 
         self.agent_groups = set()
-        # and let's use the power of DataFrames:
-        self.trade_stats = {}
-        self.trade_stats_df = pd.DataFrame()
 
         # TODO: check if this fundamental (externally provided value) is needed here
         # self.fundamental = fundamental
@@ -276,7 +273,7 @@ class Security:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
     def __str__(self) -> str:
-        return f"Market_{self.asset_id}"
+        return f"Security_{self.asset_id}_{self.instrument_class}"
 
     ## plotting and supporting functions     #######################
 
@@ -486,7 +483,12 @@ class Security:
                                   "close": self.last_traded_price,
                                   "volume": 0, }}
 
+        # and let's use the power of DataFrames:
+        self.trade_stats = {}
+        self.trade_stats_df = pd.DataFrame()
+
         for agent_id, agent in self.agents.items():
+            # TODO: we can relatively easily make those aggregations in the DB now
             self.orders_by_agent_type.setdefault(agent.group, {"count_buy": 0, "volume_buy": 0, "count_sell": 0,
                                                                "volume_sell": 0})
             self.trades_by_agent_type.setdefault(agent.group,
@@ -530,7 +532,7 @@ class Security:
             )
 
             self.traded_prices_df["asset_id"] = self.asset_id
-            self.traded_prices_df["day"] = self.current_day
+            self.traded_prices_df["day"] = self.current_day-1 #
 
             self.repository.save_traded_prices(self.traded_prices_df)
 
@@ -559,7 +561,7 @@ class Security:
                 # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
                 #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
 
-                agent.position_history_df["day"] = self.current_day ## well, yes, the old should have been cleared out
+                agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
                 agent.position_history_df["agent_id"] = agent_key
 
                 self.repository.save_position_history(agent.position_history_df)
@@ -576,17 +578,19 @@ class Security:
                 orders.append(order)
 
             orders_df = pd.DataFrame(orders)
-            orders_df["day"] = self.current_day
+            orders_df["day"] = self.current_day - 1
             self.repository.save_orders(orders_df=orders_df)
 
             matched_orders = []
             for order_id, matched_order in self.matched_orders_hashed.items():
-                matched_orders.append({ "order_id":order_id, "price": matched_order.price,
-                        "time": matched_order.time,
-                        "volume": matched_order.volume,
-                        "cash": matched_order.cash,
-                        "phase": matched_order.phase,
-                        "day": self.current_day, })
+                matched_orders.append({ "order_id": order_id,
+                                        "order_side:": matched_order.order.order_type,
+                                        "executed_price": matched_order.price,
+                                        "executed_time": matched_order.time,
+                                        "executed_volume": matched_order.volume,
+                                        "cash": matched_order.cash,
+                                        "phase": matched_order.phase,
+                                        "day": self.current_day-1, })
             matched_orders_df = pd.DataFrame(matched_orders)
             self.repository.save_trades(trades_df=matched_orders_df)
 

@@ -18,18 +18,22 @@ class NoiseAgent(Agent):
     """
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
-    def __init__(self, *, markets: list[Security], q_max: int = 1000, lam=1.0,
-                 mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
-                 , withdraw_old: bool = False, repository: Repository) -> None:
-        super().__init__(markets=markets, repository=repository)
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None = None) -> None:
+        default_configuration = { "q_max": 1000,
+                                 "lam": 1.0,
+                                 "mean_volume": 5.0,
+                                  "mean_spread": Price(0.2),
+                                  "withdraw_old": False, }
+        self.configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=self.configuration)
         self.group = "Noise"
 
-        self.q_max = q_max # check if doesn't collide with mean_volume
-        self.lam = lam # activity parameter
-        self.mean_volume = mean_volume
-        self.mean_spread = mean_spread
+        self.q_max = self.configuration["q_max"] # check if doesn't collide with mean_volume
+        self.lam = self.configuration["lam"] # activity parameter
+        self.mean_volume = self.configuration["mean_volume"]
+        self.mean_spread = self.configuration["mean_spread"]
         # withdrawing old oders when placing new one:
-        self.withdraw_old = withdraw_old
+        self.withdraw_old = self.configuration["withdraw_old"]
 
     def get_id(self) -> int:
         return self.agent_id

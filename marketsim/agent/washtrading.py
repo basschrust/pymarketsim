@@ -4,6 +4,7 @@ import math
 import random
 from typing import TYPE_CHECKING
 import numpy as np
+from marketsim.loggers.basic import terminal
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
@@ -15,17 +16,28 @@ if TYPE_CHECKING:
 
 
 class WashTradingAgent(Agent):
-    def __init__(self, *, markets: list[Security], repository: Repository,
-                 q_max: int, lam: float = 0.5, pool_id: int = 0,
-                 manipulation_boundaries: dict | None = None, mean_volume: float = 5.0, group_name: str | None = None):
-        super().__init__(markets=markets, group_name=group_name, repository=repository)
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None=None,
+                 group_name: str | None = None):
+        default_configuration = { "q_max": 1000,
+                                  "lam": 0.5,
+                                  "pool_id": 0,
+                                "mean_volume":  5.0 }
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, group_name=group_name, repository=repository, configuration=final_configuration)
         self.group = "WashTraders"
 
-        self.q_max = q_max
-        self.lam = lam # yet not used - probably used in the non-manipulation period
-        self.pool_id = pool_id
-        self.manipulation_boundaries = manipulation_boundaries # what if several such periods? maybe list of dicts?
-        self.mean_volume = mean_volume
+        self.q_max = final_configuration["q_max"]
+        self.lam = final_configuration["lam"] # yet not used - probably used in the non-manipulation period
+        self.pool_id = final_configuration["pool_id"]
+        # self.manipulation_boundaries =
+        # configuration["manipulation_boundaries # what if several such periods? maybe list of dicts?
+        self.mean_volume = final_configuration["mean_volume"]
+        self.manipulation_period_start = final_configuration["manipulation_period_start"]
+        self.manipulation_period_end = final_configuration["manipulation_period_end"]
+        self.manipulation_type = final_configuration["manipulation_type"]
+        self.manipulation_side = final_configuration["manipulation_side"]
+        self.spread = final_configuration["spread"]
+
         # specific for this (WashTrading) type:
         # TODO: set it for all markets
         self.price_to_reach = markets[0].last_traded_price
@@ -42,24 +54,25 @@ class WashTradingAgent(Agent):
 
     def take_action(self, current_time: int):
         # TODO: parameters per each market
-        period = self.manipulation_boundaries["manipulation_period"]
+        # period = self.manipulation_boundaries["manipulation_period"]
         orders = []
-        length = period["end"] - period["start"]  # let' make it kiss (keep it silly simple)
+        length = self.manipulation_period_end - self.manipulation_period_start  # let' make it kiss (keep it silly simple)
         for asset_id, market in self.markets.items():
-            if period["start"] <= current_time <= period["end"]:
+            # TODO: they should not manipulate in the same day times every day :)
+            if self.manipulation_period_start <= current_time <= self.manipulation_period_end:
                 # so act as designed
 
                 # if q_max almost reached we could try to push more with spread?
-                if self.manipulation_boundaries["lam"] > random.random(): # let's see what happens when we push always
+                if self.lam > random.random(): # let's see what happens when we push always
                     # but then this method is easy to find out
                     # TODO: if the position is heavily unbalanced set more aggressive price, too
                     if current_time % 3 == 1:
                         # in odd time ticks calculate volume & price and make order of one side
                         market.withdraw_all(agent_id=self.agent_id) # cancel also only in odd ticks
 
-                        if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
+                        if self.manipulation_type == "PULL_UP":
                             self.quantity = int(
-                                (self.q_max - abs(self.position[asset_id])) / (length * self.manipulation_boundaries["lam"]))
+                                (self.q_max - abs(self.position[asset_id])) / (length * self.lam))
                             # TODO: check if this liquidity check gives the reached or exceeded volumes (what happens on boundaries)
                             self.price_to_reach = market.order_book.get_ask_at_volume(
                                 self.quantity / 4)  # + Price(0.01)
@@ -67,7 +80,7 @@ class WashTradingAgent(Agent):
                             if not math.isfinite(self.price_to_reach):
                                 self.price_to_reach = market.last_traded_price + Price(0.5)
 
-                            if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                            if self.manipulation_side == "BUY":
                                 if self.price_to_reach > 0 and self.quantity > 0:
                                     order = Order(
                                         price=self.price_to_reach,
@@ -75,7 +88,7 @@ class WashTradingAgent(Agent):
                                         agent_id=self.agent_id,
                                         asset_id=asset_id,
                                         time=current_time,
-                                        order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                        order_type=1 if self.manipulation_side == 'BUY' else -1,
                                     )
                                     orders.append(order)
                                     market.add_orders(orders)
@@ -83,9 +96,9 @@ class WashTradingAgent(Agent):
                             else:
                                 self.price_to_reach = max(self.price_to_reach - Price(0.01), Price(0.01))
 
-                        elif self.manipulation_boundaries.get("manipulation_type") == "PUSH_DOWN":
+                        elif self.manipulation_type == "PUSH_DOWN":
                             self.quantity = int(
-                                (self.q_max - abs(self.position[asset_id])) / (length * self.manipulation_boundaries["lam"]))
+                                (self.q_max - abs(self.position[asset_id])) / (length * self.lam))
                             self.price_to_reach = market.order_book.get_bid_at_volume(self.quantity / 4)
                             # TODO: add also a memory what price we set in the previous step (and was the order executed?)
                             # TODO: and matched with the other side of the WT or just MM or Noise?
@@ -94,7 +107,7 @@ class WashTradingAgent(Agent):
                             else:
                                 self.price_to_reach = max(market.last_traded_price - Price(0.5), Price(0.01))
 
-                            if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                            if self.manipulation_side == "BUY":
                                 self.price_to_reach = self.price_to_reach+Price(0.01)
                             else:
                                 if self.price_to_reach > 0 and self.quantity > 0:
@@ -104,18 +117,18 @@ class WashTradingAgent(Agent):
                                         agent_id=self.agent_id,
                                         asset_id=asset_id,
                                         time=current_time,
-                                        order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                        order_type=1 if self.manipulation_side == 'BUY' else -1,
                                     )
                                     orders.append(order)
                                     market.add_orders(orders)
                                     return
 
                         else:
-                            raise ValueError(f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
+                            raise ValueError(f"Invalid manipulation type {self.manipulation_type}.")
                     elif current_time % 3 == 2:
                         # in even time ticks (2/3) place the other side order, use price and volume calculated in previous step
-                        if self.manipulation_boundaries["manipulation_type"] == "PULL_UP":
-                            if self.manipulation_boundaries["manipulation_side"] == "BUY":
+                        if self.manipulation_type == "PULL_UP":
+                            if self.manipulation_side == "BUY":
                                 self.quantity = 0
                             else:
                                 if self.price_to_reach > 0 and self.quantity > 0:
@@ -125,12 +138,12 @@ class WashTradingAgent(Agent):
                                         agent_id=self.agent_id,
                                         asset_id=asset_id,
                                         time=current_time,
-                                        order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                        order_type=1 if self.manipulation_side == 'BUY' else -1,
                                     )
                                     orders.append(order)
 
-                        elif self.manipulation_boundaries["manipulation_type"] == "PUSH_DOWN":
-                            if self.manipulation_boundaries["manipulation_side"] == "SELL":
+                        elif self.manipulation_type == "PUSH_DOWN":
+                            if self.manipulation_side == "SELL":
                                 self.quantity = 0
                             else:
                                 if self.price_to_reach > 0 and self.quantity > 0:
@@ -140,13 +153,13 @@ class WashTradingAgent(Agent):
                                         agent_id=self.agent_id,
                                         asset_id=asset_id,
                                         time=current_time,
-                                        order_type=1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1,
+                                        order_type=1 if self.manipulation_side == 'BUY' else -1,
                                     )
                                     orders.append(order)
 
                         else:
                             raise ValueError(
-                                f"Invalid manipulation type {self.manipulation_boundaries['manipulation_type']}")
+                                f"Invalid manipulation type {self.manipulation_type}")
                     else:
                         self.logger.info(f"WT waiting turn in time {current_time}.")
 
@@ -155,12 +168,12 @@ class WashTradingAgent(Agent):
                 if random.random() < self.lam:
                     # but if we are after washtrading then let's try to rebalance as much as we can
                     # so let only one side of the orders
-                    if current_time < period["start"]:
+                    if current_time < self.manipulation_period_start:
                         side = random.choice([BUY, SELL])
                         quantity = np.random.poisson(lam=self.mean_volume) if abs(self.position[asset_id]) < self.q_max else 1
                     else:
                         # so we are after the manipulation period - let's just rebalance here
-                        side = 1 if self.manipulation_boundaries["manipulation_side"] == 'BUY' else -1
+                        side = 1 if self.manipulation_side == 'BUY' else -1
                         # but how not to exceed the q_max? - like this:   # but we don't know how many steps are left
                             # till the end of the simulation, it should depend on the momentary liquidity
 
@@ -174,7 +187,7 @@ class WashTradingAgent(Agent):
                             if side == BUY:
                                 quantity = int((self.q_max - abs(self.position[asset_id])) * (0.5 + 0.5 * random.random()) / length)
 
-                    spread = self.manipulation_boundaries["spread"] # maybe some other spread should be put here
+                    spread = self.spread # maybe some other spread should be put here
                     # TODO: some rebalance spread parameter?
                     price = market.last_traded_price + Price(0.05 * spread * (random.random() - 0.5))
 

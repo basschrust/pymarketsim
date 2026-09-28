@@ -12,29 +12,36 @@ if TYPE_CHECKING:
     from database.connectors.duckdb_storage import Repository
 
 class SpoofingAgent(Agent):
-    def __init__(self, *, markets: [Security], repository: Repository,
-                 q_max: int, pv_var: float, order_size:int, spoofing_size: int,
-                 normalizers: dict, spoofing_times: list[int]|None):
-        super().__init__(markets=markets, repository=repository)
+    def __init__(self, *, markets: list[Security], repository: Repository,
+                 configuration: dict | None = None):
+        default_configuration = { "q_max": 1000,
+                                  "pv_var": 0.2,
+                                  "order_size": 10,
+                                  "spoofing_size": 15000,
+                                    # "normalizers": dict,
+                                  # spoofing_times: list[int] | None
+                                  }
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
         self.group = "Spoofers"
-        if pv_var is not None:
-            self.pv = pv_var
+        if final_configuration["pv_var"] is not None:
+            self.pv = final_configuration["pv_var"]
         else:
-            self.pv = PrivateValues(q_max, float(pv_var))
-        self.spoofing_size = spoofing_size
-        self.order_size = order_size
+            self.pv = PrivateValues(final_configuration["q_max"], float(final_configuration["pv_var"]))
+        self.spoofing_size = final_configuration["spoofing_size"]
+        self.order_size = final_configuration["order_size"]
         self.last_value = 0 # value at last time step (liquidate all inventory)
-        self.normalizers = normalizers # A dictionary {"fundamental": float, "invt": float, "cash": float}
-        self.spoofing_size = spoofing_size
-        self.regular_order_size = order_size
+        self.normalizers = final_configuration["normalizers"] # A dictionary {"fundamental": float, "invt": float, "cash": float}
+        self.spoofing_size = final_configuration["spoofing_size"]
+        self.regular_order_size = final_configuration["order_size"]
 
-        self.q_max = q_max
-        self.pv_var = pv_var
+        self.q_max = final_configuration["q_max"]
+        self.pv_var = final_configuration["pv_var"]
 
-        if spoofing_times is None:
+        if final_configuration["spoofing_times"] is None:
             self.spoofing_times = [50, 1300, 2345, 3709]
         else:
-            self.spoofing_times = spoofing_times
+            self.spoofing_times = final_configuration["spoofing_times"]
 
     def get_id(self) -> int:
         return self.agent_id
