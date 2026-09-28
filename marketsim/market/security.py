@@ -115,6 +115,7 @@ class Security:
                                             "volume": 0, }
 
     def step(self, current_time: int) -> list[MatchedOrder]:
+        # step is operations happening during single time_tick
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # first:cancel orders that are no longer valid
@@ -565,6 +566,30 @@ class Security:
 
                 self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
                 self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+
+            # orders and trades
+            orders = []
+            for order_id, order in self.order_book.buy_unmatched.order_dict.items():
+                orders.append(order)
+
+            for order_id, order in self.order_book.sell_unmatched.order_dict.items():
+                orders.append(order)
+
+            orders_df = pd.DataFrame(orders)
+            orders_df["day"] = self.current_day
+            self.repository.save_orders(orders_df=orders_df)
+
+            matched_orders = []
+            for order_id, matched_order in self.matched_orders_hashed.items():
+                matched_orders.append({ "order_id":order_id, "price": matched_order.price,
+                        "time": matched_order.time,
+                        "volume": matched_order.volume,
+                        "cash": matched_order.cash,
+                        "phase": matched_order.phase,
+                        "day": self.current_day, })
+            matched_orders_df = pd.DataFrame(matched_orders)
+            self.repository.save_trades(trades_df=matched_orders_df)
+
 
             self.logger.info(f"EoD procedure of day: {self.current_day-1} completed.")
         else:

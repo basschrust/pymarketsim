@@ -158,9 +158,6 @@ class Repository:
         conn.unregister("position_history_df")
         conn.close()
 
-    def save_trades(self):
-        pass
-
     def save_traded_prices(self, traded_price_df: pd.DataFrame):
         # TODO: add version for derivatives, including theoretical - needed?
         conn = duckdb.connect(self.localdb)
@@ -183,8 +180,43 @@ class Repository:
         conn.close()
 
 
+    def save_orders(self, orders_df: pd.DataFrame):
+        with duckdb.connect(self.localdb) as conn:
+            conn.register("orders_df", orders_df)
+            conn.execute("""
+                INSERT INTO orders
+                SELECT  day,
+                        price,
+                        order_type,
+                        quantity,
+                        agent_id,
+                        time,
+                        order_id,
+                        asset_id,
+                        executed_price,
+                        executed_mode,
+                        parent_id,
+                        matched_with,
+                        valid_until
+                FROM orders_df
+            """)
+            conn.unregister("orders_df")
 
 
-
+    def save_trades(self, trades_df: pd.DataFrame):
+        # matched_orders aka trades
+        with duckdb.connect(self.localdb) as conn:
+            conn.register("trades_df", trades_df)
+            conn.execute("""
+                INSERT INTO trades
+                SELECT price,
+                        time,
+                        order_id,
+                        volume,
+                        cash,
+                        phase,
+                FROM trades_df
+            """)
+            conn.unregister("trades_df")
 
     # methods for data extraction
