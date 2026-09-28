@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import duckdb
 import pandas as pd
+from sympy.core import parameters
 
+from marketsim.agent import Agent
 from marketsim.market import Security
 from marketsim.input import config
 from marketsim.loggers.basic import terminal
@@ -29,6 +31,15 @@ class Repository:
             )
         """)
 
+        # agents - subjects of the simulation
+        conn.execute("""
+                    CREATE TABLE IF NOT EXISTS agents (
+                            agent_id INTEGER,
+                            name STRING,
+                            group_name STRING,
+                    )
+                """)
+
         # EoD position (portfolio) of each agent, lowercase columns please!
         conn.execute("""
             CREATE TABLE IF NOT EXISTS position_history (
@@ -41,7 +52,7 @@ class Repository:
             )
         """)
 
-        # Market tables
+        # Market situation
         # traded prices # TODO: add volume_by_value (?)
         conn.execute("""
                     CREATE TABLE IF NOT EXISTS traded_prices (
@@ -78,7 +89,7 @@ class Repository:
                     reference_price
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, [
+            """, parameters=[
                 security.asset_id,
                 security.instrument_class,
                 security.market_type,
@@ -87,6 +98,16 @@ class Repository:
                 security.reference_price,
             ])
 
+    def save_agent(self, agent: Agent) -> None:
+        with duckdb.connect(self.localdb) as conn:
+            conn.execute("""
+                INSERT INTO agents (
+                    agent_id,
+                    name,
+                    group_name
+                )
+                VALUES (?, ?, ?)
+            """, parameters=[agent.agent_id, agent.name, agent.group_name])
 
     def save_position_history(self, position_history_df: pd.DataFrame):
         conn = duckdb.connect(self.localdb)

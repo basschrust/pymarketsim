@@ -12,7 +12,6 @@ import duckdb
 
 import pandas as pd
 
-from marketsim.connectors.duckdb_storage import Repository
 from marketsim.input import config
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
@@ -22,6 +21,7 @@ from marketsim.plot.simple_plot import plot_agent_history_many_markets
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
     from marketsim.market import Security
+    from marketsim.connectors.duckdb_storage import Repository
 
 
 def validate_update(quantity: int, cash: Price) -> None:
@@ -40,10 +40,13 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None):
+    def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None,
+                 name: str | None = None):
         self.agent_id = id_generator.next()
-        self.markets = { market.asset_id: market for market in markets } # converting to dict
         self.group_name = group_name
+        self.name = name if name is not None else f"{self.group_name}_{self.agent_id}"
+
+        self.markets = { market.asset_id: market for market in markets }  # converting to dict
 
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
         #self.position_value_history = {} # {time: position_value} # TODO: portfolio_value_history!
@@ -149,6 +152,7 @@ class Agent(ABC):
         # TODO: reconcile it at the end
 
     def sod(self):
+        self.repository.save_agent(self)
         self.eod_status = "open"
 
     def eod(self) -> None:
@@ -173,21 +177,9 @@ class Agent(ABC):
                         )
                     )
 
-            # position_history(
-            #     day
-            # INTEGER,
-            # time_tick
-            # INTEGER,
-            # agent_id
-            # INTEGER,
-            # asset_id
-            # INTEGER,
-            # position
-            # INTEGER,
-            # position_value
-            # DOUBLE
 
-            # self.repository.save_position_history(self.position_history_df)
+
+            # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
 
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")

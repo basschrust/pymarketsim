@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from decimal import Decimal
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
-from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market import Security, Price, Option
 from marketsim.fourheap.order import Order
@@ -10,6 +12,8 @@ from marketsim.utils.id_generator import id_generator
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.loggers.basic import terminal
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 
 class OptionMMZOHAgent(Agent):

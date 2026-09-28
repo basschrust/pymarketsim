@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 import sys
 import scipy as sp
@@ -5,10 +7,10 @@ import numpy as np
 from loguru import logger
 from bisect import bisect_left
 from time import perf_counter
+from typing import TYPE_CHECKING
 
 from scipy.interpolate import PchipInterpolator
 
-from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
@@ -18,6 +20,8 @@ from typing import List
 #from fastcubicspline import FCS
 from marketsim.utils.id_generator import id_generator
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 class Custom_cs:
     # custom function object to implement linear interpolation instead of computationally demanding cubic spline

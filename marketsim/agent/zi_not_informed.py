@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import random
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
@@ -12,6 +14,8 @@ import numpy as np
 from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
 
+if TYPE_CHECKING:
+    from marketsim.connectors.duckdb_storage import Repository
 
 class ZIAgentNotInformed(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
