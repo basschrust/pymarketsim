@@ -15,6 +15,7 @@ class Simulator:
     def __init__(self,
                  *,
                  sim_time: int,
+                 days: int = 1,
                  lam: float = 0.1,
                  mean: float = 100.0,
                  r: float = .6,
@@ -26,7 +27,8 @@ class Simulator:
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
 
-        self.sim_time = sim_time
+        self.sim_time = sim_time # steps per day
+        self.days = days
         self.lam = lam # lambda (activity factor)
         self.mean = mean
         self.r = r
@@ -277,26 +279,43 @@ class Simulator:
 
             self.last_progress = percentage
 
-    def sod(self):
-        self.logger.info(f"\nStarting Start-of-Day procedure day: 0 ...")
-        for agent_id, agent in self.agents.items():
-            agent.sod()
+    def sod(self, day: int):
+        self.logger.info(f"\nStarting Start-of-Day procedure day: {day} ...")
+
+        self.current_time = 0
 
         for market_key, market in self.markets.items():
             market.sod()
 
-        self.logger.info("Start-of-Day day: 0 procedure completed.")
+        for agent_id, agent in self.agents.items():
+            agent.sod()
 
+        self.logger.info(f"\nStart-of-Day day: {day} procedure completed.")
+
+    def eod(self, day: int):
+        self.logger.info(f"\nStarting End-of-Day procedure day: {day} ...")
+
+        for agent_id, agent in self.agents.items():
+            agent.eod()
+
+        for market_key, market in self.markets.items():
+            market.eod()
+
+        self.logger.info(f"\nEnd-of-Day day: {day} procedure completed.")
 
     def run(self) -> None:
         terminal.write("\nStarting simulation...\n")
 
-        self.sod() # start of day
+        for day in range(self.days):
+            terminal.write(f"\nStarting day {str(day+1)} out of {self.days}\n")
+            self.sod(day=day) # start of day
 
-        for step in range(self.sim_time):
-            self.logger.info(f"Simulation step start: {step}.", end='')
-            self.step()
-            self.show_progress_bar(step)
+            for step in range(self.sim_time):
+                self.logger.info(f"Simulation step start: {step}.", end='')
+                self.step()
+                self.show_progress_bar(step)
+
+            self.eod(day=day)
 
         terminal.write("\nSimulation complete.")
         terminal.write("\nPreparing summary...\n")

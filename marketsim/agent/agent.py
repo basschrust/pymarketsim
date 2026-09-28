@@ -61,7 +61,11 @@ class Agent(ABC):
         self.repository = repository
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
+        self.current_day = 0
 
+        self.repository.save_agent(self)
+
+    ####### init ends here  ###########
 
     @property
     def cash(self):
@@ -148,7 +152,7 @@ class Agent(ABC):
         # TODO: reconcile it at the end
 
     def sod(self):
-        self.repository.save_agent(self)
+
         self.eod_status = "open"
 
     def eod(self) -> None:
@@ -158,7 +162,11 @@ class Agent(ABC):
         if self.eod_status == "closed":
             return
         elif self.eod_status == "open":
+            self.logger.info(f"Starting agent {self.agent_id} EoD procedure of day: {self.current_day}")
+
             self.eod_status = "closed"
+            self.current_day += 1
+
             # run the EoD procedure
             # make position history a DF to enable quick filtering
             # self.position_history
@@ -173,8 +181,7 @@ class Agent(ABC):
                         )
                     )
 
-
-
+            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
             # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
 
         else:

@@ -31,6 +31,7 @@ class Security:
         self.reference_price = reference_price
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
+
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
         self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
@@ -68,8 +69,10 @@ class Security:
         )
         self.logger = logger.bind(market_id=self.asset_id)
 
+        self.current_day = 0
         self.eod_status = "open"  # open/closed  to make eod procedure idempotent
         self.repository = repository
+        self.save()
 
         #### end of __init__
 
@@ -429,7 +432,7 @@ class Security:
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def show_summary(self):
-        self.eod()  # End of Day for the Market
+        self.eod()  # End of Day for the Security
 
         self.logger.info(f"\n\nMarket {str(self)} summary:")
         self.logger.info(f"Orders matched: {len(self.matched_orders)}")
@@ -457,36 +460,12 @@ class Security:
 
         # valuations by agent:
         for agent_key, agent in self.agents.items():
-            agent.eod()
-            value_history = agent.portfolio_value_history # now includes also other assets!
-
-            position_history_df = agent.position_history_df[
-                agent.position_history_df["asset_id"]==self.asset_id].merge(
-                    self.traded_prices_df,
-                    on="time_tick",
-                    how="left",
-                )
-
-            position_history_df["position_value"] = (
-                    position_history_df["position"] * position_history_df["close"]
-            )
-            # now we have asset_id_x, asset_id_y as both merge sides had this
-            position_history_df["asset_id"] = position_history_df["asset_id_x"]
-
-            position_history_df["day"] = 0 # TODO: but soon multiday simulations...
-            position_history_df["agent_id"] = agent_key
-
-            self.repository.save_position_history(position_history_df)
-
-            self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history_df}")
-
             # plot it
             agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
 
             plot_agent_history_single_market(
-                position_history=position_history_df,
-                value_history=value_history,
+                position_history=agent.position_history_df,
+                value_history=agent.portfolio_value_history,
                 output_file=agent_file,
             )
 
@@ -517,7 +496,6 @@ class Security:
         self.plot_trade_stats()
 
     def sod(self):
-        self.save()
         self.eod_status = "open"
 
     def eod(self):
@@ -527,7 +505,11 @@ class Security:
         if self.eod_status == "closed":
             return
         elif self.eod_status == "open":
+            self.logger.info(f"Starting EoD procedure of day: {self.current_day}")
+
             self.eod_status = "closed"
+            self.current_day += 1
+            self.current_time = 0
             # run the EoD procedure
             # make traded_price a DF to enable quick filtering and joining with agents' positions
 
@@ -539,10 +521,44 @@ class Security:
             )
 
             self.traded_prices_df["asset_id"] = self.asset_id
-            self.traded_prices_df["day"] = 0 # TODO: for now ;)
+            self.traded_prices_df["day"] = self.current_day
 
             self.repository.save_traded_prices(self.traded_prices_df)
 
+            # valuations by agent:
+            for agent_key, agent in self.agents.items():
+                agent.eod()
+                value_history = agent.portfolio_value_history  # now includes also other assets!
+
+                left_df = agent.position_history_df[
+                    agent.position_history_df["asset_id"] == self.asset_id
+                    ]
+
+                common_cols = left_df.columns.intersection(
+                    self.traded_prices_df.columns
+                ).difference(["time_tick"])
+
+                agent.position_history_df = left_df.drop(columns=common_cols).merge(
+                    self.traded_prices_df,
+                    on="time_tick",
+                    how="left",
+                )
+
+                agent.position_history_df["position_value"] = (
+                        agent.position_history_df["position"] * agent.position_history_df["close"]
+                )
+                # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
+                #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
+
+                agent.position_history_df["day"] = self.current_day ## well, yes, the old should have been cleared out
+                agent.position_history_df["agent_id"] = agent_key
+
+                self.repository.save_position_history(agent.position_history_df)
+
+                self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+                self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+
+            self.logger.info(f"EoD procedure of day: {self.current_day-1} completed.")
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
