@@ -19,6 +19,8 @@ class Repository:
     def prepare_tables(self):
         conn = duckdb.connect(self.localdb)
 
+        ###### static tables - per simulation  ################
+
         # securities
         conn.execute("""
             CREATE TABLE IF NOT EXISTS securities (
@@ -39,6 +41,8 @@ class Repository:
                             group_name STRING,
                     )
                 """)
+
+        ##############  dynamic tables - per day mostly   ######################
 
         # EoD position (portfolio) of each agent, lowercase columns please!
         conn.execute("""
@@ -67,10 +71,41 @@ class Repository:
                     )
                 """)
 
+        # TODO: eod_prices / eod_traded_prices
 
-        # trades
+        ##### granular tables - may contain significant volumes of data ######################
+
+        # orders
+        conn.execute("""
+                    CREATE TABLE IF NOT EXISTS orders (
+                        day INTEGER,
+                        price DOUBLE,
+                        order_type INTEGER,
+                        quantity INTEGER,
+                        agent_id INTEGER,
+                        time INTEGER,
+                        order_id INTEGER,
+                        asset_id INTEGER,
+                        executed_price DOUBLE,
+                        executed_mode STRING,
+                        parent_id INTEGER,
+                        matched_with INTEGER,
+                        valid_until INTEGER,
+                    )
+                """)
 
 
+        # trades / matched orders
+        conn.execute("""
+                    CREATE TABLE IF NOT EXISTS trades (
+                        price DOUBLE,
+                        time INTEGER,
+                        order_id INTEGER,
+                        volume INTEGER,
+                        cash DOUBLE,
+                        phase STRING,
+                    )
+                """)
 
 
         conn.close()

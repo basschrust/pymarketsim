@@ -313,7 +313,7 @@ class FourHeap:
 
     def cancel_outdated_orders(self, current_time: int) -> None:
         # removes orders which are not yet matched and their allowed time for matching has passed
-        # TODO: check for performance as this might be heavy
+        # TODO: check for performance as this might be heavy. Well, better than expected :D
         sell_to_remove = []
         for ord_id, order in self.sell_unmatched.order_dict.items():
             if order.valid_until is not None and order.valid_until < current_time:

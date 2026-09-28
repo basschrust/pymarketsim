@@ -67,12 +67,12 @@ class Option(Security):
                 pass
             else:
                 if self.option_side == "CALL":
-                    call_option = BSCall(S=price_row.get("Close"), K=self.strike, r=self.r,
+                    call_option = BSCall(S=price_row.get("close"), K=self.strike, r=self.r,
                                          volatility=self.volatility,
                                          Time=self.expiration, d=0.0)
                     price_row["theoretical"] = call_option.get("price", 100)
                 elif self.option_side == "PUT":
-                    put_option = BSPut(S=price_row.get("Close"), K=self.strike, r=self.r,
+                    put_option = BSPut(S=price_row.get("close"), K=self.strike, r=self.r,
                                          volatility=self.volatility,
                                          Time=self.expiration, d=0.0)
                     price_row["theoretical"] = put_option.get("price", 100)

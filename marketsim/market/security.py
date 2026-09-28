@@ -32,21 +32,6 @@ class Security:
         self.last_traded_price = reference_price if reference_price is not None else Price(100)
         self.asset_id = id_generator.next()
 
-        self.order_book = FourHeap(plus_one=True, market=self)
-        self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
-        self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
-        self.traded_prices = {0:{"open": self.last_traded_price,
-                                                "low": self.last_traded_price,
-                                                "high": self.last_traded_price,
-                                                "close": self.last_traded_price,
-                                                "volume": 0, }}
-        self.bid_ask_history = {}
-        self.realized_volatility = {0:0}
-        self.orders_by_agent_type = {}
-        self.trades_by_agent_type = {}
-        self.trades_by_agent_type_ext = {}
-        # by groups - including counterparty groups:
-        self.trade_history_by_groups = {}
         self.agent_groups = set()
         # and let's use the power of DataFrames:
         self.trade_stats = {}
@@ -70,7 +55,7 @@ class Security:
         self.logger = logger.bind(market_id=self.asset_id)
 
         self.current_day = 0
-        self.eod_status = "open"  # open/closed  to make eod procedure idempotent
+        self.eod_status = "closed"  # open/closed  to make eod procedure idempotent
         self.repository = repository
         self.save()
 
@@ -84,24 +69,7 @@ class Security:
             self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
             self.agent_groups.add(agent.group)
-            self.orders_by_agent_type.setdefault(agent.group, {"count_buy":0, "volume_buy":0, "count_sell":0,
-                                                               "volume_sell":0})
-            self.trades_by_agent_type.setdefault(agent.group,
-                                                 {"count_buy": 0, "volume_buy": 0,
-                                                  "count_sell": 0, "volume_sell": 0})
-            self.trades_by_agent_type_ext.setdefault(agent.group,
-                                                 {"count_buy": {"arrived":0, "waited":0}, "volume_buy":
-                                                     {"arrived":0, "waited":0}
-                                                     , "count_sell": {"arrived":0, "waited":0}, "volume_sell":
-                                                      {"arrived":0, "waited":0}})
-            # this one is tricky as requires n-square combination
-            # TODO: but also with already existing groups!
-            # and then by time...
-        for g1 in self.agent_groups:
-            for g2 in self.agent_groups:
-                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"count_buy": {"arrived":0
-                    , "waited":0}, "volume_buy": {"arrived":0, "waited":0}
-                    , "count_sell": {"arrived":0, "waited":0}, "volume_sell": {"arrived":0, "waited":0}})
+
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -133,13 +101,6 @@ class Security:
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["count_sell"] += 1
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["volume_sell"] += order.quantity
 
-    def get_time(self):
-        raise # to make sure it is not used
-        return self.event_queue.get_current_time()
-
-    def get_info(self):
-        return self.fundamental.get_info()
-
     def cancel_outdated_orders(self, current_time: int):
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
         self.order_book.cancel_outdated_orders(current_time=current_time)
@@ -159,7 +120,7 @@ class Security:
         # first:cancel orders that are no longer valid
         self.cancel_outdated_orders(current_time=current_time)
 
-        # second: rolling the traded_prices
+        # second: rolling the traded_prices just for one tick... so not in sod()
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
             self.roll_traded_prices(current_time=current_time)
 
@@ -495,8 +456,55 @@ class Security:
         # plot the history of trading between agent groups:
         self.plot_trade_stats()
 
+
+    ################## SoD and EoD
+
+
     def sod(self):
         self.eod_status = "open"
+
+        self.order_book = FourHeap(plus_one=True, market=self)
+        self.matched_orders = []  # stores a list of all trades from the beginning of trading to the end of simulation
+        self.matched_orders_hashed = {}  # {order_id: { "price": price, "quantity":quantity }}
+        self.traded_prices = {0: {"open": self.last_traded_price,
+                                  "low": self.last_traded_price,
+                                  "high": self.last_traded_price,
+                                  "close": self.last_traded_price,
+                                  "volume": 0, }}
+        self.bid_ask_history = {}
+        self.realized_volatility = {0: 0}
+        self.orders_by_agent_type = {}
+        self.trades_by_agent_type = {}
+        self.trades_by_agent_type_ext = {}
+        # by groups - including counterparty groups:
+        self.trade_history_by_groups = {}
+
+        self.traded_prices = {0: {"open": self.last_traded_price,
+                                  "low": self.last_traded_price,
+                                  "high": self.last_traded_price,
+                                  "close": self.last_traded_price,
+                                  "volume": 0, }}
+
+        for agent_id, agent in self.agents.items():
+            self.orders_by_agent_type.setdefault(agent.group, {"count_buy": 0, "volume_buy": 0, "count_sell": 0,
+                                                               "volume_sell": 0})
+            self.trades_by_agent_type.setdefault(agent.group,
+                                                 {"count_buy": 0, "volume_buy": 0,
+                                                  "count_sell": 0, "volume_sell": 0})
+            self.trades_by_agent_type_ext.setdefault(agent.group,
+                                                     {"count_buy": {"arrived": 0, "waited": 0}, "volume_buy":
+                                                         {"arrived": 0, "waited": 0}
+                                                         , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell":
+                                                          {"arrived": 0, "waited": 0}})
+            # this one is tricky as requires n-square combination
+            # TODO: but also with already existing groups!
+            # and then by time...
+
+        for g1 in self.agent_groups:
+            for g2 in self.agent_groups:
+                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2, {"count_buy": {"arrived": 0
+                    , "waited": 0}, "volume_buy": {"arrived": 0, "waited": 0}
+                    , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell": {"arrived": 0, "waited": 0}})
 
     def eod(self):
         # End of Day process for the Market - create EoD DataFrames

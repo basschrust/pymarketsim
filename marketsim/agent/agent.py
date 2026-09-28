@@ -52,7 +52,7 @@ class Agent(ABC):
         self.position = { m_id: 0 for m_id  in self.markets }
 
         self.position_history = defaultdict(dict)
-        self.position_history[0] = { m_id:0  for m_id  in self.markets }  # {time: {asset_id: number_of_shares}}
+        self.position_history[0] = { m_id:0  for m_id  in self.markets }  # valid one day! {time: {asset_id: number_of_shares}}
                 # at the end of tick
         self.position_history_df = None
         self.cash = Price(0)
@@ -152,8 +152,16 @@ class Agent(ABC):
         # TODO: reconcile it at the end
 
     def sod(self):
+        self.logger.info(f"Starting agent {self.agent_id} SoD procedure of day: {self.current_day}")
+
+        self.portfolio_value_history = defaultdict(Price)
+
+        self.position_history = defaultdict(dict)
+        self.position_history[0] = {m_id: 0 for m_id in self.markets}
 
         self.eod_status = "open"
+
+        self.logger.info(f"SoD agent {self.agent_id} procedure of day: {self.current_day} completed.")
 
     def eod(self) -> None:
         # End Of Day procedure of the agent
