@@ -10,7 +10,7 @@ from scipy.interpolate import PchipInterpolator
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -36,7 +36,7 @@ class Custom_cs:
         return ret
 
 class HBLAgent(Agent):
-    def __init__(self, *, markets: list[Market], repository: Repository,
+    def __init__(self, *, markets: list[Security], repository: Repository,
                  q_max: int, shade: List, L: int, pv_var: float,
                  arrival_rate: float, pv = None):
         super().__init__(markets=markets, repository=repository)

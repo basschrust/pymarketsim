@@ -1,6 +1,6 @@
 import random
 from marketsim.fourheap.constants import BUY, SELL
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
 from marketsim.agent.zero_intelligence_agent import ZIAgent
 from marketsim.agent.market_maker import MMAgent
@@ -72,7 +72,7 @@ class SimulatorSampledArrival_MM:
         self.markets = []
         for _ in range(num_assets):
             fundamental = LazyGaussianMeanReverting(mean=mean, final_time=sim_time+1, r=r, shock_var=shock_var)
-            self.markets.append(Market(fundamental=fundamental, time_steps=sim_time))
+            self.markets.append(Security(fundamental=fundamental, time_steps=sim_time))
 
         self.agents = {}
         for agent_id in range(num_background_agents):

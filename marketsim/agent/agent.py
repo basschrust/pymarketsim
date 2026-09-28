@@ -21,7 +21,7 @@ from marketsim.plot.simple_plot import plot_agent_history_many_markets
 
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
-    from marketsim.market import Market
+    from marketsim.market import Security
 
 
 def validate_update(quantity: int, cash: Price) -> None:
@@ -40,7 +40,7 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, *, markets: list[Market], repository: Repository, group_name: str | None = None):
+    def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None):
         self.agent_id = id_generator.next()
         self.markets = { market.asset_id: market for market in markets } # converting to dict
         self.group_name = group_name

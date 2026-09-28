@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
@@ -13,7 +13,7 @@ class MMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, markets: list[Market], repository: Repository,  xi: float= 0.1,
+    def __init__(self, *, markets: list[Security], repository: Repository, xi: float= 0.1,
                  K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
                  , rebalance_by: str = "time", rebalance_volume: int = 70):
         super().__init__(markets=markets, repository=repository)

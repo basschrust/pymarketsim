@@ -11,7 +11,7 @@ from marketsim.fourheap import constants
 from marketsim.market.price import  Price
 
 if TYPE_CHECKING:
-    from marketsim.market import Market
+    from marketsim.market import Security
     from marketsim.fourheap import Order, MatchedOrder
 
 
@@ -20,7 +20,7 @@ class FourHeap:
     This class reimplements the four-heap data structure described in "Flexible double auctions for electronic commerce:
     theory and implementation" (Wurman, 98)
     """
-    def __init__(self, plus_one=False, market: Market|None = None):
+    def __init__(self, plus_one=False, market: Security | None = None):
         self.plus_one = plus_one # AK - wtf is that? if True gets ask price in clearing, bid otherwise
 
         self.market = market

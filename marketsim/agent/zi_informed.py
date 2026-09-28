@@ -1,7 +1,7 @@
 import random
 from decimal import Decimal
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -12,7 +12,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class ZIAgentInformed(Agent):
-    def __init__(self, market: Market, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
+    def __init__(self, market: Security, q_max: int, shade: List, pv_var: float, eta: float = 1.0, lam=1.0):
         self.agent_id = id_generator.next()
         self.market = market
         self.q_max = q_max

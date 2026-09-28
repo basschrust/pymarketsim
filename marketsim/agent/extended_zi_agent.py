@@ -1,6 +1,6 @@
 import random
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -8,7 +8,7 @@ from typing import List
 
 
 class ZIAgent(Agent):
-    def __init__(self, agent_id: int, market: Market, q_max: int, offset: float, eta: float, shade: List):
+    def __init__(self, agent_id: int, market: Security, q_max: int, offset: float, eta: float, shade: List):
         self.agent_id = agent_id
         self.market = market
         self.pv = PrivateValues(q_max)

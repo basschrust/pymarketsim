@@ -2,15 +2,15 @@ import pandas as pd
 
 from marketsim.connectors.duckdb_storage import Repository
 from .price import Price
-from .market import Market
+from .security import Security
 from marketsim.input import config
 from marketsim.fourheap import Order, MatchedOrder
 from .valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.plot.candle import plot_candlestick_derivative
 
 
-class Option(Market):
-    def __init__(self, *, derivatives_config: dict, underlying: Market,
+class Option(Security):
+    def __init__(self, *, derivatives_config: dict, underlying: Security,
                  market_type: str = "continuous", repository: Repository,
                  name: str| None = None) -> None:
 

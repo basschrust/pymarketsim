@@ -12,7 +12,7 @@ from marketsim.plot.simple_plot import (simple_plot, plot_agent_history_single_m
 , plot_realized_volatility, plot_volume_transfers)
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
-from marketsim.market import Price, Market, Option
+from marketsim.market import Price, Security, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
 from marketsim.agent.washtrading import WashTradingPool
@@ -95,8 +95,8 @@ class Simulator:
                     for group_name, agent_group in m_conf.get("agent_groups", {}).items():
                         self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
             elif instrument_class == "stock":
-                market = Market(market_type=m_conf.get("market_type"), name=m_conf.get("name")
-                                , repository=self.repository)
+                market = Security(market_type=m_conf.get("market_type"), name=m_conf.get("name")
+                                  , repository=self.repository)
                 self.market_map[m_key] = market.asset_id
                 self.markets[market.asset_id] = market
                 self.asset_names_map[market.asset_id] = {"name": market.name,
@@ -147,7 +147,7 @@ class Simulator:
     #     for i in range(number):
 
 
-    def add_agent_group(self, *, agent_group:dict, markets: list[Market], group_name: str) -> None:
+    def add_agent_group(self, *, agent_group:dict, markets: list[Security], group_name: str) -> None:
         for i in range(agent_group["number"]):
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:

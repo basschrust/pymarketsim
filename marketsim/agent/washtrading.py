@@ -10,7 +10,7 @@ from networkx.algorithms.community import quality
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -18,7 +18,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class WashTradingAgent(Agent):
-    def __init__(self, *, markets: list[Market], repository: Repository,
+    def __init__(self, *, markets: list[Security], repository: Repository,
                  q_max: int, lam: float = 0.5, pool_id: int = 0,
                  manipulation_boundaries: dict | None = None, mean_volume: float = 5.0, group_name: str | None = None):
         super().__init__(markets=markets, group_name=group_name, repository=repository)

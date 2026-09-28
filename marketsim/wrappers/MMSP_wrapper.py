@@ -4,7 +4,7 @@ import numpy as np
 import math
 import random
 from marketsim.fourheap.constants import BUY, SELL
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
 from marketsim.agent.zero_intelligence_agent import ZIAgent
 from marketsim.agent.hbl_agent import HBLAgent
@@ -134,7 +134,7 @@ class MMSPEnv(gym.Env):
         self.marketConfig = {"mean": mean, "r": r, "shock_var": shock_var, "num_assets": num_assets}
         for _ in range(num_assets):
             fundamental = fundamental
-            self.markets.append(Market(fundamental=fundamental, time_steps=sim_time))
+            self.markets.append(Security(fundamental=fundamental, time_steps=sim_time))
 
         self.agents = {}
         self.backgroundAgentConfig = {"q_max":q_max, "pv_var": pv_var, "shade": shade, "L": 4, "spoof_size": spoofing_size, "reg_size": order_size}

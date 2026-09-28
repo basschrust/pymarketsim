@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -14,7 +14,7 @@ from marketsim.market.price import Price
 
 
 class ZIAgentNotInformed(Agent):
-    def __init__(self, *, markets: list[Market], repository: Repository,
+    def __init__(self, *, markets: list[Security], repository: Repository,
                  q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
         super().__init__(markets=markets, repository=repository)

@@ -2,7 +2,7 @@ import random
 import numpy as np
 import scipy
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market
+from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List, Optional, Any
@@ -53,7 +53,7 @@ def quantise_scaledbetadist_v2(total_volume, n_levels, a, b):
 class MMAgent(Agent):
     def __init__(self,
                  agent_id: int,
-                 market: Market,
+                 market: Security,
                  n_levels: int,
                  total_volume: int,
                  xi: float,

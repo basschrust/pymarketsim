@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from marketsim.agent import Agent
 
 
-class Market:
+class Security:
     def __init__(self, *, reference_price: Price |None = None, name: str|None=None,
                  repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock"):

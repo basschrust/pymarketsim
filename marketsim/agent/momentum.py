@@ -2,7 +2,7 @@ import random
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
 from marketsim.utils.id_generator import id_generator
@@ -12,7 +12,7 @@ class MomentumAgent(Agent):
     ### Momentum Agent -
     # Momentum Agent trades using moving average to catch the market trend
     ###
-    def __init__(self, *, markets: list[Market], repository: Repository,
+    def __init__(self, *, markets: list[Security], repository: Repository,
                  period: int=7, lam: float= 0.5, q_max: int=100, threshold: float=0.01):
         super().__init__(markets=markets, repository=repository)
         self.group = "MOMENTUM"

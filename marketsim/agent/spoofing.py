@@ -2,7 +2,7 @@ import random
 
 from marketsim.connectors.duckdb_storage import Repository
 from marketsim.agent.agent import Agent
-from marketsim.market.market import Market, Price
+from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
@@ -10,7 +10,7 @@ from marketsim.utils.id_generator import id_generator
 
 
 class SpoofingAgent(Agent):
-    def __init__(self, *, markets: [Market], repository: Repository,
+    def __init__(self, *, markets: [Security], repository: Repository,
                  q_max: int, pv_var: float, order_size:int, spoofing_size: int,
                  normalizers: dict, spoofing_times: list[int]|None):
         super().__init__(markets=markets, repository=repository)
