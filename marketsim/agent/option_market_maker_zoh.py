@@ -179,7 +179,8 @@ class OptionMMZOHAgent(Agent):
         return f'Opt_MM_ZOH{self.agent_id}'
 
     ### the Derivative agent typical methods:
-    def calculate_greeks(self):
+    def calculate_greeks(self, as_of_day: int|None=None):
+        as_of_day = as_of_day if as_of_day is not None else self.current_day
         for asset_id, market in self.underlying_markets.items():
             self.greeks_agg[asset_id] = {"delta": self.position[asset_id], "gamma": 0,
                                          "theta": 0, "vega": 0, "rho": 0}
@@ -189,13 +190,15 @@ class OptionMMZOHAgent(Agent):
             underlying_id = underlying_market.asset_id
             # TODO: the volatility should be taken calculated/estimated from underlying
             if option_market.option_side == "CALL":
-                self.greeks[option_id] = BSCall(underlying_market.last_traded_price, option_market.strike,
-                            option_market.r, option_market.volatility,
-                   option_market.expiration, 0.0)
+                self.greeks[option_id] = BSCall(S=underlying_market.last_traded_price,
+                                                K=option_market.strike,
+                            r=option_market.r, volatility=option_market.volatility,
+                                    Time=(option_market.expiration-as_of_day)/248, d=0.0)
             elif option_market.option_side == "PUT":
-                self.greeks[option_id] = BSPut(underlying_market.last_traded_price, option_market.strike,
-                                option_market.r, option_market.volatility,
-                                option_market.expiration, 0.0)
+                self.greeks[option_id] = BSPut(S=underlying_market.last_traded_price,
+                                               K=option_market.strike,
+                                r=option_market.r, volatility=option_market.volatility,
+                                Time=(option_market.expiration-as_of_day)/248, d=0.0)
 
             # now add and aggregate for the underlying
             for greek_letter in self.greeks_agg[underlying_id]:
