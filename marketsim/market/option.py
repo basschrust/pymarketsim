@@ -34,13 +34,7 @@ class Option(Security):
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
                          , instrument_class=self.instrument_class, repository=repository)
 
-        # structures to be extended
-        self.traded_prices = {0: {"open": self.last_traded_price,
-                                  "low": self.last_traded_price,
-                                  "high": self.last_traded_price,
-                                  "close": self.last_traded_price,
-                                  "theoretical": theoretical_price,
-                                  "volume": 0, }}
+
 
     def calculate_greeks(self):
         pass
@@ -125,3 +119,13 @@ class Option(Security):
         candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick_derivative(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
+    def sod(self):
+        super().sod()
+
+        theoretical_price = self.get_theoretical_price()
+        self.traded_prices = {0: {"open": theoretical_price,
+                                  "low": theoretical_price,
+                                  "high": theoretical_price,
+                                  "close": theoretical_price,
+                                  "theoretical": theoretical_price,
+                                  "volume": 0, }}

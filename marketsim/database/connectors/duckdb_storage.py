@@ -158,7 +158,7 @@ class Repository:
                 configuration
             )
             VALUES (?, ?, ?, ?)
-        """, parameters=[agent.agent_id, agent.name, agent.group_name, agent.configuration])
+        """, parameters=[agent.agent_id, agent.name, agent.group, agent.configuration])
 
     def save_position_history(self, position_history_df: pd.DataFrame):
         # conn = duckdb.connect(self.localdb)

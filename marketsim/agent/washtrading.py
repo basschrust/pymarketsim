@@ -17,14 +17,15 @@ if TYPE_CHECKING:
 
 class WashTradingAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None=None,
-                 group_name: str | None = None):
+                 group: str = "WashTraders"):
         default_configuration = { "q_max": 1000,
                                   "lam": 0.5,
                                   "pool_id": 0,
                                 "mean_volume":  5.0 }
         final_configuration = default_configuration | configuration if configuration is not None else {}
-        super().__init__(markets=markets, group_name=group_name, repository=repository, configuration=final_configuration)
-        self.group = "WashTraders"
+        super().__init__(markets=markets, repository=repository,
+                         configuration=final_configuration,
+                         group=group)
 
         self.q_max = final_configuration["q_max"]
         self.lam = final_configuration["lam"] # yet not used - probably used in the non-manipulation period

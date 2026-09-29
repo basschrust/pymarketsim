@@ -36,11 +36,12 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None,
+    def __init__(self, *, markets: list[Security], repository: Repository, group: str | None = None,
                  name: str | None = None, configuration: dict|None):
         self.agent_id = id_generator.next()
-        self.group_name = group_name
-        self.name = name if name is not None else f"{self.agent_id}_{self.group_name}"
+        # if group is not None:
+        self.group = group # previously group_name
+        self.name = name if name is not None else f"{self.agent_id}_{self.group}"
         self.configuration = configuration
 
         self.markets = { market.asset_id: market for market in markets }  # converting to dict
@@ -64,13 +65,13 @@ class Agent(ABC):
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
         logger.add(
-            f"{config.output_dir}/agent_{self.agent_id}_{self.group_name}.log",
+            f"{config.output_dir}/agent_{self.agent_id}_{self.group}.log",
             format="{elapsed} | {message}",
             level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, agent_id=self.agent_id:
             record["extra"].get("agent_id") == agent_id,
         )
-        self.logger = logger.bind(market_id=self.agent_id)
+        self.logger = logger.bind(agent_id=self.agent_id)
 
         self.repository.save_agent(self)
 
@@ -216,4 +217,4 @@ class Agent(ABC):
                                         title=f"Agent {self.agent_id} {str(self)} summary")
 
     def __str__(self) -> str:
-        return f"{self.agent_id}_{self.group_name}"
+        return f"{self.agent_id}_{self.group}"

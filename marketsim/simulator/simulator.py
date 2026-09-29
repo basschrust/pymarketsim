@@ -117,10 +117,12 @@ class Simulator:
                     buy_pool_agents = []
                     sell_pool_agents = []
                     for agent in market.agents.values():
-                        if agent.group_name == buy_pool:
+                        # TODO: simplify it. Currently "group_name" is the yaml header of the agent group
+                        # try using self.agent_map similarly to market_map
+                        if agent.group == buy_pool:
                             # terminal.write(f"\nFound buy agent {agent.agent_id}")
                             buy_pool_agents.append(agent)
-                        elif agent.group_name == sell_pool:
+                        elif agent.group == sell_pool:
                             # terminal.write(f"\nFound sell agent {agent.agent_id}")
                             sell_pool_agents.append(agent)
 
@@ -148,12 +150,14 @@ class Simulator:
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:
             if agent_group["agent_class"] == "ZIAgentNotInformed":
-                agent = ZIAgentNotInformed(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = ZIAgentNotInformed(markets=markets, configuration=agent_group["config"],
+                                            repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
-                agent = NoiseAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = NoiseAgent(markets=markets, configuration=agent_group["config"],
+                                   repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # MMs:
@@ -173,7 +177,7 @@ class Simulator:
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
-                agent = WashTradingAgent(markets=markets, group_name=group_name, configuration=agent_group["config"], repository=self.repository)
+                agent = WashTradingAgent(markets=markets, group=group_name, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
                 # those will need the relationship...
 

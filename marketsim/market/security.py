@@ -464,11 +464,7 @@ class Security:
         self.order_book = FourHeap(plus_one=True, market=self)
         self.matched_orders = []  # stores a list of all trades from the beginning of trading to the end of simulation
         self.matched_orders_hashed = {}  # {order_id: { "price": price, "quantity":quantity }}
-        self.traded_prices = {0: {"open": self.last_traded_price,
-                                  "low": self.last_traded_price,
-                                  "high": self.last_traded_price,
-                                  "close": self.last_traded_price,
-                                  "volume": 0, }}
+
         self.bid_ask_history = {}
         self.realized_volatility = {0: 0}
         self.orders_by_agent_type = {}

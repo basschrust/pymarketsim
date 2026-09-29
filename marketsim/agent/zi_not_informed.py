@@ -18,10 +18,11 @@ if TYPE_CHECKING:
 
 class ZIAgentNotInformed(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
+                 group: str = "ZINI",
                  q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
-        super().__init__(markets=markets, repository=repository)
-        self.group = "ZINI"
+        super().__init__(markets=markets, repository=repository, group= group)
+        # self.group = "ZINI"
         self.q_max = q_max
         self.pv_var = pv_var
         # print(f"q_max: {self.q_max}, pv_var: {self.pv_var}")
