@@ -17,7 +17,7 @@ class Repository:
         self.prepare_tables()
 
 
-    def prepare_tables(self):
+    def prepare_tables(self) -> None:
         # conn = duckdb.connect(self.localdb)
 
         ###### static tables - per simulation  ################
@@ -66,6 +66,26 @@ class Repository:
                 asset_id  INTEGER,
                 position  INTEGER,
                 position_value DOUBLE
+            )
+        """)
+
+        # portfolio value history
+        self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS position_value_history (
+                day       INTEGER,
+                time_tick INTEGER,
+                agent_id  INTEGER,
+                portfolio_value DOUBLE
+            )
+        """)
+
+        # cash history
+        self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS cash_history (
+                day       INTEGER,
+                time_tick INTEGER,
+                agent_id  INTEGER,
+                cash DOUBLE
             )
         """)
 
@@ -160,7 +180,7 @@ class Repository:
             VALUES (?, ?, ?, ?)
         """, parameters=[agent.agent_id, agent.name, agent.group, agent.configuration])
 
-    def save_position_history(self, position_history_df: pd.DataFrame):
+    def save_position_history(self, position_history_df: pd.DataFrame) -> None:
         # conn = duckdb.connect(self.localdb)
         self.connection.register("position_history_df", position_history_df)
 
@@ -173,7 +193,27 @@ class Repository:
         self.connection.unregister("position_history_df")
         # conn.close()
 
-    def save_traded_prices(self, traded_price_df: pd.DataFrame):
+    def save_portfolio_value_history(self, portfolio_value_history_df: pd.DataFrame) -> None:
+        self.connection.register("portfolio_value_history_df", portfolio_value_history_df)
+        self.connection.execute("""
+                INSERT INTO portfolio_value_history (day, time_tick, agent_id, portfolio_value)
+                SELECT day, time_tick, agent_id, portfolio_value
+                FROM portfolio_value_history_df
+        """)
+
+        self.connection.unregister("portfolio_value_history_df")
+
+    def save_cash_history(self, cash_history_df: pd.DataFrame) -> None:
+        self.connection.register("cash_history_df", cash_history_df)
+        self.connection.execute("""
+            INSERT INTO cash_history (day, time_tick, agent_id, cash)
+            SELECT day, time_tick, agent_id, cash
+            FROM cash_history_df
+        """)
+
+        self.connection.unregister("cash_history_df")
+
+    def save_traded_prices(self, traded_price_df: pd.DataFrame) -> None:
         # TODO: add version for derivatives, including theoretical - needed?
         # conn = duckdb.connect(self.localdb)
         self.connection.register("traded_prices_df", traded_price_df)
@@ -195,7 +235,7 @@ class Repository:
         # conn.close()
 
 
-    def save_orders(self, orders_df: pd.DataFrame):
+    def save_orders(self, orders_df: pd.DataFrame) -> None:
         # with duckdb.connect(self.localdb) as conn:
         self.connection.register("orders_df", orders_df)
         self.connection.execute("""
@@ -218,7 +258,7 @@ class Repository:
         self.connection.unregister("orders_df")
 
 
-    def save_trades(self, trades_df: pd.DataFrame):
+    def save_trades(self, trades_df: pd.DataFrame) -> None:
         # matched_orders aka trades
         # with duckdb.connect(self.localdb) as conn:
         self.connection.register("trades_df", trades_df)

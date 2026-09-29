@@ -165,6 +165,7 @@ class Agent(ABC):
         self.logger.info(f"Starting agent {self.agent_id} SoD procedure of day: {self.current_day}")
 
         self.portfolio_value_history = defaultdict(Price)
+        self.cash_history = defaultdict(Price)
 
         self.position_history = defaultdict(dict)
         self.position_history[0] = {m_id: 0 for m_id in self.markets}
@@ -200,6 +201,27 @@ class Agent(ABC):
                     )
 
             self.logger.info(f"Position_history_df: {self.position_history_df.head()}")
+
+            # portfolio_value_history:
+            # by SQL or in Python?
+
+            value_history_df = pd.DataFrame.from_dict(self.portfolio_value_history, orient="index", columns=["portfolio_value"])
+            value_history_df["time_tick"] = value_history_df.index
+            value_history_df["day"] = self.current_day
+            value_history_df["agent_id"] = self.agent_id
+            self.logger.info(f"Portfolio value history: {value_history_df.head()}")
+
+            self.repository.save_portfolio_value_history(portfolio_value_history_df=value_history_df)
+
+            # cash history
+            cash_history_df = pd.DataFrame.from_dict(self.cash_history, orient="index", columns=["cash"])
+            cash_history_df["time_tick"] = cash_history_df.index
+            cash_history_df["day"] = self.current_day
+            cash_history_df["agent_id"] = self.agent_id
+
+            self.logger.info(f"Cash history: {cash_history_df.head()}")
+
+            self.repository.save_cash_history(cash_history_df=cash_history_df)
 
             self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
             # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
