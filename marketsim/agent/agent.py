@@ -199,6 +199,8 @@ class Agent(ABC):
                         )
                     )
 
+            self.logger.info(f"Position_history_df: {self.position_history_df.head()}")
+
             self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
             # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
 

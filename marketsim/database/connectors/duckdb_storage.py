@@ -165,8 +165,8 @@ class Repository:
         self.connection.register("position_history_df", position_history_df)
 
         self.connection.execute("""
-            INSERT INTO position_history
-            SELECT day, agent_id, time_tick, asset_id, position, position_value
+            INSERT INTO position_history (day, time_tick, agent_id, asset_id, position, position_value)
+            SELECT day, time_tick, agent_id, asset_id, position, position_value
             FROM position_history_df
         """)
 
