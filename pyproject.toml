@@ -23,6 +23,7 @@ dependencies = [
     "PyYAML>=6.0",
     "loguru>=0.7",
     "torch>=2.2",
+    "duckdb>=1.5.5",
 ]
 
 [project.optional-dependencies]
