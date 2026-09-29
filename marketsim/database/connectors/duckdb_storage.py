@@ -71,7 +71,7 @@ class Repository:
 
         # portfolio value history
         self.connection.execute("""
-            CREATE TABLE IF NOT EXISTS position_value_history (
+            CREATE TABLE IF NOT EXISTS portfolio_value_history (
                 day       INTEGER,
                 time_tick INTEGER,
                 agent_id  INTEGER,
@@ -141,9 +141,6 @@ class Repository:
                         phase STRING,
                     )
                 """)
-
-
-        # conn.close()
 
     ##### methods for making data persistent
 

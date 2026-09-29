@@ -207,7 +207,7 @@ class Agent(ABC):
 
             value_history_df = pd.DataFrame.from_dict(self.portfolio_value_history, orient="index", columns=["portfolio_value"])
             value_history_df["time_tick"] = value_history_df.index
-            value_history_df["day"] = self.current_day
+            value_history_df["day"] = self.current_day -1
             value_history_df["agent_id"] = self.agent_id
             self.logger.info(f"Portfolio value history: {value_history_df.head()}")
 
@@ -216,7 +216,7 @@ class Agent(ABC):
             # cash history
             cash_history_df = pd.DataFrame.from_dict(self.cash_history, orient="index", columns=["cash"])
             cash_history_df["time_tick"] = cash_history_df.index
-            cash_history_df["day"] = self.current_day
+            cash_history_df["day"] = self.current_day - 1
             cash_history_df["agent_id"] = self.agent_id
 
             self.logger.info(f"Cash history: {cash_history_df.head()}")
