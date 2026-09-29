@@ -5,15 +5,13 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from marketsim.agent.agent import Agent
-from marketsim.market import Security, Price, Option
+from marketsim.market import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
-from marketsim.utils.id_generator import id_generator
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
-from marketsim.loggers.basic import terminal
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class OptionMMZOHAgent(Agent):
@@ -21,11 +19,17 @@ class OptionMMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, markets: list[Security], repository: Repository, market_map: dict,
-                 xi: float= 0.1,
-                 K: int = 3, omega: float= 0.1, rebalance_period: int=5, volume: int=7, q_max: int=1000
-                 , rebalance_by: str = "time", rebalance_volume: int = 70) -> None:
-        super().__init__(markets=markets, repository=repository) # TODO: base should accept all the list
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict|None=None) -> None:
+        default_configuration = {"xi": 0.1,
+                                 "K": 3,
+                                 "omega": 0.1,
+                                 "rebalance_period": 5,
+                                 "volume": 7,
+                                 "q_max": 1000,
+                                 "rebalance_by": "time",
+                                 "rebalance_volume": 70}
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
         self.group = "OptionsMMZOH"
 
         self.option_markets = { market.asset_id: market for market in markets if
@@ -41,16 +45,17 @@ class OptionMMZOHAgent(Agent):
         self.position = { m_id: 0 for m_id in self.markets }
 
         #  TODO: Market Making parameters - per each market:
-        self.xi = Decimal(xi) # step of the order ladder
-        self.K = K # number of orders in the ladder
-        self.omega = Decimal(omega) # bid ask spread between two closest MM quotations
-        self.rebalance_period = rebalance_period
-        self.rebalance_by = rebalance_by # time or volume or exposure (in derivatives markets!)
-        self.rebalance_volume = rebalance_volume # and this differs for derivatives, too!
-        self.last_rebalance_time = 0 # on each market!
+        self.xi = Decimal(final_configuration["xi"])  # step of the order ladder
+        self.K = final_configuration["K"]  # number of orders in the ladder
+        self.omega = Decimal(final_configuration["omega"])  # bid ask spread between two closest MM quotations
+        self.rebalance_period = final_configuration["rebalance_period"]
+        self.rebalance_by = final_configuration["rebalance_by"]  # time or volume
+        self.rebalance_volume = final_configuration["rebalance_volume"]
+        self.last_rebalance_time = 0
         self.cum_volume = 0
-        self.volume = volume
-        self.q_max = q_max
+
+        self.volume = final_configuration["volume"]
+        self.q_max = final_configuration["q_max"]
 
 
     def get_id(self) -> int:
@@ -174,7 +179,8 @@ class OptionMMZOHAgent(Agent):
         return f'Opt_MM_ZOH{self.agent_id}'
 
     ### the Derivative agent typical methods:
-    def calculate_greeks(self):
+    def calculate_greeks(self, as_of_day: int|None=None):
+        as_of_day = as_of_day if as_of_day is not None else self.current_day
         for asset_id, market in self.underlying_markets.items():
             self.greeks_agg[asset_id] = {"delta": self.position[asset_id], "gamma": 0,
                                          "theta": 0, "vega": 0, "rho": 0}
@@ -184,13 +190,15 @@ class OptionMMZOHAgent(Agent):
             underlying_id = underlying_market.asset_id
             # TODO: the volatility should be taken calculated/estimated from underlying
             if option_market.option_side == "CALL":
-                self.greeks[option_id] = BSCall(underlying_market.last_traded_price, option_market.strike,
-                            option_market.r, option_market.volatility,
-                   option_market.expiration, 0.0)
+                self.greeks[option_id] = BSCall(S=underlying_market.last_traded_price,
+                                                K=option_market.strike,
+                            r=option_market.r, volatility=option_market.volatility,
+                                    Time=(option_market.expiration-as_of_day)/248, d=0.0)
             elif option_market.option_side == "PUT":
-                self.greeks[option_id] = BSPut(underlying_market.last_traded_price, option_market.strike,
-                                option_market.r, option_market.volatility,
-                                option_market.expiration, 0.0)
+                self.greeks[option_id] = BSPut(S=underlying_market.last_traded_price,
+                                               K=option_market.strike,
+                                r=option_market.r, volatility=option_market.volatility,
+                                Time=(option_market.expiration-as_of_day)/248, d=0.0)
 
             # now add and aggregate for the underlying
             for greek_letter in self.greeks_agg[underlying_id]:

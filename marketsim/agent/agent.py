@@ -3,13 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import copy
 import math
-from typing import List
-from dataclasses import dataclass, field
-import traceback
 from typing import TYPE_CHECKING
 from collections import defaultdict
-import duckdb
-
+from loguru import logger
 import pandas as pd
 
 from marketsim.input import config
@@ -19,9 +15,9 @@ from marketsim.market.price import Price
 from marketsim.plot.simple_plot import plot_agent_history_many_markets
 
 if TYPE_CHECKING:
-    from marketsim.fourheap import Order, MatchedOrder
+    from marketsim.fourheap import MatchedOrder
     from marketsim.market import Security
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 def validate_update(quantity: int, cash: Price) -> None:
@@ -40,11 +36,13 @@ def validate_update(quantity: int, cash: Price) -> None:
 class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
-    def __init__(self, *, markets: list[Security], repository: Repository, group_name: str | None = None,
-                 name: str | None = None):
+    def __init__(self, *, markets: list[Security], repository: Repository, group: str | None = None,
+                 name: str | None = None, configuration: dict|None):
         self.agent_id = id_generator.next()
-        self.group_name = group_name
-        self.name = name if name is not None else f"{self.group_name}_{self.agent_id}"
+        # if group is not None:
+        self.group = group # previously group_name
+        self.name = name if name is not None else f"{self.agent_id}_{self.group}"
+        self.configuration = configuration
 
         self.markets = { market.asset_id: market for market in markets }  # converting to dict
 
@@ -56,16 +54,28 @@ class Agent(ABC):
         self.position = { m_id: 0 for m_id  in self.markets }
 
         self.position_history = defaultdict(dict)
-        self.position_history[0] = { m_id:0  for m_id  in self.markets }  # {time: {asset_id: number_of_shares}}
+        self.position_history[0] = { m_id:0  for m_id  in self.markets }  # valid one day! {time: {asset_id: number_of_shares}}
                 # at the end of tick
         self.position_history_df = None
         self.cash = Price(0)
         self.cash_history = defaultdict(Price)
-        self.logger = markets[0].logger
+
         self.repository = repository
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
+        self.current_day = 0
+        logger.add(
+            f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
+            format="{elapsed} | {message}",
+            level="DEBUG" if config.debug_logging else "INFO",
+            filter=lambda record, agent_id=self.agent_id:
+            record["extra"].get("agent_id") == agent_id,
+        )
+        self.logger = logger.bind(agent_id=self.agent_id)
 
+        self.repository.save_agent(self)
+
+    ####### init ends here  ###########
 
     @property
     def cash(self):
@@ -152,8 +162,16 @@ class Agent(ABC):
         # TODO: reconcile it at the end
 
     def sod(self):
-        self.repository.save_agent(self)
+        self.logger.info(f"Starting agent {self.agent_id} SoD procedure of day: {self.current_day}")
+
+        self.portfolio_value_history = defaultdict(Price)
+
+        self.position_history = defaultdict(dict)
+        self.position_history[0] = {m_id: 0 for m_id in self.markets}
+
         self.eod_status = "open"
+
+        self.logger.info(f"SoD agent {self.agent_id} procedure of day: {self.current_day} completed.")
 
     def eod(self) -> None:
         # End Of Day procedure of the agent
@@ -162,7 +180,11 @@ class Agent(ABC):
         if self.eod_status == "closed":
             return
         elif self.eod_status == "open":
+            self.logger.info(f"Starting agent {self.agent_id} EoD procedure of day: {self.current_day}")
+
             self.eod_status = "closed"
+            self.current_day += 1
+
             # run the EoD procedure
             # make position history a DF to enable quick filtering
             # self.position_history
@@ -177,8 +199,7 @@ class Agent(ABC):
                         )
                     )
 
-
-
+            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
             # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
 
         else:
@@ -195,3 +216,5 @@ class Agent(ABC):
                                         output_file=agent_output_file,
                                         title=f"Agent {self.agent_id} {str(self)} summary")
 
+    def __str__(self) -> str:
+        return f"{self.agent_id}_{self.group}"

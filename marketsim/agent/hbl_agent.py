@@ -4,12 +4,8 @@ import random
 import sys
 import scipy as sp
 import numpy as np
-from loguru import logger
-from bisect import bisect_left
 from time import perf_counter
 from typing import TYPE_CHECKING
-
-from scipy.interpolate import PchipInterpolator
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
@@ -18,10 +14,9 @@ from marketsim.private_values.private_values import PrivateValues
 from marketsim.fourheap.constants import BUY, SELL
 from typing import List
 #from fastcubicspline import FCS
-from marketsim.utils.id_generator import id_generator
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 class Custom_cs:
     # custom function object to implement linear interpolation instead of computationally demanding cubic spline
@@ -41,18 +36,24 @@ class Custom_cs:
 
 class HBLAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 q_max: int, shade: List, L: int, pv_var: float,
-                 arrival_rate: float, pv = None):
-        super().__init__(markets=markets, repository=repository)
+                 configuration: dict| None = None) -> None:
+        default_configuration = { "q_max": 1000,
+                                  # "shade": List,
+                                  "L": 25,
+                                  "pv_var": 0.4,
+                                "arrival_rate": 0.4,
+                                  "pv": None }
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
         self.group = "HBL"
-        if pv is not None:
-            self.pv = pv
+        if final_configuration["pv"] is not None:
+            self.pv = final_configuration["pv"]
         else:
-            self.pv = PrivateValues(q_max, float(pv_var))
-        self.shade = shade
+            self.pv = PrivateValues(final_configuration["q_max"], float(final_configuration["pv_var"]))
+        self.shade = final_configuration["shade"]
         self.cash = 0
-        self.L = L
-        self.grace_period = 1 / arrival_rate
+        self.L = final_configuration["L"]
+        self.grace_period = 1 / final_configuration["arrival_rate"]
         self.lower_bound_mem = 0
         
         # spoofing accuracy mid point
@@ -67,8 +68,8 @@ class HBLAgent(Agent):
         self.sell_count = [0,0]
         self.buy_count = [0,0]
 
-        self.q_max = q_max
-        self.pv_var = pv_var
+        self.q_max = final_configuration["q_max"]
+        self.pv_var = final_configuration["pv_var"]
 
     def get_id(self) -> int:
         return self.agent_id

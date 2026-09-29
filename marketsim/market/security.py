@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pandas as pd
-import duckdb
 from collections import defaultdict
 from itertools import accumulate
 from loguru import logger
@@ -21,7 +20,7 @@ from marketsim.fourheap.fourheap import FourHeap
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
     from marketsim.agent import Agent
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class Security:
@@ -29,28 +28,11 @@ class Security:
                  repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock"):
         self.instrument_class = instrument_class
-        self.reference_price = reference_price
-        self.last_traded_price = reference_price if reference_price is not None else Price(100)
+        self.reference_price = reference_price if reference_price is not None else Price(100)
+        self.last_traded_price = self.reference_price
         self.asset_id = id_generator.next()
-        self.order_book = FourHeap(plus_one=True, market=self)
-        self.matched_orders = [] # stores a list of all trades from the beginning of trading to the end of simulation
-        self.matched_orders_hashed = {} # {order_id: { "price": price, "quantity":quantity }}
-        self.traded_prices = {0:{"open": self.last_traded_price,
-                                                "low": self.last_traded_price,
-                                                "high": self.last_traded_price,
-                                                "close": self.last_traded_price,
-                                                "volume": 0, }}
-        self.bid_ask_history = {}
-        self.realized_volatility = {0:0}
-        self.orders_by_agent_type = {}
-        self.trades_by_agent_type = {}
-        self.trades_by_agent_type_ext = {}
-        # by groups - including counterparty groups:
-        self.trade_history_by_groups = {}
+
         self.agent_groups = set()
-        # and let's use the power of DataFrames:
-        self.trade_stats = {}
-        self.trade_stats_df = pd.DataFrame()
 
         # TODO: check if this fundamental (externally provided value) is needed here
         # self.fundamental = fundamental
@@ -69,8 +51,10 @@ class Security:
         )
         self.logger = logger.bind(market_id=self.asset_id)
 
-        self.eod_status = "open"  # open/closed  to make eod procedure idempotent
+        self.current_day = 0
+        self.eod_status = "closed"  # open/closed  to make eod procedure idempotent
         self.repository = repository
+        self.save()
 
         #### end of __init__
 
@@ -82,24 +66,7 @@ class Security:
             self.logger.info(f"Adding agent {str(agent)} to market {str(self)}")
             self.agents[agent.get_id()] = agent
             self.agent_groups.add(agent.group)
-            self.orders_by_agent_type.setdefault(agent.group, {"count_buy":0, "volume_buy":0, "count_sell":0,
-                                                               "volume_sell":0})
-            self.trades_by_agent_type.setdefault(agent.group,
-                                                 {"count_buy": 0, "volume_buy": 0,
-                                                  "count_sell": 0, "volume_sell": 0})
-            self.trades_by_agent_type_ext.setdefault(agent.group,
-                                                 {"count_buy": {"arrived":0, "waited":0}, "volume_buy":
-                                                     {"arrived":0, "waited":0}
-                                                     , "count_sell": {"arrived":0, "waited":0}, "volume_sell":
-                                                      {"arrived":0, "waited":0}})
-            # this one is tricky as requires n-square combination
-            # TODO: but also with already existing groups!
-            # and then by time...
-        for g1 in self.agent_groups:
-            for g2 in self.agent_groups:
-                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2,{"count_buy": {"arrived":0
-                    , "waited":0}, "volume_buy": {"arrived":0, "waited":0}
-                    , "count_sell": {"arrived":0, "waited":0}, "volume_sell": {"arrived":0, "waited":0}})
+
 
 
     def get_fundamental_value(self, current_time: int) -> float:
@@ -131,13 +98,6 @@ class Security:
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["count_sell"] += 1
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["volume_sell"] += order.quantity
 
-    def get_time(self):
-        raise # to make sure it is not used
-        return self.event_queue.get_current_time()
-
-    def get_info(self):
-        return self.fundamental.get_info()
-
     def cancel_outdated_orders(self, current_time: int):
         # TODO: go to event_queue and delete the ones that should be cancelled due to time
         self.order_book.cancel_outdated_orders(current_time=current_time)
@@ -152,12 +112,13 @@ class Security:
                                             "volume": 0, }
 
     def step(self, current_time: int) -> list[MatchedOrder]:
+        # step is operations happening during single time_tick
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
         # first:cancel orders that are no longer valid
         self.cancel_outdated_orders(current_time=current_time)
 
-        # second: rolling the traded_prices
+        # second: rolling the traded_prices just for one tick... so not in sod()
         if current_time-1 in self.traded_prices and current_time not in self.traded_prices:
             self.roll_traded_prices(current_time=current_time)
 
@@ -312,7 +273,7 @@ class Security:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
     def __str__(self) -> str:
-        return f"Market_{self.asset_id}"
+        return f"Security_{self.asset_id}_{self.instrument_class}"
 
     ## plotting and supporting functions     #######################
 
@@ -430,7 +391,7 @@ class Security:
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def show_summary(self):
-        self.eod()  # End of Day for the Market
+        self.eod()  # End of Day for the Security
 
         self.logger.info(f"\n\nMarket {str(self)} summary:")
         self.logger.info(f"Orders matched: {len(self.matched_orders)}")
@@ -458,36 +419,12 @@ class Security:
 
         # valuations by agent:
         for agent_key, agent in self.agents.items():
-            agent.eod()
-            value_history = agent.portfolio_value_history # now includes also other assets!
-
-            position_history_df = agent.position_history_df[
-                agent.position_history_df["asset_id"]==self.asset_id].merge(
-                    self.traded_prices_df,
-                    on="time_tick",
-                    how="left",
-                )
-
-            position_history_df["position_value"] = (
-                    position_history_df["position"] * position_history_df["close"]
-            )
-            # now we have asset_id_x, asset_id_y as both merge sides had this
-            position_history_df["asset_id"] = position_history_df["asset_id_x"]
-
-            position_history_df["day"] = 0 # TODO: but soon multiday simulations...
-            position_history_df["agent_id"] = agent_key
-
-            self.repository.save_position_history(position_history_df)
-
-            self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-            self.logger.info(f"\nAgent {str(agent_key)} position history\n: {position_history_df}")
-
             # plot it
             agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
 
             plot_agent_history_single_market(
-                position_history=position_history_df,
-                value_history=value_history,
+                position_history=agent.position_history_df,
+                value_history=agent.portfolio_value_history,
                 output_file=agent_file,
             )
 
@@ -517,9 +454,56 @@ class Security:
         # plot the history of trading between agent groups:
         self.plot_trade_stats()
 
+
+    ################## SoD and EoD
+
+
     def sod(self):
-        self.save()
         self.eod_status = "open"
+
+        self.order_book = FourHeap(plus_one=True, market=self)
+        self.matched_orders = []  # stores a list of all trades from the beginning of trading to the end of simulation
+        self.matched_orders_hashed = {}  # {order_id: { "price": price, "quantity":quantity }}
+
+        self.bid_ask_history = {}
+        self.realized_volatility = {0: 0}
+        self.orders_by_agent_type = {}
+        self.trades_by_agent_type = {}
+        self.trades_by_agent_type_ext = {}
+        # by groups - including counterparty groups:
+        self.trade_history_by_groups = {}
+
+        self.traded_prices = {0: {"open": self.last_traded_price,
+                                  "low": self.last_traded_price,
+                                  "high": self.last_traded_price,
+                                  "close": self.last_traded_price,
+                                  "volume": 0, }}
+
+        # and let's use the power of DataFrames:
+        self.trade_stats = {}
+        self.trade_stats_df = pd.DataFrame()
+
+        for agent_id, agent in self.agents.items():
+            # TODO: we can relatively easily make those aggregations in the DB now
+            self.orders_by_agent_type.setdefault(agent.group, {"count_buy": 0, "volume_buy": 0, "count_sell": 0,
+                                                               "volume_sell": 0})
+            self.trades_by_agent_type.setdefault(agent.group,
+                                                 {"count_buy": 0, "volume_buy": 0,
+                                                  "count_sell": 0, "volume_sell": 0})
+            self.trades_by_agent_type_ext.setdefault(agent.group,
+                                                     {"count_buy": {"arrived": 0, "waited": 0}, "volume_buy":
+                                                         {"arrived": 0, "waited": 0}
+                                                         , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell":
+                                                          {"arrived": 0, "waited": 0}})
+            # this one is tricky as requires n-square combination
+            # TODO: but also with already existing groups!
+            # and then by time...
+
+        for g1 in self.agent_groups:
+            for g2 in self.agent_groups:
+                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2, {"count_buy": {"arrived": 0
+                    , "waited": 0}, "volume_buy": {"arrived": 0, "waited": 0}
+                    , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell": {"arrived": 0, "waited": 0}})
 
     def eod(self):
         # End of Day process for the Market - create EoD DataFrames
@@ -528,7 +512,11 @@ class Security:
         if self.eod_status == "closed":
             return
         elif self.eod_status == "open":
+            self.logger.info(f"Starting EoD procedure of day: {self.current_day}")
+
             self.eod_status = "closed"
+            self.current_day += 1
+            self.current_time = 0
             # run the EoD procedure
             # make traded_price a DF to enable quick filtering and joining with agents' positions
 
@@ -540,10 +528,74 @@ class Security:
             )
 
             self.traded_prices_df["asset_id"] = self.asset_id
-            self.traded_prices_df["day"] = 0 # TODO: for now ;)
+            self.traded_prices_df["day"] = self.current_day-1 #
 
-            self.repository.save_traded_prices(self.traded_prices_df)
+            if self.instrument_class == "stock":
+                self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
 
+                self.logger.info(f"Saving traded prices for stock...")
+                self.repository.save_traded_prices(self.traded_prices_df)
+
+            # valuations by agent:
+            for agent_key, agent in self.agents.items():
+                agent.eod()
+                value_history = agent.portfolio_value_history  # now includes also other assets!
+
+                left_df = agent.position_history_df[
+                    agent.position_history_df["asset_id"] == self.asset_id
+                    ]
+
+                common_cols = left_df.columns.intersection(
+                    self.traded_prices_df.columns
+                ).difference(["time_tick"])
+
+                agent.position_history_df = left_df.drop(columns=common_cols).merge(
+                    self.traded_prices_df,
+                    on="time_tick",
+                    how="left",
+                )
+
+                agent.position_history_df["position_value"] = (
+                        agent.position_history_df["position"] * agent.position_history_df["close"]
+                )
+                # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
+                #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
+
+                agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
+                agent.position_history_df["agent_id"] = agent_key
+
+                self.repository.save_position_history(agent.position_history_df)
+
+                self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+                self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+
+            # orders and trades
+            orders = []
+            for order_id, order in self.order_book.buy_unmatched.order_dict.items():
+                orders.append(order)
+
+            for order_id, order in self.order_book.sell_unmatched.order_dict.items():
+                orders.append(order)
+
+            orders_df = pd.DataFrame(orders)
+            orders_df["day"] = self.current_day - 1
+            self.repository.save_orders(orders_df=orders_df)
+
+            matched_orders = []
+            for order_id, matched_order in self.matched_orders_hashed.items():
+                matched_orders.append({ "order_id": order_id,
+                                        "order_side:": matched_order.order.order_type,
+                                        "executed_price": matched_order.price,
+                                        "executed_time": matched_order.time,
+                                        "executed_volume": matched_order.volume,
+                                        "cash": matched_order.cash,
+                                        "phase": matched_order.phase,
+                                        "day": self.current_day-1, })
+            matched_orders_df = pd.DataFrame(matched_orders)
+            self.repository.save_trades(trades_df=matched_orders_df)
+
+
+            self.logger.info(f"EoD procedure of day: {self.current_day-1} completed.")
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 

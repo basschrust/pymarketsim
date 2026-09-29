@@ -1,22 +1,14 @@
 from __future__ import annotations
 
-import pandas as pd
 from loguru import logger
-from typing import TYPE_CHECKING
-import duckdb
+from pip._internal.commands import configuration
 
-from marketsim.connectors.duckdb_storage import Repository
+from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.loggers.basic import terminal
 from marketsim.fundamental.mean_reverting import GaussianMeanReverting
-from marketsim.fundamental.lazy_mean_reverting import LazyGaussianMeanReverting
-from marketsim.utils.id_generator import id_generator
-from marketsim.plot.simple_plot import (simple_plot, plot_agent_history_single_market, plot_by_type, plot_bid_ask
-, plot_realized_volatility, plot_volume_transfers)
-from marketsim.plot.candle import plot_candlestick
-from marketsim.input import config
-from marketsim.market import Price, Security, Option
+from marketsim.market import Security, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
-from marketsim.agent import ZIAgentInformed, ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
+from marketsim.agent import ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
 from marketsim.agent.washtrading import WashTradingPool
 
 
@@ -24,6 +16,7 @@ class Simulator:
     def __init__(self,
                  *,
                  sim_time: int,
+                 days: int = 1,
                  lam: float = 0.1,
                  mean: float = 100.0,
                  r: float = .6,
@@ -35,7 +28,8 @@ class Simulator:
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
 
-        self.sim_time = sim_time
+        self.sim_time = sim_time # steps per day
+        self.days = days
         self.lam = lam # lambda (activity factor)
         self.mean = mean
         self.r = r
@@ -123,10 +117,12 @@ class Simulator:
                     buy_pool_agents = []
                     sell_pool_agents = []
                     for agent in market.agents.values():
-                        if agent.group_name == buy_pool:
+                        # TODO: simplify it. Currently "group_name" is the yaml header of the agent group
+                        # try using self.agent_map similarly to market_map
+                        if agent.group == buy_pool:
                             # terminal.write(f"\nFound buy agent {agent.agent_id}")
                             buy_pool_agents.append(agent)
-                        elif agent.group_name == sell_pool:
+                        elif agent.group == sell_pool:
                             # terminal.write(f"\nFound sell agent {agent.agent_id}")
                             sell_pool_agents.append(agent)
 
@@ -154,38 +150,40 @@ class Simulator:
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:
             if agent_group["agent_class"] == "ZIAgentNotInformed":
-                agent = ZIAgentNotInformed(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = ZIAgentNotInformed(markets=markets, configuration=agent_group["config"],
+                                            repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
-                agent = NoiseAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = NoiseAgent(markets=markets, configuration=agent_group["config"],
+                                   repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # MMs:
             if agent_group["agent_class"] == "MMZOHAgent":
-                agent = MMZOHAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = MMZOHAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # HBL (Heuristic Belief)
             if agent_group["agent_class"] == "HBLAgent":
-                agent = HBLAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = HBLAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # spoofers: (to trick HBL Agents)
             if agent_group["agent_class"] == "SpoofingAgent":
-                agent = SpoofingAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = SpoofingAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
-                agent = WashTradingAgent(markets=markets, group_name=group_name, **agent_group["config"], repository=self.repository)
+                agent = WashTradingAgent(markets=markets, group=group_name, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
                 # those will need the relationship...
 
             # momentum
             if agent_group["agent_class"] == "MomentumAgent":
-                agent = MomentumAgent(markets=markets, **agent_group["config"], repository=self.repository)
+                agent = MomentumAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
                 self.add_agents([agent])
 
             ########## Derivatives agents, complicated ones :)  ###############
@@ -193,8 +191,8 @@ class Simulator:
             ## MM, simple delta hedger
             if agent_group["agent_class"] == "OptionMMZOHAgent":
                 # TODO - what with underlying?
-                agent = OptionMMZOHAgent(markets=markets, market_map=self.market_map, #underlying_market=market.underlying,
-                                         **agent_group["config"], repository=self.repository)
+                agent = OptionMMZOHAgent(markets=markets, #market_map=self.market_map, #underlying_market=market.underlying,
+                                         configuration=agent_group.get("config", None), repository=self.repository)
                 self.add_agents([agent])
 
     def create_agents(self, *, agent_group: dict, group_name: str) -> None:
@@ -286,26 +284,43 @@ class Simulator:
 
             self.last_progress = percentage
 
-    def sod(self):
-        self.logger.info(f"\nStarting Start-of-Day procedure day: 0 ...")
-        for agent_id, agent in self.agents.items():
-            agent.sod()
+    def sod(self, day: int):
+        self.logger.info(f"\nStarting Start-of-Day procedure day: {day} ...")
+
+        self.current_time = 0
 
         for market_key, market in self.markets.items():
             market.sod()
 
-        self.logger.info("Start-of-Day day: 0 procedure completed.")
+        for agent_id, agent in self.agents.items():
+            agent.sod()
 
+        self.logger.info(f"\nStart-of-Day day: {day} procedure completed.")
+
+    def eod(self, day: int):
+        self.logger.info(f"\nStarting End-of-Day procedure day: {day} ...")
+
+        for agent_id, agent in self.agents.items():
+            agent.eod()
+
+        for market_key, market in self.markets.items():
+            market.eod()
+
+        self.logger.info(f"\nEnd-of-Day day: {day} procedure completed.")
 
     def run(self) -> None:
         terminal.write("\nStarting simulation...\n")
 
-        self.sod() # start of day
+        for day in range(self.days):
+            terminal.write(f"\nStarting day {str(day+1)} out of {self.days}\n")
+            self.sod(day=day) # start of day
 
-        for step in range(self.sim_time):
-            self.logger.info(f"Simulation step start: {step}.", end='')
-            self.step()
-            self.show_progress_bar(step)
+            for step in range(self.sim_time):
+                self.logger.info(f"Simulation step start: {step}.", end='')
+                self.step()
+                self.show_progress_bar(step)
+
+            self.eod(day=day)
 
         terminal.write("\nSimulation complete.")
         terminal.write("\nPreparing summary...\n")

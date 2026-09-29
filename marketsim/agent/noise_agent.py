@@ -1,38 +1,40 @@
 from __future__ import annotations
 
 import random
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
-from typing import List
 import numpy as np
-from marketsim.utils.id_generator import id_generator
 from marketsim.market.price import Price
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class NoiseAgent(Agent):
     """
     Noise agent - aware only of last traded price and his own position (but this also only roughly)
     """
-    def __init__(self, *, markets: list[Security], q_max: int = 1000, lam=1.0,
-                 mean_volume: float = 5.0, mean_spread: Price = Price(0.2)
-                 , withdraw_old: bool = False, repository: Repository) -> None:
-        super().__init__(markets=markets, repository=repository)
-        self.group = "Noise"
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None = None
+                 , group: str="Noise") -> None:
+        default_configuration = { "q_max": 1000,
+                                 "lam": 1.0,
+                                 "mean_volume": 5.0,
+                                  "mean_spread": Price(0.2),
+                                  "withdraw_old": False, }
+        self.configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository,
+                         configuration=self.configuration, group=group)
 
-        self.q_max = q_max # check if doesn't collide with mean_volume
-        self.lam = lam # activity parameter
-        self.mean_volume = mean_volume
-        self.mean_spread = mean_spread
+        self.q_max = self.configuration["q_max"] # check if doesn't collide with mean_volume
+        self.lam = self.configuration["lam"] # activity parameter
+        self.mean_volume = self.configuration["mean_volume"]
+        self.mean_spread = self.configuration["mean_spread"]
         # withdrawing old oders when placing new one:
-        self.withdraw_old = withdraw_old
+        self.withdraw_old = self.configuration["withdraw_old"]
 
     def get_id(self) -> int:
         return self.agent_id
@@ -74,8 +76,3 @@ class NoiseAgent(Agent):
 
     def get_pos_value(self) -> Price:
         return self.cash + sum([market.last_traded_price * self.position[asset_id] for asset_id, market in self.markets.items()])
-
-    # def reset(self) -> None:
-    #     self.position = 0
-    #     self.cash = 0
-

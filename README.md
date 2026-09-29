@@ -1,14 +1,15 @@
 # Deadalus - based on PyMarketSim
 
-PyMarketSim is a research-oriented sandbox for building and evaluating agent-based limit order book markets. The package provides reusable components for modeling fundamentals, simulating heterogeneous trading agents, and instrumenting the resulting market dynamics so that you can prototype new strategies or reinforcement-learning environments with minimal boilerplate.
+Daedalus is a research-oriented sandbox (based on PyMarketSim) for building and evaluating agent-based limit order book markets. The package provides reusable components for modeling fundamentals, simulating heterogeneous trading agents, and instrumenting the resulting market dynamics so that you can prototype new strategies or reinforcement-learning environments with minimal boilerplate.
 
 ## Key capabilities
 
 - **Limit order book microstructure.** Matching is handled by a four-heap order book that respects price-time priority and exposes utilities for monitoring mid-prices and execution statistics.
-- **Customizable fundamentals.** Plug in stochastic processes (for example mean-reverting Gaussian fundamentals) to drive the latent asset value observed by your agents.
+- **Configurable market structure.** Place your desired market structure in the marketsim/input directory as a yaml file and run your own desired scenario
 - **Agent library.** Combine zero-intelligence, market making, informed, and noise agents or author your own policies by extending the base agent interface.
 - **Event-driven simulation loop.** A discrete event queue coordinates order arrivals and market clearing, letting you scale to multiple agents and assets while keeping control over the simulation clock.
 - **Reinforcement learning wrappers.** Gym-style wrappers make it straightforward to expose the simulator as an RL environment for training custom policies and benchmarking existing ones.
+- **Customizable fundamentals.** Plug in stochastic processes (for example mean-reverting Gaussian fundamentals) to drive the latent asset value observed by your agents.
 
 ## Installation
 
@@ -53,11 +54,10 @@ python -m run.simulation_main pletora_of_agent_types_1.yaml
 
 You can replace or augment the background agents with your own implementations by subclassing `marketsim.agent.agent.Agent` and registering instances in `sim.agents`. Fundamentals are swappable as long as they implement the `marketsim.fundamental.fundamental_abc.Fundamental` interface.
 
-## Working with agents and markets
+## Working with agents and securities (markets)
 
 - **Agents:** Agent policies live under `marketsim/agent`. They encapsulate order submission logic via a `take_action` method and maintain inventory through helper utilities like `update_position`. Use the provided zero-intelligence and market-making agents as blueprints for new behaviors.
-- **Markets:** The `Market` class manages the event queue, order book, and matching process. At each step it ingests orders from agents, clears the book, and updates mid-prices so you can compute downstream metrics.
-- **Fundamentals:** Mean-reverting fundamentals offer a simple default latent value process. Implement `get_value_at` and `get_info` to introduce new information structures.
+- **Securities:** The `Security` class manages the event queue, order book, and matching process. At each step it ingests orders from agents, clears the book, and updates mid-prices so you can compute downstream metrics.
 
 ## Important note on reference price used in Deadalus
 

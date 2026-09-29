@@ -7,10 +7,9 @@ from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
 from marketsim.fourheap.constants import BUY, SELL
-from marketsim.utils.id_generator import id_generator
 
 if TYPE_CHECKING:
-    from marketsim.connectors.duckdb_storage import Repository
+    from database.connectors.duckdb_storage import Repository
 
 
 class MomentumAgent(Agent):
@@ -18,13 +17,18 @@ class MomentumAgent(Agent):
     # Momentum Agent trades using moving average to catch the market trend
     ###
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 period: int=7, lam: float= 0.5, q_max: int=100, threshold: float=0.01):
-        super().__init__(markets=markets, repository=repository)
+                 configuration: dict| None=None) -> None:
+        default_configuration = { "period": 7,
+                                  "lam": 0.5,
+                                  "q_max": 100,
+                                  "threshold": 0.01 }
+        final_configuration = default_configuration | configuration if configuration is not None else {}
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
         self.group = "MOMENTUM"
-        self.period = period # the period for trend analyzing
-        self.lam = lam # lambda, the activity parameter
-        self.q_max = q_max # maximum agent position on each side
-        self.threshold = threshold # threshold above which we consider the trend to exist
+        self.period = final_configuration["period"] # the period for trend analyzing
+        self.lam = final_configuration["lam"] # lambda, the activity parameter
+        self.q_max = final_configuration["q_max"] # maximum agent position on each side
+        self.threshold = final_configuration["threshold"] # threshold above which we consider the trend to exist
 
 
     def get_id(self) -> int:
