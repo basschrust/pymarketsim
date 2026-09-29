@@ -539,7 +539,7 @@ class Security:
             # valuations by agent:
             for agent_key, agent in self.agents.items():
                 agent.eod()
-                value_history = agent.portfolio_value_history  # now includes also other assets!
+                # value_history = agent.portfolio_value_history  # now includes also other assets!
 
                 left_df = agent.position_history_df[
                     agent.position_history_df["asset_id"] == self.asset_id
@@ -566,7 +566,7 @@ class Security:
 
                 self.repository.save_position_history(agent.position_history_df)
 
-                self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
+                # self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
                 self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
 
             # orders and trades
