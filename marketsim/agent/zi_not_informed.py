@@ -21,7 +21,7 @@ class ZIAgentNotInformed(Agent):
                  group: str = "ZINI",
                  q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  , lam=1.0, mean_volume: float = 5.0):
-        super().__init__(markets=markets, repository=repository, group= group)
+        super().__init__(markets=markets, repository=repository, group=group)
         # self.group = "ZINI"
         self.q_max = q_max
         self.pv_var = pv_var

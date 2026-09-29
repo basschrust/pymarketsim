@@ -36,7 +36,7 @@ class Custom_cs:
 
 class HBLAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 configuration: dict| None = None) -> None:
+                 configuration: dict| None = None, group: str = "HBL") -> None:
         default_configuration = { "q_max": 1000,
                                   # "shade": List,
                                   "L": 25,
@@ -44,8 +44,9 @@ class HBLAgent(Agent):
                                 "arrival_rate": 0.4,
                                   "pv": None }
         final_configuration = default_configuration | configuration if configuration is not None else {}
-        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
-        self.group = "HBL"
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration,
+                         group=group)
+
         if final_configuration["pv"] is not None:
             self.pv = final_configuration["pv"]
         else:

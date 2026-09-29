@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class SpoofingAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 configuration: dict | None = None):
+                 configuration: dict | None = None, group: str = "Spoofers"):
         default_configuration = { "q_max": 1000,
                                   "pv_var": 0.2,
                                   "order_size": 10,
@@ -22,8 +22,9 @@ class SpoofingAgent(Agent):
                                   # spoofing_times: list[int] | None
                                   }
         final_configuration = default_configuration | configuration if configuration is not None else {}
-        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
-        self.group = "Spoofers"
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration,
+                         group=group)
+
         if final_configuration["pv_var"] is not None:
             self.pv = final_configuration["pv_var"]
         else:

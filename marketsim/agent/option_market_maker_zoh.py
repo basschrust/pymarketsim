@@ -19,7 +19,8 @@ class OptionMMZOHAgent(Agent):
     # A MM which just takes into account last traded price and sets new order ladder
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
-    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict|None=None) -> None:
+    def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict|None=None,
+                 group: str = "OptionsMMZOH") -> None:
         default_configuration = {"xi": 0.1,
                                  "K": 3,
                                  "omega": 0.1,
@@ -29,8 +30,8 @@ class OptionMMZOHAgent(Agent):
                                  "rebalance_by": "time",
                                  "rebalance_volume": 70}
         final_configuration = default_configuration | configuration if configuration is not None else {}
-        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
-        self.group = "OptionsMMZOH"
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration,
+                         group=group)
 
         self.option_markets = { market.asset_id: market for market in markets if
                                market.instrument_class == "option" }

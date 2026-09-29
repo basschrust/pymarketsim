@@ -17,14 +17,15 @@ class MomentumAgent(Agent):
     # Momentum Agent trades using moving average to catch the market trend
     ###
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 configuration: dict| None=None) -> None:
+                 configuration: dict| None=None, group: str= "MOMENTUM") -> None:
         default_configuration = { "period": 7,
                                   "lam": 0.5,
                                   "q_max": 100,
                                   "threshold": 0.01 }
         final_configuration = default_configuration | configuration if configuration is not None else {}
-        super().__init__(markets=markets, repository=repository, configuration=final_configuration)
-        self.group = "MOMENTUM"
+        super().__init__(markets=markets, repository=repository, configuration=final_configuration
+                         , group=group)
+
         self.period = final_configuration["period"] # the period for trend analyzing
         self.lam = final_configuration["lam"] # lambda, the activity parameter
         self.q_max = final_configuration["q_max"] # maximum agent position on each side
