@@ -145,6 +145,17 @@ class Option(Security):
         super().eod()
 
         self.fill_theoretical_price()
+        self.traded_prices_df = (
+            pd.DataFrame.from_dict(self.traded_prices, orient="index")
+            .rename_axis("time_tick")
+            .reset_index()
+            [["time_tick", "open", "high", "low", "close", "volume", "theoretical"]]
+        )
+
+        self.traded_prices_df["asset_id"] = self.asset_id
+        self.traded_prices_df["day"] = self.current_day - 1
+
+        self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
         self.repository.save_traded_prices(self.traded_prices_df)
 
         self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
