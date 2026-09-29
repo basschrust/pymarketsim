@@ -23,14 +23,15 @@ class Option(Security):
         self.instrument_class = "option"
         self.underlying = underlying
         self.strike = derivatives_config["strike"]
-        self.expiration = 1.0  if derivatives_config["expiration"] == '1Y' else derivatives_config["expiration"] # TODO: prepare mapper for this
+        self.expiration = derivatives_config["expiration"] # TODO: prepare mapper for this
             # so that we can give relative time or precise dates or just take it from option series
+            # for now we set mostly as 248 (number of trading days per year)
         self.option_side = derivatives_config["option_side"]
         self.option_type = derivatives_config["option_type"]
         self.r = 0 # the risk-free financing rate
         self.volatility = 0.157  # annualized volatility of the underlying security
         # TODO: reference price should be theoretical - what about calculating this and then calling super()?
-        theoretical_price = self.get_theoretical_price()
+        theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
                          , instrument_class=self.instrument_class, repository=repository)
 
@@ -39,23 +40,26 @@ class Option(Security):
     def calculate_greeks(self):
         pass
 
-    def get_theoretical_price(self) -> Price:
+    def get_theoretical_price(self, as_of_day: int | None = None) -> Price:
         # TODO: is current_time needed as parameter?
+        # as_of_day - day for which the option is valuated, could be current, could be future
         # returns theoretical price of the option, using BS formula
+        as_of_day = as_of_day if as_of_day is not None else self.current_day
         if self.option_side == "CALL":
             call_option = BSCall(S=self.underlying.last_traded_price, K=self.strike,
-                                 r=self.r, volatility=self.volatility, Time=self.expiration, d=0.0)
+                                 r=self.r, volatility=self.volatility, Time=self.expiration-as_of_day, d=0.0)
             # TODO: this gives us the option price along with its Greeks :)
             return call_option["price"]
         elif self.option_side == "PUT":
             put_option = BSPut(S=self.underlying.last_traded_price, K=self.strike,
-                                 r=self.r, volatility=self.volatility, Time=self.expiration, d=0.0)
+                                 r=self.r, volatility=self.volatility, Time=self.expiration-as_of_day, d=0.0)
             # TODO: this gives us the option price along with its Greeks :)
             return put_option["price"]
         else:
             ValueError(f"Unknown option side: {self.option_side}")
 
     def fill_theoretical_price(self):
+        # as_of_day - value of the option is calculated for that day
         for t, price_row in self.traded_prices.items():
             if "theoretical" in price_row:
                 pass
@@ -63,12 +67,13 @@ class Option(Security):
                 if self.option_side == "CALL":
                     call_option = BSCall(S=price_row.get("close"), K=self.strike, r=self.r,
                                          volatility=self.volatility,
-                                         Time=self.expiration, d=0.0)
+                                         Time=self.expiration-self.current_day-1, d=0.0)
                     price_row["theoretical"] = call_option.get("price", 100)
                 elif self.option_side == "PUT":
                     put_option = BSPut(S=price_row.get("close"), K=self.strike, r=self.r,
                                          volatility=self.volatility,
-                                         Time=self.expiration, d=0.0)
+                                         Time=self.expiration-self.current_day-1, d=0.0)
+                    # TODO: check if this is called as of D (today) or as of D-1 (yesterday) during EoD
                     price_row["theoretical"] = put_option.get("price", 100)
 
     def roll_traded_prices(self, current_time:int) -> None:
@@ -78,7 +83,9 @@ class Option(Security):
                                             "high": yesterday["close"],
                                             "close": yesterday["close"],
                                             "volume": 0,
-                                            "theoretical": self.get_theoretical_price(), }
+                                            "theoretical" : yesterday["theoretical"] }
+                                            # TODO we need the day number here, too to calculate it
+                        #  "theoretical": self.get_theoretical_price(), }
 
     def record_volume_and_price(self, matched_order: MatchedOrder) -> None:
         # overriden in derivatives to include theoretical
@@ -122,10 +129,22 @@ class Option(Security):
     def sod(self):
         super().sod()
 
+
         theoretical_price = self.get_theoretical_price()
         self.traded_prices = {0: {"open": theoretical_price,
                                   "low": theoretical_price,
                                   "high": theoretical_price,
                                   "close": theoretical_price,
-                                  "theoretical": theoretical_price,
+                                  "theoretical": self.get_theoretical_price(),
                                   "volume": 0, }}
+
+        self.logger.info(f"Option SoD completed for day: {self.current_day}")
+
+
+    def eod(self):
+        super().eod()
+
+        self.fill_theoretical_price()
+        self.repository.save_traded_prices(self.traded_prices_df)
+
+        self.logger.info(f"Option EoD completed for day: {self.current_day-1}")

@@ -12,7 +12,7 @@ markets:
   security_1:
     name: "Simple stock market as underlying"
     instrument_class: stock # stock is default :)
-    ticker: "AAA"
+    ticker: "TNT"
     market_type: continuous
     lam: 0.8 # does this have any effect? It's defined in each agent though
     agent_groups:
@@ -37,7 +37,7 @@ markets:
   ########################## second security ###################################################
 
   security_2:
-    name: "First derivative - European option on AAA (security_1)"
+    name: "First derivative - European CALL option on stock TNT with strike 100"
     instrument_class: option
     derivatives_config:
       option_type: European

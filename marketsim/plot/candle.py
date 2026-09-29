@@ -158,6 +158,7 @@ def plot_candlestick_derivative(df: pd.DataFrame, output_file: str | None =None,
         color="black",
     )
 
+    ax_price.legend(loc="best")
     ax_price.set_title(title)
     ax_price.set_ylabel("Price")
     ax_price.grid(True, alpha=0.3)

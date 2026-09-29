@@ -65,7 +65,7 @@ class Agent(ABC):
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
         logger.add(
-            f"{config.output_dir}/agent_{self.agent_id}_{self.group}.log",
+            f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
             format="{elapsed} | {message}",
             level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, agent_id=self.agent_id:

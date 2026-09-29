@@ -530,7 +530,10 @@ class Security:
             self.traded_prices_df["asset_id"] = self.asset_id
             self.traded_prices_df["day"] = self.current_day-1 #
 
-            self.repository.save_traded_prices(self.traded_prices_df)
+            # TODO: for options/derivatives add the theoretical price
+            if self.instrument_class == "stock":
+                self.repository.save_traded_prices(self.traded_prices_df)
+
 
             # valuations by agent:
             for agent_key, agent in self.agents.items():
