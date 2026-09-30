@@ -585,6 +585,8 @@ class Security:
             for order_id, matched_order in self.matched_orders_hashed.items():
                 matched_orders.append({ "order_id": order_id,
                                         "order_side": matched_order.order.order_type,
+                                        "matched_with": matched_order.order.matched_with,
+                                        "executed_mode": matched_order.order.executed_mode,
                                         "executed_price": matched_order.price,
                                         "executed_time": matched_order.time,
                                         "executed_volume": matched_order.volume,
@@ -596,6 +598,8 @@ class Security:
             matched_orders_df = matched_orders_df.astype({
                 "order_id": "int64",
                 "order_side": "int64",
+                "matched_with": "int64",
+                "executed_mode": "object",
                 "executed_price": "float64",
                 "executed_time": "int64",
                 "executed_volume": "int64",
