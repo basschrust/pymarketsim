@@ -537,38 +537,22 @@ class Security:
                 self.logger.info(f"Saving traded prices for stock...")
                 self.repository.save_traded_prices(self.traded_prices_df)
 
-            # valuations by agent:
-            for agent_key, agent in self.agents.items():
-                agent.eod()
-                # value_history = agent.portfolio_value_history  # now includes also other assets!
+            # eod_prices
+            eod_prices_df = pd.DataFrame([{
+                "open": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"] == 0, "open"
+                ].iloc[0],
+                "high": self.traded_prices_df["high"].max(),
+                "low": self.traded_prices_df["low"].min(),
+                "close": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"].idxmax(), "close"
+                ],
+                "volume": self.traded_prices_df["volume"].sum(),
+                "asset_id": self.asset_id,
+                "day": self.current_day - 1,
+            }])
 
-                # left_df = agent.position_history_df[
-                #     agent.position_history_df["asset_id"] == self.asset_id
-                #     ]
-                #
-                # common_cols = left_df.columns.intersection(
-                #     self.traded_prices_df.columns
-                # ).difference(["time_tick"])
-                #
-                # agent.position_history_df = left_df.drop(columns=common_cols).merge(
-                #     self.traded_prices_df,
-                #     on="time_tick",
-                #     how="left",
-                # )
-                #
-                # agent.position_history_df["position_value"] = (
-                #         agent.position_history_df["position"] * agent.position_history_df["close"]
-                # )
-                # # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
-                # #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
-                #
-                # agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
-                # agent.position_history_df["agent_id"] = agent_key
-                #
-                # self.repository.save_position_history(agent.position_history_df)
-
-                # self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-                # self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+            self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
 
             # orders and trades
             orders = []
