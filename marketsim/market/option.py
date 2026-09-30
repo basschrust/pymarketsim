@@ -111,17 +111,17 @@ class Option(Security):
                                                  "volume": volume,
                                                  "theoretical": self.get_theoretical_price(),}
 
-    def plot_history(self):
+    def plot_history(self, traded_prices: dict):
         # ensure that theoretical will be plotted, too:
-        self.fill_theoretical_price()
+        # self.fill_theoretical_price() # TODO: check if in historical analysis this takes proper Time
 
         traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
-                               for t, item in self.traded_prices.items()}
+                               for t, item in traded_prices.items()}
         df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
                                                 orient="index"
                                                 )
         df_candlestick.index.name = "time"
-        self.logger.info(df_candlestick.head())
+        self.logger.info(f"Option candlestick to plot: {df_candlestick.head()}")
 
         candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick_derivative(df=df_candlestick, output_file=candlestick_filename, title=self.name)
@@ -129,13 +129,12 @@ class Option(Security):
     def sod(self):
         super().sod()
 
-
         theoretical_price = self.get_theoretical_price()
-        self.traded_prices = {0: {"open": theoretical_price,
-                                  "low": theoretical_price,
-                                  "high": theoretical_price,
-                                  "close": theoretical_price,
-                                  "theoretical": self.get_theoretical_price(),
+        self.traded_prices = {0: {"open": Price(theoretical_price),
+                                  "low": Price(theoretical_price),
+                                  "high": Price(theoretical_price),
+                                  "close": Price(theoretical_price),
+                                  "theoretical": Price(theoretical_price),
                                   "volume": 0, }}
 
         self.logger.info(f"Option SoD completed for day: {self.current_day}")
@@ -159,10 +158,29 @@ class Option(Security):
         self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
         self.repository.save_traded_prices(self.traded_prices_df)
 
+        # eod_prices
+        eod_prices_df = pd.DataFrame([{
+            "open": self.traded_prices_df.loc[
+                self.traded_prices_df["time_tick"] == 0, "open"
+            ].iloc[0],
+            "high": self.traded_prices_df["high"].max(),
+            "low": self.traded_prices_df["low"].min(),
+            "close": self.traded_prices_df.loc[
+                self.traded_prices_df["time_tick"].idxmax(), "close"
+            ],
+            "volume": self.traded_prices_df["volume"].sum(),
+            "asset_id": self.asset_id,
+            "day": self.current_day - 1,
+            "theoretical": self.get_theoretical_price(),
+        }])
+
+        self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
+
         self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 
     def exercise(self):
-        # exercising the option - yet only European are served (as for American
+        # check if this option should be exercised and if so, then
+        # exercise the option - yet only European are served (as for American
         if self.option_type == "European":
             if self.expiration == self.current_day:
                 self.logger.info(f"Day of European option expiry {self.name}")

@@ -379,9 +379,9 @@ class Security:
         # TODO: plot cash transfers
         plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
 
-    def plot_history(self):
+    def plot_history(self, traded_prices: dict) -> None:
         traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
-                               for t, item in self.traded_prices.items()}
+                               for t, item in traded_prices.items()}
         df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
                                                 orient="index"
                                                 )
@@ -392,47 +392,20 @@ class Security:
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def show_summary(self):
-        self.eod()  # End of Day for the Security
+        # self.eod()  # End of Day for the Security - not needed, simulator takes care of it
 
         self.logger.info(f"\n\nMarket {str(self)} summary:")
-        self.logger.info(f"Orders matched: {len(self.matched_orders)}")
+        # self.logger.info(f"Orders matched: {len(self.matched_orders)}")
         self.logger.info(f"Last traded price: {self.last_traded_price}")
-        values_by_last_traded_price = {}
-        for agent_id, agent in self.agents.items():
-            values_by_last_traded_price[agent_id] = agent.position[
-                                                        self.asset_id] * self.last_traded_price + agent.cash
-        # TODO: put the results in separate, simple (CSV) files
-        positions_sum = 0
-        cash_sum = 0
-        values_by_last_trade_sum = 0
-        for i, agent in self.agents.items():
-            self.logger.info(f"Agent {str(agent)}: \tposition: {agent.position}  \tcash: {agent.cash} "
-                               f"value(by last trade): {values_by_last_traded_price[i]}")
-            positions_sum += agent.position[self.asset_id]
-            cash_sum += agent.cash
-            values_by_last_trade_sum += self.last_traded_price * agent.position[self.asset_id]
-        self.logger.info(f"Positions sum: {positions_sum}")
-        # TODO: positions should sum up to 0, but cash is affected by operations on other markets so not 0
-        self.logger.info(f"Cash sum: {cash_sum}")
-        self.logger.info(f"Sum of values by last traded price: {values_by_last_trade_sum}")
-        self.logger.info(f"Midprices: {self.get_midprices()}")
-        self.logger.info(f"Traded prices {self.traded_prices}")
 
-        # valuations by agent:
-        for agent_key, agent in self.agents.items():
-            # plot it
-            agent_file = f"{config.output_dir}/{str(self)}/by_agents/{str(self)}_agent_{str(agent)}.png"
+        # plot the security values history for all period - take data from DB:
+        eod_prices_df = self.repository.get_eod_prices(asset_id=self.asset_id)
+        self.logger.info(f"EoD prices DF: {eod_prices_df}")
+        eod_prices = eod_prices_df.set_index("day").to_dict(orient="index")
+        self.logger.info(f"EOD prices: {eod_prices}")
+        self.plot_history(traded_prices=eod_prices)
 
-            plot_agent_history_single_market(
-                position_history=agent.position_history_df,
-                value_history=agent.portfolio_value_history,
-                output_file=agent_file,
-            )
-
-        # plot the security values history:
-        self.plot_history()
-
-        # plotting by type:
+        # plotting by type - TODO: take overall data from DB:
         plot_by_type(self.orders_by_agent_type,
                      output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
                      title=f"Orders by type in {self.name}")
@@ -537,22 +510,22 @@ class Security:
                 self.logger.info(f"Saving traded prices for stock...")
                 self.repository.save_traded_prices(self.traded_prices_df)
 
-            # eod_prices
-            eod_prices_df = pd.DataFrame([{
-                "open": self.traded_prices_df.loc[
-                    self.traded_prices_df["time_tick"] == 0, "open"
-                ].iloc[0],
-                "high": self.traded_prices_df["high"].max(),
-                "low": self.traded_prices_df["low"].min(),
-                "close": self.traded_prices_df.loc[
-                    self.traded_prices_df["time_tick"].idxmax(), "close"
-                ],
-                "volume": self.traded_prices_df["volume"].sum(),
-                "asset_id": self.asset_id,
-                "day": self.current_day - 1,
-            }])
+                # eod_prices
+                eod_prices_df = pd.DataFrame([{
+                    "open": self.traded_prices_df.loc[
+                        self.traded_prices_df["time_tick"] == 0, "open"
+                    ].iloc[0],
+                    "high": self.traded_prices_df["high"].max(),
+                    "low": self.traded_prices_df["low"].min(),
+                    "close": self.traded_prices_df.loc[
+                        self.traded_prices_df["time_tick"].idxmax(), "close"
+                    ],
+                    "volume": self.traded_prices_df["volume"].sum(),
+                    "asset_id": self.asset_id,
+                    "day": self.current_day - 1,
+                }])
 
-            self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
+                self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
 
             # orders and trades
             orders = []
@@ -596,7 +569,6 @@ class Security:
             self.logger.info("Suspicious values:")
             self.logger.info(matched_orders_df.loc[matched_orders_df["executed_price"] > 99.99,["executed_price", "cash"]].head())
             self.repository.save_trades(trades_df=matched_orders_df)
-
 
             self.logger.info(f"EoD procedure of day: {self.current_day-1} completed.")
         else:
