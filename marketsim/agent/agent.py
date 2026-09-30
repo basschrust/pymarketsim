@@ -204,6 +204,14 @@ class Agent(ABC):
             self.logger.info(f"Position_history_df: {self.position_history_df.head()}")
             self.repository.save_position_history(position_history_df=self.position_history_df)
 
+            position_df = pd.DataFrame(
+                self.position.items(),
+                columns=["asset_id", "position"],
+            )
+            position_df["agent_id"] = self.agent_id
+            position_df["day"] = self.current_day - 1
+            self.repository.save_eod_position(eod_position_df=position_df)
+
             # portfolio_value_history:
             # by SQL or in Python?
 

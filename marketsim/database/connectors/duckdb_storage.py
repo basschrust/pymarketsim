@@ -57,7 +57,7 @@ class Repository:
 
         ##############  dynamic tables - per day mostly   ######################
 
-        # EoD position (portfolio) of each agent, lowercase columns please!
+        # End-of-Tick position (portfolio) of each agent, lowercase columns please!
         self.connection.execute("""
             CREATE TABLE IF NOT EXISTS position_history (
                 day       INTEGER,
@@ -67,6 +67,17 @@ class Repository:
                 position  INTEGER
             )
         """)
+        # deleted column: position_value DOUBLE
+
+        # EoD position (portfolio) of each agent, lowercase columns please!
+        self.connection.execute("""
+                    CREATE TABLE IF NOT EXISTS eod_positions (
+                        day       INTEGER,
+                        agent_id  INTEGER,
+                        asset_id  INTEGER,
+                        position  INTEGER
+                    )
+                """)
         # deleted column: position_value DOUBLE
 
         # portfolio value history
@@ -106,6 +117,18 @@ class Repository:
                 """)
 
         # TODO: eod_prices / eod_traded_prices
+        self.connection.execute("""
+                    CREATE TABLE IF NOT EXISTS eod_prices (
+                        day       INTEGER,
+                        asset_id  INTEGER,
+                        open      DOUBLE,
+                        high      DOUBLE,
+                        low       DOUBLE,
+                        close     DOUBLE,
+                        volume    DOUBLE,
+                        theoretical DOUBLE,
+                    )
+                """)
 
         ##### granular tables - may contain significant volumes of data ######################
 
@@ -189,7 +212,6 @@ class Repository:
         """, parameters=[agent.agent_id, agent.name, agent.group, agent.configuration])
 
     def save_position_history(self, position_history_df: pd.DataFrame) -> None:
-        # conn = duckdb.connect(self.localdb)
         self.connection.register("position_history_df", position_history_df)
 
         self.connection.execute("""
@@ -197,11 +219,21 @@ class Repository:
             SELECT day, time_tick, agent_id, asset_id, position
             FROM position_history_df
         """)
-
         # deleted column: position_value
 
         self.connection.unregister("position_history_df")
-        # conn.close()
+
+    def save_eod_position(self, eod_position_df: pd.DataFrame) -> None:
+        self.connection.register("eod_position_df", eod_position_df)
+
+        self.connection.execute("""
+            INSERT INTO eod_positions (day, agent_id, asset_id, position)
+            SELECT day, agent_id, asset_id, position
+            FROM eod_position_df
+        """)
+        # deleted column: position_value
+
+        self.connection.unregister("eod_position_df")
 
     def save_portfolio_value_history(self, portfolio_value_history_df: pd.DataFrame) -> None:
         self.connection.register("portfolio_value_history_df", portfolio_value_history_df)
@@ -223,12 +255,11 @@ class Repository:
 
         self.connection.unregister("cash_history_df")
 
-    def save_traded_prices(self, traded_price_df: pd.DataFrame) -> None:
+    def save_traded_prices(self, traded_prices_df: pd.DataFrame) -> None:
         # TODO: add version for derivatives, including theoretical - needed?
-        # conn = duckdb.connect(self.localdb)
-        self.connection.register("traded_prices_df", traded_price_df)
+        self.connection.register("traded_prices_df", traded_prices_df)
 
-        if "theoretical" in traded_price_df.columns:
+        if "theoretical" in traded_prices_df.columns:
             self.connection.execute("""
                             INSERT INTO traded_prices
                             SELECT day, time_tick, asset_id, open, high, low, close, volume, theoretical
@@ -242,8 +273,25 @@ class Repository:
             """)
 
         self.connection.unregister("traded_prices_df")
-        # conn.close()
 
+    def save_eod_prices(self, eod_prices_df: pd.DataFrame) -> None:
+        # TODO: add version for derivatives, including theoretical - needed?
+        self.connection.register("eod_prices_df", eod_prices_df)
+
+        if "theoretical" in eod_prices_df.columns:
+            self.connection.execute("""
+                            INSERT INTO eod_prices
+                            SELECT day, asset_id, open, high, low, close, volume, theoretical
+                            FROM eod_prices_df      
+                        """)
+        else:
+            self.connection.execute("""
+                INSERT INTO eod_prices
+                SELECT day, asset_id, open, high, low, close, volume, NULL
+                FROM eod_prices_df      
+            """)
+
+        self.connection.unregister("eod_prices_df")
 
     def save_orders(self, orders_df: pd.DataFrame) -> None:
         # with duckdb.connect(self.localdb) as conn:
@@ -302,3 +350,17 @@ class Repository:
         self.connection.unregister("option_expiration_df")
 
     # methods for data extraction
+    # for multiday plotting
+    def get_eod_positions(self, agent_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, asset_id, position
+                FROM position_history
+                WHERE agent_id = ?
+            """, parameters=[agent_id]).fetchdf()
+
+    def get_eod_prices(self, asset_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, open, high, low, close, volume, theoretical
+                FROM eod_prices
+                WHERE asset_id = ?
+            """, parameters=[asset_id]).fetchdf()
