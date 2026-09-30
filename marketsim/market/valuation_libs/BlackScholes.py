@@ -4,6 +4,8 @@
 import math, random
 # TODO: import ChrustSolver
 from scipy.stats import distributions
+from torch.ao.nn import intrinsic
+
 from ..price import Price
 
 N = distributions.norm.cdf #dystrybuanta
@@ -12,16 +14,26 @@ fi = distributions.norm.pdf #rozklad prawdopodobienstwa
 def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: float =0.0):
   #delta in arguments is small delta - the dividend yield
   print(f"BSCall, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
-  d1 = (math.log(float(S)/float(K)) + ((r-d+(volatility**2)/2) * Time))/(volatility * math.sqrt(Time))
-  d2 = d1 - volatility * math.sqrt(Time)
-  #print "d1, d2:", d1, d2
-  delta = N(d1)
-  gamma = fi(d1) / (float(S)*volatility*math.sqrt(Time))
-  theta = - (float(S) * fi(d1) * volatility)/ (2*math.sqrt(Time)) - r * float(K) * math.exp(-r*Time)*N(d2) #lack of dividend-related factor
-  vega = float(S) * fi(d1) * math.sqrt(Time)
-  rho = float(K) * Time * math.exp(-r*Time)*N(d2)
-  callPrice = float(S)*distributions.norm.cdf(d1) - math.exp(-r*Time)*K*distributions.norm.cdf(d2)
-  intrinsicValue = max(0, float(S)-float(K)*math.exp(-r*Time))
+  # on expiration date Time=0, so the option value is S-K
+  if Time == 0:
+    callPrice = max(Price(0), S - K)
+    intrinsicValue = callPrice
+    delta = 1 if S > K else 0
+    gamma = 0
+    theta = 0
+    vega = 0
+    rho = 0
+  else:
+    d1 = (math.log(float(S)/float(K)) + ((r-d+(volatility**2)/2) * Time))/(volatility * math.sqrt(Time))
+    d2 = d1 - volatility * math.sqrt(Time)
+    #print "d1, d2:", d1, d2
+    delta = N(d1)
+    gamma = fi(d1) / (float(S)*volatility*math.sqrt(Time))
+    theta = - (float(S) * fi(d1) * volatility)/ (2*math.sqrt(Time)) - r * float(K) * math.exp(-r*Time)*N(d2) #lack of dividend-related factor
+    vega = float(S) * fi(d1) * math.sqrt(Time)
+    rho = float(K) * Time * math.exp(-r*Time)*N(d2)
+    callPrice = float(S)*distributions.norm.cdf(d1) - math.exp(-r*Time)*K*distributions.norm.cdf(d2)
+    intrinsicValue = max(0, float(S)-float(K)*math.exp(-r*Time))
   timeValue = callPrice - intrinsicValue
   print({"price": callPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \
     "intrinsicValue": intrinsicValue, "timeValue": timeValue})
@@ -32,16 +44,25 @@ def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: floa
 
 def BSPut(S: Price, K: Price, r: float, volatility: float, Time: float, d: float=0.0):
   print(f"BSPut, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
-  d1 = (math.log(float(S)/float(K)) + ((r-d+(volatility**2)/2) * Time))/(volatility * math.sqrt(Time))
-  d2 = d1 - volatility * math.sqrt(Time)
-  #print "d1, d2:", d1, d2
-  delta = N(d1) - 1 
-  gamma = fi(d1) / (float(S) * volatility * math.sqrt(Time))
-  theta = -(float(S)*fi(d1)*volatility)/(2*math.sqrt(Time)) + r*float(K)*math.exp(-r*Time)*N(-d2) #as above - dividend-related factor should be added
-  vega = float(S)* fi(d1) * math.sqrt(Time)
-  rho = - float(K) * Time * math.exp(-r*Time) * N(-d2)
-  putPrice = - float(S)*distributions.norm.cdf(-d1) + math.exp(-r*Time)*float(K)*distributions.norm.cdf(-d2)
-  intrinsicValue = max(0, float(K)*math.exp(-r*Time)-float(S))
+  if Time == 0:
+    putPrice = max(Price(0), K-S)
+    intrinsicValue = putPrice
+    delta = 1 if S < K else 0
+    gamma = 0
+    theta = 0
+    vega = 0
+    rho = 0
+  else:
+    d1 = (math.log(float(S)/float(K)) + ((r-d+(volatility**2)/2) * Time))/(volatility * math.sqrt(Time))
+    d2 = d1 - volatility * math.sqrt(Time)
+    #print "d1, d2:", d1, d2
+    delta = N(d1) - 1
+    gamma = fi(d1) / (float(S) * volatility * math.sqrt(Time))
+    theta = -(float(S)*fi(d1)*volatility)/(2*math.sqrt(Time)) + r*float(K)*math.exp(-r*Time)*N(-d2) #as above - dividend-related factor should be added
+    vega = float(S)* fi(d1) * math.sqrt(Time)
+    rho = - float(K) * Time * math.exp(-r*Time) * N(-d2)
+    putPrice = - float(S)*distributions.norm.cdf(-d1) + math.exp(-r*Time)*float(K)*distributions.norm.cdf(-d2)
+    intrinsicValue = max(0, float(K)*math.exp(-r*Time)-float(S))
   timeValue = putPrice - intrinsicValue
   return {"price": putPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \
     "intrinsicValue": intrinsicValue, "timeValue": timeValue}

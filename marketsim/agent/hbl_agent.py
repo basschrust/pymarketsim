@@ -38,12 +38,12 @@ class HBLAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
                  configuration: dict| None = None, group: str = "HBL") -> None:
         default_configuration = { "q_max": 1000,
-                                  # "shade": List,
+                                  "shade": [0.1,0.2],
                                   "L": 25,
                                   "pv_var": 0.4,
                                 "arrival_rate": 0.4,
                                   "pv": None }
-        final_configuration = default_configuration | configuration if configuration is not None else {}
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration,
                          group=group)
 

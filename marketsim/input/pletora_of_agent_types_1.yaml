@@ -27,12 +27,10 @@ markets:
         agent_class: WashTradingAgent
         number: 1
         config:
-          # lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
           q_max: 11000
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: BUY
-#          manipulation_period:
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -41,12 +39,10 @@ markets:
         agent_class: WashTradingAgent
         number: 1
         config:
-          #lam: 0.05 # activation factor outside manipulation periods - should behave like ZI
           q_max: 11000
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: SELL
-#          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -54,25 +50,13 @@ markets:
       hbl:
         agent_class: HBLAgent
         number: 1
-        config:
-          q_max: 200
-          L: 13 # memory length
-          shade:
-            - 0.01
-            - 0.03
-          arrival_rate: 2
-          pv_var: 0
       hbl2:
         agent_class: HBLAgent
         number: 1
         config:
           q_max: 100
           L: 25 # memory length
-          shade:
-            - 0.05
-            - 0.1
-          arrival_rate: 4
-          pv_var: 0
+
     agent_dependencies:
       - type: wash_trading_pool
         buy_pool: poolA
@@ -100,7 +84,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: BUY
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -113,7 +96,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: SELL
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -121,41 +103,21 @@ markets:
       hbl:
         agent_class: HBLAgent
         number: 1
-        config:
-          q_max: 200
-          L: 13 # memory length
-          shade:
-            - 0.01
-            - 0.03
-          arrival_rate: 2
-          pv_var: 0
       hbl2:
         agent_class: HBLAgent
         number: 1
         config:
           q_max: 100
           L: 25 # memory length
-          shade:
-            - 0.05
-            - 0.1
-          arrival_rate: 4
-          pv_var: 0
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
         number: 1
-        config:
-          lam: 0.6
-          q_max: 5 # yet this is used as transaction volume instead of max engagement
-          period: 55
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
-          lam: 0.6
-          q_max: 25
           period: 100
-          threshold: 0.005
     # dep:
     agent_dependencies:
       - type: wash_trading_pool
@@ -183,7 +145,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: BUY
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -196,7 +157,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: SELL
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -204,48 +164,30 @@ markets:
       hbl:
         agent_class: HBLAgent
         number: 1
-        config:
-          q_max: 200
-          L: 13 # memory length
-          shade:
-            - 0.01
-            - 0.03
-          arrival_rate: 2
-          pv_var: 0
       hbl2:
         agent_class: HBLAgent
         number: 1
         config:
           q_max: 100
           L: 25 # memory length
-          shade:
-            - 0.05
-            - 0.1
-          arrival_rate: 4
-          pv_var: 0
       # momentum traders:
       momentum_1:
         agent_class: MomentumAgent
         number: 1
-        config:
-          lam: 0.6
-          q_max: 5 # yet this is used as transaction volume instead of max engagement
-          period: 55
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
-          lam: 0.6
-          q_max: 25
           period: 100
           threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
         number: 1
         config:
-          lam: 0.6
-          q_max: 20
           period: 15
+      spoofers:
+        agent_class: SpoofingAgent
+        number: 1
     # dep:
     agent_dependencies:
       - type: wash_trading_pool
@@ -272,7 +214,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: BUY
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -285,7 +226,6 @@ markets:
           manipulation_boundaries:
           manipulation_type: PULL_UP #PUSH_DOWN #PULL_UP
           manipulation_side: SELL
-          #          manipulation_period: # could be more than 1 period
           manipulation_period_start: 1002
           manipulation_period_end: 2000
           lam: 0.995
@@ -316,18 +256,12 @@ markets:
       momentum_1:
         agent_class: MomentumAgent
         number: 1
-        config:
-          lam: 0.6
-          q_max: 5 # yet this is used as transaction volume instead of max engagement
-          period: 55
       momentum_2:
         agent_class: MomentumAgent
         number: 1
         config:
           lam: 0.6
-          q_max: 25
           period: 100
-          threshold: 0.005
       momentum_3:
         agent_class: MomentumAgent
         number: 1

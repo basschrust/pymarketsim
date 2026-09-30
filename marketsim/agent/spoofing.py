@@ -19,9 +19,11 @@ class SpoofingAgent(Agent):
                                   "order_size": 10,
                                   "spoofing_size": 15000,
                                     # "normalizers": dict,
+                                  "normalizers": {"fundamental": 100.0, "invt": 12, "cash": 1000000},
                                   # spoofing_times: list[int] | None
+                                  "spoofing_times": [23, 67]
                                   }
-        final_configuration = default_configuration | configuration if configuration is not None else {}
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration,
                          group=group)
 

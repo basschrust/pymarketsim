@@ -53,6 +53,7 @@ class Security:
 
         self.current_day = 0
         self.eod_status = "closed"  # open/closed  to make eod procedure idempotent
+        self.status = "active"
         self.repository = repository
         self.save()
 
@@ -541,33 +542,33 @@ class Security:
                 agent.eod()
                 # value_history = agent.portfolio_value_history  # now includes also other assets!
 
-                left_df = agent.position_history_df[
-                    agent.position_history_df["asset_id"] == self.asset_id
-                    ]
-
-                common_cols = left_df.columns.intersection(
-                    self.traded_prices_df.columns
-                ).difference(["time_tick"])
-
-                agent.position_history_df = left_df.drop(columns=common_cols).merge(
-                    self.traded_prices_df,
-                    on="time_tick",
-                    how="left",
-                )
-
-                agent.position_history_df["position_value"] = (
-                        agent.position_history_df["position"] * agent.position_history_df["close"]
-                )
-                # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
-                #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
-
-                agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
-                agent.position_history_df["agent_id"] = agent_key
-
-                self.repository.save_position_history(agent.position_history_df)
+                # left_df = agent.position_history_df[
+                #     agent.position_history_df["asset_id"] == self.asset_id
+                #     ]
+                #
+                # common_cols = left_df.columns.intersection(
+                #     self.traded_prices_df.columns
+                # ).difference(["time_tick"])
+                #
+                # agent.position_history_df = left_df.drop(columns=common_cols).merge(
+                #     self.traded_prices_df,
+                #     on="time_tick",
+                #     how="left",
+                # )
+                #
+                # agent.position_history_df["position_value"] = (
+                #         agent.position_history_df["position"] * agent.position_history_df["close"]
+                # )
+                # # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
+                # #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
+                #
+                # agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
+                # agent.position_history_df["agent_id"] = agent_key
+                #
+                # self.repository.save_position_history(agent.position_history_df)
 
                 # self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-                self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+                # self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
 
             # orders and trades
             orders = []
@@ -585,6 +586,8 @@ class Security:
             for order_id, matched_order in self.matched_orders_hashed.items():
                 matched_orders.append({ "order_id": order_id,
                                         "order_side": matched_order.order.order_type,
+                                        "matched_with": matched_order.order.matched_with,
+                                        "executed_mode": matched_order.order.executed_mode,
                                         "executed_price": matched_order.price,
                                         "executed_time": matched_order.time,
                                         "executed_volume": matched_order.volume,
@@ -596,6 +599,8 @@ class Security:
             matched_orders_df = matched_orders_df.astype({
                 "order_id": "int64",
                 "order_side": "int64",
+                "matched_with": "int64",
+                "executed_mode": "object",
                 "executed_price": "float64",
                 "executed_time": "int64",
                 "executed_volume": "int64",
