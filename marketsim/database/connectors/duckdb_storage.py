@@ -350,3 +350,17 @@ class Repository:
         self.connection.unregister("option_expiration_df")
 
     # methods for data extraction
+    # for multiday plotting
+    def get_eod_positions(self, agent_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, asset_id, position
+                FROM position_history
+                WHERE agent_id = ?
+            """, parameters=[agent_id]).fetchdf()
+
+    def get_eod_prices(self, asset_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, open, high, low, close, volume, theoretical
+                FROM eod_prices
+                WHERE asset_id = ?
+            """, parameters=[asset_id]).fetchdf()
