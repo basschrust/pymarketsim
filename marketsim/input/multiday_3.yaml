@@ -1,8 +1,8 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 200  # steps per day
-days: 20 # default 1 day, starting with id=0
+sim_time: 10  # steps per day
+days: 5 # default 1 day, starting with id=0
 lob_plot_interval: 25
 debug_logging: False
 seed: 67
@@ -30,11 +30,7 @@ markets:
         - 100
         - 110
       option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
-      quotation_type: price # price/ implied_volatility/ etc.
-      settlement_type: cash # cash/ physical/ etc
-#    ticker: "O100Y092027ABB"
     market_type: continuous
-#    lam: 0.8 # does this have any effect? It's defined in each agent though
 
   options_put:
     name: "Sec derivative - European PUT option on stock TNT with 1Y to maturity"
@@ -49,38 +45,17 @@ markets:
         - 100
         - 110
       option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
-      quotation_type: price # price/ implied_volatility/ etc.
-      settlement_type: cash # cash/ physical/ etc
-#    ticker: "O100Y092027ABB"
     market_type: continuous
-#    lam: 0.8 # does this have any effect? It's defined in each agent though
 
 agents:
   noise:
     agent_class: NoiseAgent
     number: 15
-    config:
-      lam: 0.1
-      q_max: 1000
-      mean_volume: 15
-      mean_spread: 0.8
   mmzoh_1:
     markets:
       - tnt_stock
     agent_class: MMZOHAgent
     number: 1
-    config:
-      xi: 0.12
-      K: 3
-      omega: 0.1
-      rebalance_period: 20
-      volume: 60
   option_mmzoh_1:
     agent_class: OptionMMZOHAgent
     number: 1
-    config:
-      xi: 0.12
-      K: 3
-      omega: 0.1
-      rebalance_period: 20
-      volume: 60

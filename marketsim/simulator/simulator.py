@@ -149,41 +149,43 @@ class Simulator:
         for i in range(agent_group["number"]):
             # let's make it in case/ series of ifs to avoid security breach (if used the class name as code directly)
             # ZI agents:
+            configuration = agent_group.get("config", {})
             if agent_group["agent_class"] == "ZIAgentNotInformed":
-                agent = ZIAgentNotInformed(markets=markets, configuration=agent_group["config"],
+                agent = ZIAgentNotInformed(markets=markets, configuration=configuration,
                                             repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
-                agent = NoiseAgent(markets=markets, configuration=agent_group["config"],
+                agent = NoiseAgent(markets=markets, configuration=configuration,
                                    repository=self.repository, group=group_name)
                 self.add_agents([agent])
 
             # MMs:
             if agent_group["agent_class"] == "MMZOHAgent":
-                agent = MMZOHAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = MMZOHAgent(markets=markets, configuration=configuration, repository=self.repository)
                 self.add_agents([agent])
 
             # HBL (Heuristic Belief)
             if agent_group["agent_class"] == "HBLAgent":
-                agent = HBLAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = HBLAgent(markets=markets, configuration=configuration, repository=self.repository)
                 self.add_agents([agent])
 
             # spoofers: (to trick HBL Agents)
             if agent_group["agent_class"] == "SpoofingAgent":
-                agent = SpoofingAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = SpoofingAgent(markets=markets, configuration=configuration, repository=self.repository)
                 self.add_agents([agent])
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
-                agent = WashTradingAgent(markets=markets, group=group_name, configuration=agent_group["config"], repository=self.repository)
+                agent = WashTradingAgent(markets=markets, group=group_name, configuration=configuration,
+                                         repository=self.repository)
                 self.add_agents([agent])
                 # those will need the relationship...
 
             # momentum
             if agent_group["agent_class"] == "MomentumAgent":
-                agent = MomentumAgent(markets=markets, configuration=agent_group["config"], repository=self.repository)
+                agent = MomentumAgent(markets=markets, configuration=configuration, repository=self.repository)
                 self.add_agents([agent])
 
             ########## Derivatives agents, complicated ones :)  ###############

@@ -39,7 +39,7 @@ class Agent(ABC):
     def __init__(self, *, markets: list[Security], repository: Repository, group: str | None = None,
                  name: str | None = None, configuration: dict|None):
         self.agent_id = id_generator.next()
-        # if group is not None:
+
         self.group = group # previously group_name
         self.name = name if name is not None else f"{self.agent_id}_{self.group}"
         self.configuration = configuration
@@ -47,7 +47,7 @@ class Agent(ABC):
         self.markets = { market.asset_id: market for market in markets }  # converting to dict
 
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
-        #self.position_value_history = {} # {time: position_value} # TODO: portfolio_value_history!
+
         self.portfolio_value = Price(0)
         self.portfolio_value_history = defaultdict(Price)
 
@@ -102,11 +102,9 @@ class Agent(ABC):
 
     def update_position(self, quantity: int, cash: Price, asset_id: int) -> None:
         validate_update(quantity=quantity, cash=cash)
-        # self.logger.info(f"Update position, agent: {self.agent_id}, old: {self.position}")
         if asset_id not in self.position:
-            terminal.write(f"Position:  {self.position}. {asset_id} not in position")
+            raise ValueError(f"Position:  {self.position}. {asset_id} not in position")
         self.position[asset_id] += quantity
-        # self.logger.info(f"New: {self.position}")
         self.cash += cash
 
     def reset(self) -> None:
@@ -133,7 +131,7 @@ class Agent(ABC):
     def record_trade(self, matched_order: MatchedOrder) -> None:
         quantity = matched_order.order.order_type * matched_order.order.quantity
         cash = - Price(matched_order.price * matched_order.order.quantity * matched_order.order.order_type)
-        # print(f"Updating cash: {cash}")
+
         self.update_position(quantity=quantity, cash=cash, asset_id=matched_order.order.asset_id)
         self.position_history[matched_order.time][matched_order.order.asset_id] = (
                 self.position_history.get(matched_order.time, {}).get(matched_order.order.asset_id, 0) + quantity)
@@ -153,26 +151,21 @@ class Agent(ABC):
             # first trade this day
             self.trade_history[matched_order.time] = { matched_order.order.asset_id:
                                                 {"trades": 1, "volume": abs(matched_order.order.quantity),
-                                                 } }# side, volume bought/sold, ...
+                                                 } }
 
-        # TODO: record also with what kind of agent the capital was exchanged with.
-        # and record it also per group...
-        # TODO: structure like: self.trade_history_by_groups =
-        #  {"MM":{ timeTick1: { volumeBought: , volumeSold: , cashBalance: }, timeTick2: {} } }
-        # TODO: reconcile it at the end
 
     def sod(self):
-        self.logger.info(f"Starting agent {self.agent_id} SoD procedure of day: {self.current_day}")
+        self.logger.info(f"Starting agent {self.agent_id} Start-of-Day procedure of day: {self.current_day}")
 
         self.portfolio_value_history = defaultdict(Price)
         self.cash_history = defaultdict(Price)
 
         self.position_history = defaultdict(dict)
-        self.position_history[0] = {m_id: 0 for m_id in self.markets}
+        self.position_history[0] = { m_id: 0 for m_id in self.markets }
 
         self.eod_status = "open"
 
-        self.logger.info(f"SoD agent {self.agent_id} procedure of day: {self.current_day} completed.")
+        self.logger.info(f"Start-of-Day agent {self.agent_id} procedure of day: {self.current_day} completed.")
 
     def eod(self) -> None:
         # End Of Day procedure of the agent
