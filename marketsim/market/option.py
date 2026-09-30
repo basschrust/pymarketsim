@@ -26,8 +26,8 @@ class Option(Security):
         self.expiration = derivatives_config["expiration"] # TODO: prepare mapper for this
             # so that we can give relative time or precise dates or just take it from option series
             # for now we set mostly as 248 (number of trading days per year)
-        self.option_side = derivatives_config["option_side"]
-        self.option_type = derivatives_config["option_type"]
+        self.option_side = derivatives_config["option_side"] # CALL/PUT
+        self.option_type = derivatives_config.get("option_type", "European")
         self.r = 0 # the risk-free financing rate
         self.volatility = 0.157  # annualized volatility of the underlying security
         # TODO: reference price should be theoretical - what about calculating this and then calling super()?
@@ -142,6 +142,7 @@ class Option(Security):
 
 
     def eod(self):
+        self.exercise()
         super().eod()
 
         self.fill_theoretical_price()
@@ -159,3 +160,41 @@ class Option(Security):
         self.repository.save_traded_prices(self.traded_prices_df)
 
         self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
+
+    def exercise(self):
+        # exercising the option - yet only European are served (as for American
+        if self.option_type == "European":
+            if self.expiration == self.current_day:
+                self.logger.info(f"Day of European option expiry {self.name}")
+                # ITM or OTM?
+                premium = 0
+                if self.option_side == "CALL":
+                    if self.underlying.last_traded_price > self.strike:
+                        premium = self.underlying.last_traded_price - self.strike
+                    else:
+                        premium = 0
+                elif self.option_side == "PUT":
+                    if self.underlying.last_traded_price < self.strike:
+                        premium = self.strike - self.underlying.last_traded_price
+                    else:
+                        premium = 0
+                premium = Price(premium)
+                # for all holders transfer the cash and null out the positions
+                for agent_id, agent in self.agents.items():
+                    final_position = agent.position[self.asset_id]
+                    if final_position != 0:
+                        agent.update_position(quantity=-final_position,
+                                              cash=premium*final_position,
+                                              asset_id=self.asset_id)
+
+                option_expiration = { "day": [self.current_day],
+                                      "asset_id": [self.asset_id],
+                                      "exercise_price": [self.underlying.last_traded_price],
+                                      "premium": [premium],}
+                option_expiration_df = pd.DataFrame.from_dict(option_expiration, orient="columns")
+                self.repository.save_option_expiration(option_expiration_df=option_expiration_df)
+                # move the security to non-tradable as expired
+                # TODO: self.status = ""
+                self.status = "expired"
+        else:
+            raise NotImplementedError(f"{self.option_type} not implemented")

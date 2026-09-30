@@ -53,6 +53,7 @@ class Security:
 
         self.current_day = 0
         self.eod_status = "closed"  # open/closed  to make eod procedure idempotent
+        self.status = "active"
         self.repository = repository
         self.save()
 
@@ -541,33 +542,33 @@ class Security:
                 agent.eod()
                 # value_history = agent.portfolio_value_history  # now includes also other assets!
 
-                left_df = agent.position_history_df[
-                    agent.position_history_df["asset_id"] == self.asset_id
-                    ]
-
-                common_cols = left_df.columns.intersection(
-                    self.traded_prices_df.columns
-                ).difference(["time_tick"])
-
-                agent.position_history_df = left_df.drop(columns=common_cols).merge(
-                    self.traded_prices_df,
-                    on="time_tick",
-                    how="left",
-                )
-
-                agent.position_history_df["position_value"] = (
-                        agent.position_history_df["position"] * agent.position_history_df["close"]
-                )
-                # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
-                #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
-
-                agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
-                agent.position_history_df["agent_id"] = agent_key
-
-                self.repository.save_position_history(agent.position_history_df)
+                # left_df = agent.position_history_df[
+                #     agent.position_history_df["asset_id"] == self.asset_id
+                #     ]
+                #
+                # common_cols = left_df.columns.intersection(
+                #     self.traded_prices_df.columns
+                # ).difference(["time_tick"])
+                #
+                # agent.position_history_df = left_df.drop(columns=common_cols).merge(
+                #     self.traded_prices_df,
+                #     on="time_tick",
+                #     how="left",
+                # )
+                #
+                # agent.position_history_df["position_value"] = (
+                #         agent.position_history_df["position"] * agent.position_history_df["close"]
+                # )
+                # # now we have asset_id_x, asset_id_y as both merge sides had this - no more needed now
+                # #agent.position_history_df["asset_id"] = position_history_df["asset_id_x"]
+                #
+                # agent.position_history_df["day"] = self.current_day-1 ## well, yes, the old should have been cleared out
+                # agent.position_history_df["agent_id"] = agent_key
+                #
+                # self.repository.save_position_history(agent.position_history_df)
 
                 # self.logger.info(f"\nAgent {str(agent_key)} value history\n: {value_history}")
-                self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
+                # self.logger.info(f"\nAgent {str(agent_key)} position history\n: {agent.position_history_df}")
 
             # orders and trades
             orders = []

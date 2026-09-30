@@ -243,4 +243,8 @@ class OptionMMZOHAgent(Agent):
                 self.logger.info(f"Adding sell order to underlying market: {order}")
                 underlying_market.add_orders([order])
 
-
+    def sod(self):
+        expired_options = [m_id for m_id, market in self.option_markets.items() if market.status == "expired"]
+        for option_id in expired_options:
+            self.option_markets.pop(option_id)
+        super().sod()

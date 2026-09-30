@@ -160,11 +160,16 @@ class Agent(ABC):
         self.portfolio_value_history = defaultdict(Price)
         self.cash_history = defaultdict(Price)
 
+        # drop expired securities from portfolio
+        expired_securities = [m_id for m_id, market in self.markets.items() if market.status == "expired"]
+        # or not "active" ?
+        for m_id in expired_securities:
+            self.markets.pop(m_id)
+
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id: 0 for m_id in self.markets }
 
         self.eod_status = "open"
-
         self.logger.info(f"Start-of-Day agent {self.agent_id} procedure of day: {self.current_day} completed.")
 
     def eod(self) -> None:
@@ -193,7 +198,11 @@ class Agent(ABC):
                         )
                     )
 
+            self.position_history_df["agent_id"] = self.agent_id
+            self.position_history_df["day"] = self.current_day - 1
+
             self.logger.info(f"Position_history_df: {self.position_history_df.head()}")
+            self.repository.save_position_history(position_history_df=self.position_history_df)
 
             # portfolio_value_history:
             # by SQL or in Python?

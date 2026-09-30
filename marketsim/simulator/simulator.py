@@ -291,6 +291,12 @@ class Simulator:
 
         self.current_time = 0
 
+        # drop expired securities
+        expired_securities = [m_id for m_id, market in self.markets.items() if market.status == "expired"]
+        # or not "active" ?
+        for m_id in expired_securities:
+            self.markets.pop(m_id)
+
         for market_key, market in self.markets.items():
             market.sod()
 

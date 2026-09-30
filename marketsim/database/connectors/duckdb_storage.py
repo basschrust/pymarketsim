@@ -64,10 +64,10 @@ class Repository:
                 time_tick INTEGER,
                 agent_id  INTEGER,
                 asset_id  INTEGER,
-                position  INTEGER,
-                position_value DOUBLE
+                position  INTEGER
             )
         """)
+        # deleted column: position_value DOUBLE
 
         # portfolio value history
         self.connection.execute("""
@@ -145,7 +145,15 @@ class Repository:
                     )
                 """)
 
-    ##### methods for making data persistent
+        self.connection.execute("""
+                CREATE TABLE IF NOT EXISTS option_expiration (
+                    day INTEGER,
+                    asset_id INTEGER,
+                    exercise_price DOUBLE,
+                    premium DOUBLE)
+                """)
+
+    ############# methods for making data persistent ###############################
 
     def save_security(self, security: Security) -> None:
         # with duckdb.connect(self.localdb) as conn:
@@ -185,10 +193,12 @@ class Repository:
         self.connection.register("position_history_df", position_history_df)
 
         self.connection.execute("""
-            INSERT INTO position_history (day, time_tick, agent_id, asset_id, position, position_value)
-            SELECT day, time_tick, agent_id, asset_id, position, position_value
+            INSERT INTO position_history (day, time_tick, agent_id, asset_id, position)
+            SELECT day, time_tick, agent_id, asset_id, position
             FROM position_history_df
         """)
+
+        # deleted column: position_value
 
         self.connection.unregister("position_history_df")
         # conn.close()
@@ -279,5 +289,16 @@ class Repository:
             FROM trades_df
         """)
         self.connection.unregister("trades_df")
+
+    def save_option_expiration(self, option_expiration_df: pd.DataFrame) -> None:
+        self.connection.register("option_expiration_df", option_expiration_df)
+
+        self.connection.execute("""
+        INSERT INTO option_expiration (day, asset_id, exercise_price, premium)
+        SELECT day, asset_id, exercise_price, premium
+        FROM option_expiration_df
+        """)
+
+        self.connection.unregister("option_expiration_df")
 
     # methods for data extraction
