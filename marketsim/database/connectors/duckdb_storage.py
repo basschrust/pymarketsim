@@ -133,9 +133,10 @@ class Repository:
         self.connection.execute("""
                     CREATE TABLE IF NOT EXISTS trades (
                         day INTEGER,
-                        executed_price DOUBLE,
                         executed_time INTEGER,
+                        executed_price DOUBLE,
                         order_id INTEGER,
+                        order_side INTEGER,
                         executed_volume INTEGER,
                         cash DOUBLE,
                         phase STRING,
@@ -261,11 +262,13 @@ class Repository:
         self.connection.register("trades_df", trades_df)
         # terminal.write(f"Columns: {str(trades_df.columns())}")
         self.connection.execute("""
-            INSERT INTO trades
+            INSERT INTO trades (day, executed_time, executed_price,
+                    order_id, order_side, executed_volume, cash, phase)
             SELECT day,
-                    executed_price,
                     executed_time,
+                    executed_price,
                     order_id,
+                    order_side,
                     executed_volume,
                     cash,
                     phase,

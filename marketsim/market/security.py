@@ -584,7 +584,7 @@ class Security:
             matched_orders = []
             for order_id, matched_order in self.matched_orders_hashed.items():
                 matched_orders.append({ "order_id": order_id,
-                                        "order_side:": matched_order.order.order_type,
+                                        "order_side": matched_order.order.order_type,
                                         "executed_price": matched_order.price,
                                         "executed_time": matched_order.time,
                                         "executed_volume": matched_order.volume,
@@ -592,6 +592,20 @@ class Security:
                                         "phase": matched_order.phase,
                                         "day": self.current_day-1, })
             matched_orders_df = pd.DataFrame(matched_orders)
+            # adding conversion to powerful numbers to avoid exceeding range in DuckDB:
+            matched_orders_df = matched_orders_df.astype({
+                "order_id": "int64",
+                "order_side": "int64",
+                "executed_price": "float64",
+                "executed_time": "int64",
+                "executed_volume": "int64",
+                "cash": "float64",
+                "phase": "object",
+                "day": "int64",
+            })
+            self.logger.info(f"Trade data types: {matched_orders_df.dtypes}")
+            self.logger.info("Suspicious values:")
+            self.logger.info(matched_orders_df.loc[matched_orders_df["executed_price"] > 99.99,["executed_price", "cash"]].head())
             self.repository.save_trades(trades_df=matched_orders_df)
 
 

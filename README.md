@@ -8,8 +8,6 @@ Daedalus is a research-oriented sandbox (based on PyMarketSim) for building and 
 - **Configurable market structure.** Place your desired market structure in the marketsim/input directory as a yaml file and run your own desired scenario
 - **Agent library.** Combine zero-intelligence, market making, informed, and noise agents or author your own policies by extending the base agent interface.
 - **Event-driven simulation loop.** A discrete event queue coordinates order arrivals and market clearing, letting you scale to multiple agents and assets while keeping control over the simulation clock.
-- **Reinforcement learning wrappers.** Gym-style wrappers make it straightforward to expose the simulator as an RL environment for training custom policies and benchmarking existing ones.
-- **Customizable fundamentals.** Plug in stochastic processes (for example mean-reverting Gaussian fundamentals) to drive the latent asset value observed by your agents.
 
 ## Installation
 
@@ -52,35 +50,17 @@ python -m run.simulation_main pletora_of_agent_types_1.yaml
 ```
 
 
-You can replace or augment the background agents with your own implementations by subclassing `marketsim.agent.agent.Agent` and registering instances in `sim.agents`. Fundamentals are swappable as long as they implement the `marketsim.fundamental.fundamental_abc.Fundamental` interface.
+You can replace or augment simulation agents with your own implementations by subclassing `marketsim.agent.agent.Agent` and adding new section in the market structure defined in the yaml file used for your run.
 
 ## Working with agents and securities (markets)
 
-- **Agents:** Agent policies live under `marketsim/agent`. They encapsulate order submission logic via a `take_action` method and maintain inventory through helper utilities like `update_position`. Use the provided zero-intelligence and market-making agents as blueprints for new behaviors.
+- **Agents:** Agent policies live under `marketsim/agent`. They encapsulate order submission logic via a `take_action` method and maintain inventory through helper utilities like `update_position`.
 - **Securities:** The `Security` class manages the event queue, order book, and matching process. At each step it ingests orders from agents, clears the book, and updates mid-prices so you can compute downstream metrics.
 
 ## Important note on reference price used in Deadalus
 
 Unlike original PyMarketSim framework where fundamental value shared among market participants is used as a reference value, in Deadalus, during continuous trading, the last traded price is used a reference one.
 It is planned to make it configurable in the future so each of the approaches can be simulated and tested.
-
-## Reinforcement learning workflows
-
-The `marketsim.wrappers` package contains ready-to-use wrappers that expose the simulator through stable, vectorized interfaces. They provide observation builders, reward functions, and benchmarking utilities so you can plug the environment into RL pipelines with minimal glue code. Explore the examples in `marketsim/wrappers/examples` for end-to-end demonstrations of training or evaluating custom agents.
-
-## Testing and notebooks
-
-Lightweight regression tests live under `marketsim/tests`, and exploratory notebooks (such as `test_sim.ipynb` and `marketsim/intro_notebook.ipynb`) showcase typical analysis workflows. Running these notebooks is a good way to familiarize yourself with the API before embedding the simulator into your own research projects.
-
-## Contributing
-
-* You can contribute either to the original PyMarketSim framework:
-1. Fork the repository and create a feature branch.
-2. Install the development dependencies listed in `requirements.txt`.
-3. Ensure unit tests pass before submitting a pull request.
-4. Describe your changes clearly and include references to any new strategies or environments you add.
-
-* Or contribute to this repo - contact the repo owner, make a PR.  
 
 ## License
 
