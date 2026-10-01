@@ -68,7 +68,8 @@ class Simulator:
                         derivatives_config["strike"] = strike
                         market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                                    derivatives_config=derivatives_config
-                                    , underlying=underlying, repository=self.repository)
+                                    , underlying=underlying, repository=self.repository,
+                                        short_name=m_conf.get("short_name"))
                         self.market_map[m_key] = market.asset_id
                         self.markets[market.asset_id] = market
                         self.asset_names_map[market.asset_id] = {"name": market.name,
@@ -81,7 +82,8 @@ class Simulator:
                     #single strike
                     market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                                    derivatives_config=derivatives_config
-                                    , underlying=underlying, repository=self.repository)
+                                    , underlying=underlying, repository=self.repository,
+                                    short_name=m_conf.get("short_name"))
                     self.market_map[m_key] = market.asset_id
                     self.markets[market.asset_id] = market
                     self.asset_names_map[market.asset_id] = {"name": market.name,

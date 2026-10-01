@@ -429,14 +429,14 @@ class Security:
         #              output_file=f"{config.output_dir}/{str(self)}/bid_ask_history_{str(self)}.png",
         #              title=f"Bid ask spread history {str(self)}")
         # calculate and plot realized volatility:
-        window = 50
-        volatility = self.calculate_realized_volatility(window=window)
-        plot_realized_volatility(volatility=volatility,
-                                 output_file=f"{config.output_dir}/{str(self)}/realized_volatility_{str(self)}.png",
-                                 title=f"Realized volatility {str(self)} with window {window}")
+        # window = 50
+        # volatility = self.calculate_realized_volatility(window=window)
+        # plot_realized_volatility(volatility=volatility,
+        #                          output_file=f"{config.output_dir}/{str(self)}/realized_volatility_{str(self)}.png",
+        #                          title=f"Realized volatility {str(self)} with window {window}")
 
         # plot the history of trading between agent groups:
-        self.plot_trade_stats()
+        # self.plot_trade_stats()
 
 
     ##################      SoD  and  EoD      ##########################################
