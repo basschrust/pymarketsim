@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class Option(Security):
     def __init__(self, *, derivatives_config: dict, underlying: Security,
                  market_type: str = "continuous", repository: Repository,
-                 name: str| None = None) -> None:
+                 name: str| None = None, short_name: str|None=None) -> None:
 
         self.instrument_class = "option"
         self.underlying = underlying
@@ -30,11 +30,16 @@ class Option(Security):
         self.option_type = derivatives_config.get("option_type", "European")
         self.r = 0 # the risk-free financing rate
         self.volatility = 0.157  # annualized volatility of the underlying security
-        # TODO: reference price should be theoretical - what about calculating this and then calling super()?
+        if short_name is None:
+            self.short_name = f"{self.option_side}_{self.underlying.short_name}_{self.strike}"
+        else:
+            self.short_name = f"{short_name} {self.strike}"
+
+
         theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
-                         , instrument_class=self.instrument_class, repository=repository)
-
+                         , instrument_class=self.instrument_class, repository=repository,
+                         short_name=self.short_name)
 
 
     def calculate_greeks(self):

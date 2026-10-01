@@ -26,11 +26,17 @@ if TYPE_CHECKING:
 class Security:
     def __init__(self, *, reference_price: Price |None = None, name: str|None=None,
                  repository: Repository,
-                 market_type: str = "discrete", instrument_class: str = "stock"):
+                 market_type: str = "discrete", instrument_class: str = "stock",
+                 short_name: str | None = None) -> None:
+        self.asset_id = id_generator.next()
         self.instrument_class = instrument_class
+        if short_name is None:
+            self.short_name = f"{self.instrument_class} {self.asset_id}"
+        else:
+            self.short_name = short_name
         self.reference_price = reference_price if reference_price is not None else Price(100)
         self.last_traded_price = self.reference_price
-        self.asset_id = id_generator.next()
+
 
         self.agent_groups = set()
 

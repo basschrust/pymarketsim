@@ -308,11 +308,12 @@ class Simulator:
     def eod(self, day: int):
         self.logger.info(f"\nStarting End-of-Day procedure day: {day} ...")
 
-        for agent_id, agent in self.agents.items():
-            agent.eod()
-
         for market_key, market in self.markets.items():
             market.eod()
+
+        # markets first, then agents - so that the derivatives are already settled and cleared and exercised
+        for agent_id, agent in self.agents.items():
+            agent.eod()
 
         self.logger.info(f"\nEnd-of-Day day: {day} procedure completed.")
 

@@ -233,18 +233,36 @@ class Agent(ABC):
 
             self.repository.save_cash_history(cash_history_df=cash_history_df)
 
-            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
-            # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
+            # save eod_cash and eod_portfolio_value
+            eod_cash_df = pd.DataFrame([{ "day": self.current_day-1,
+                                                        "agent_id": self.agent_id,
+                                                        "cash": self.cash,
+                                                        }])
+            self.logger.info(f"eod_cash_df: {eod_cash_df.head()}")
+            self.repository.save_eod_cash(eod_cash_df=eod_cash_df)
 
+            eod_portfolio_value_df = pd.DataFrame([{ "day": self.current_day-1,
+                                                          "agent_id": self.agent_id,
+                                                          "portfolio_value": self.portfolio_value,
+                                                                   }])
+            self.logger.info(f"eod_portfolio_value_df: {eod_portfolio_value_df.head()}")
+            self.repository.save_eod_portfolio_value(eod_portfolio_value_df=eod_portfolio_value_df)
+
+            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
     def show_summary(self):
-        self.eod()
+        # self.eod()
 
         agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
 
-        plot_agent_history_many_markets(position_history=self.position_history_df,
+        positions_df = self.repository.get_eod_positions(agent_id=self.agent_id)
+        positions_df.rename(columns={"day": "time_step"}, inplace=True)
+
+
+
+        plot_agent_history_many_markets(position_history=positions_df,
                                         cash_history=self.cash_history,
                                         value_history=self.portfolio_value_history,
                                         output_file=agent_output_file,

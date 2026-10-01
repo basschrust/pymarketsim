@@ -84,14 +84,17 @@ def plot_agent_history_many_markets(
     value_history: dict,
     output_file: str,
     title: str = "Agent Portfolio history",
+    labels_map: dict|None=None, # map of short names: {asset_id: "stock TNT", 4: "CALL TNT 90", ...}
 ) -> None:
 
     asset_ids = sorted(position_history["asset_id"].unique())
     n_assets = len(asset_ids)
+    if labels_map is None:
+        labels_map = { asset_id: f"Asset {asset_id}" for asset_id in asset_ids }
 
     fig, axes = plt.subplots(
         n_assets + 2,
-        1,
+        ncols=1,
         figsize=(10, 3 * (n_assets + 2)),
         sharex=True,
     )
@@ -108,14 +111,14 @@ def plot_agent_history_many_markets(
 
         asset_history = position_history[
             position_history["asset_id"] == asset_id
-        ].sort_values("time_tick")
+        ].sort_values("time_step")
 
         ax.plot(
-            asset_history["time_tick"],
+            asset_history["time_step"],
             asset_history["position"],
         )
 
-        ax.set_ylabel(f"Asset {asset_id}")
+        ax.set_ylabel(labels_map.get(asset_id))
         ax.grid(True)
 
     # Cash subplot
@@ -163,7 +166,7 @@ def plot_order_book(
     If cumulative=True, the values are first converted to cumulative depth.
     """
 
-    def make_depth(book, reverse):
+    def make_depth(book: dict, reverse: bool):
         items = sorted(book.items(), reverse=reverse)
 
         if cumulative:
