@@ -37,7 +37,6 @@ class Security:
         self.reference_price = reference_price if reference_price is not None else Price(100)
         self.last_traded_price = self.reference_price
 
-
         self.agent_groups = set()
 
         # TODO: check if this fundamental (externally provided value) is needed here
@@ -105,8 +104,9 @@ class Security:
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["count_sell"] += 1
                 self.orders_by_agent_type[self.agents[order.agent_id].group]["volume_sell"] += order.quantity
 
-    def cancel_outdated_orders(self, current_time: int):
-        # TODO: go to event_queue and delete the ones that should be cancelled due to time
+    def cancel_outdated_orders(self, current_time: int|None=None):
+        if current_time is None:
+            current_time = self.current_time
         self.order_book.cancel_outdated_orders(current_time=current_time)
 
     # TODO: move to sod()
@@ -409,6 +409,7 @@ class Security:
         self.logger.info(f"Last traded price: {self.last_traded_price}")
 
         # plot the security values history for all period - take data from DB:
+        # TODO: for one day simulations plot the daily candlestick
         eod_prices_df = self.repository.get_eod_prices(asset_id=self.asset_id)
         self.logger.info(f"EoD prices DF: {eod_prices_df}")
         eod_prices = eod_prices_df.set_index("day").to_dict(orient="index")
@@ -503,7 +504,7 @@ class Security:
 
             self.eod_status = "closed"
             self.current_day += 1
-            self.current_time = 0
+            self.current_time = 0 # TODO: do we ever need it?
             # run the EoD procedure
             # make traded_price a DF to enable quick filtering and joining with agents' positions
 

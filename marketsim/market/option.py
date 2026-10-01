@@ -35,7 +35,6 @@ class Option(Security):
         else:
             self.short_name = f"{short_name} {self.strike}"
 
-
         theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
                          , instrument_class=self.instrument_class, repository=repository,
@@ -214,9 +213,12 @@ class Option(Security):
                 for agent_id, agent in self.agents.items():
                     final_position = agent.position[self.asset_id]
                     if final_position != 0:
-                        agent.update_position(quantity=-final_position,
+                        agent.update_position(quantity= -final_position,
                                               cash=premium*final_position,
                                               asset_id=self.asset_id)
+                        agent.portfolio_value += premium * final_position
+                        # TODO: this should be done by an agent method, but yet record_valuation
+                        # TODO: is working only for intraday trades
 
                 option_expiration = { "day": [self.current_day],
                                       "asset_id": [self.asset_id],

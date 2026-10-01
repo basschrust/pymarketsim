@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 sim_time: 10  # steps per day
-days: 5 # default 1 day, starting with id=0
+days: 7 # default 1 day, starting with id=0
 lob_plot_interval: 2
 debug_logging: False
 seed: 67
@@ -43,7 +43,7 @@ markets:
     derivatives_config:
       option_type: European
       underlying: tnt_stock  # reference to one of above defined securities
-      expiration: 3  # end of day with this number (ID)
+      expiration: 4  # end of day with this number (ID)
       # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
 #      strike: 100 # maybe list of strikes?
       strikes:
