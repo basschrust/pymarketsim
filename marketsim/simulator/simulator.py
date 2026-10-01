@@ -137,12 +137,13 @@ class Simulator:
         if agents is not None:
             for a_key, agent_gr_def in agents.items():
                 self.create_agents(agent_group=agent_gr_def, group_name=a_key)
+
+        # self.all_markets = self.markets
+
         return
 
-    ######################### __init__ ends here   ###################
-    #
-    # def create_defined_agent(self, *, agent_def: dict, markets: list[Market], number: int = 1) -> None:
-    #     for i in range(number):
+    #########################  __init__ ends here   ###################
+
 
 
     def add_agent_group(self, *, agent_group:dict, markets: list[Security], group_name: str) -> None:
@@ -221,13 +222,18 @@ class Simulator:
             # now agents decide which markets to enter on their own
 
         for market_key, market in self.markets.items():
+            if market.status != "active":
+                self.logger.info(f"Market {market_key} is inactive")
+                continue
 
             # plot the LOB
             if self.current_time > 0 and self.current_time % self.lob_plot_interval == 0:
                 market.plot_lob(self.current_time)
 
-            market.logger.info(f"Starting orders execution, matched queues should be empty here: {len(market.order_book.buy_matched.heap)}"
-                  f" {len(market.order_book.sell_matched.heap)}")
+            buy_matched_queue_length = 0 if market.order_book is None else len(market.order_book.buy_matched.heap)
+            sell_matched_queue_length = 0 if market.order_book is None else len(market.order_book.sell_matched.heap)
+            market.logger.info(f"Starting orders execution, matched queues should be empty here: {buy_matched_queue_length}"
+                  f" {sell_matched_queue_length}")
             new_orders_matched = market.step(current_time=self.current_time)
 
             market.logger.info(f"Starting to clear out orders.")
@@ -292,10 +298,10 @@ class Simulator:
         self.current_time = 0
 
         # drop expired securities
-        expired_securities = [m_id for m_id, market in self.markets.items() if market.status == "expired"]
+        # expired_securities = [m_id for m_id, market in self.markets.items() if market.status == "expired"]
         # or not "active" ?
-        for m_id in expired_securities:
-            self.markets.pop(m_id)
+        # for m_id in expired_securities:
+        #     self.markets.pop(m_id)
 
         for market_key, market in self.markets.items():
             market.sod()

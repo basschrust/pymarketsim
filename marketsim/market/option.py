@@ -132,18 +132,19 @@ class Option(Security):
         plot_candlestick_derivative(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def sod(self):
-        super().sod()
+        if self.status == "active":
+            super().sod()
 
-        if self.eod_status == "open":
-            theoretical_price = self.get_theoretical_price()
-            self.traded_prices = {0: {"open": Price(theoretical_price),
-                                      "low": Price(theoretical_price),
-                                      "high": Price(theoretical_price),
-                                      "close": Price(theoretical_price),
-                                      "theoretical": Price(theoretical_price),
-                                      "volume": 0, }}
+            if self.eod_status == "open":
+                theoretical_price = self.get_theoretical_price()
+                self.traded_prices = {0: {"open": Price(theoretical_price),
+                                          "low": Price(theoretical_price),
+                                          "high": Price(theoretical_price),
+                                          "close": Price(theoretical_price),
+                                          "theoretical": Price(theoretical_price),
+                                          "volume": 0, }}
 
-            self.logger.info(f"Option SoD completed for day: {self.current_day}")
+                self.logger.info(f"Option SoD completed for day: {self.current_day}")
 
 
     def eod(self):
@@ -184,6 +185,9 @@ class Option(Security):
             }])
 
             self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
+
+            if self.status != "active":
+                self.cleanup()
 
             self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 

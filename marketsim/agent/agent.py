@@ -65,7 +65,7 @@ class Agent(ABC):
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
         logger.add(
-            f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
+            sink=f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
             format="{elapsed} | {message}",
             level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, agent_id=self.agent_id:
@@ -165,6 +165,9 @@ class Agent(ABC):
         # or not "active" ?
         for m_id in expired_securities:
             self.markets.pop(m_id)
+
+        self.logger.info(f"After removing expired securities agent will be active on the following markets:")
+        self.logger.info(self.markets)
 
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id: 0 for m_id in self.markets }

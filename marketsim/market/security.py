@@ -122,6 +122,10 @@ class Security:
         # step is operations happening during single time_tick
         # TODO Need to figure out how to handle ties for price and time - AK: maybe fractal time?
         self.logger.info(f"Starting step for time tick: {str(current_time)}")
+        if self.status != "active":
+            self.logger.info(f"Security {self.name} is inactive!")
+            return []
+
         # first:cancel orders that are no longer valid
         self.cancel_outdated_orders(current_time=current_time)
 
@@ -412,18 +416,18 @@ class Security:
         self.plot_history(traded_prices=eod_prices)
 
         # plotting by type - TODO: take overall data from DB:
-        plot_by_type(self.orders_by_agent_type,
-                     output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
-                     title=f"Orders by type in {self.name}")
-        plot_by_type(self.trades_by_agent_type,
-                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_{str(self)}.png",
-                     title=f"Trades by type in {self.name}")
-        plot_by_type(self.trades_by_agent_type_ext,
-                     output_file=f"{config.output_dir}/{str(self)}/trades_by_type_ext_{str(self)}.png",
-                     title=f"Trades by extended type in {self.name}", mode="extended")
-        plot_bid_ask(self.bid_ask_history,
-                     output_file=f"{config.output_dir}/{str(self)}/bid_ask_history_{str(self)}.png",
-                     title=f"Bid ask spread history {str(self)}")
+        # plot_by_type(self.orders_by_agent_type,
+        #              output_file=f"{config.output_dir}/{str(self)}/orders_by_type_{str(self)}.png",
+        #              title=f"Orders by type in {self.name}")
+        # plot_by_type(self.trades_by_agent_type,
+        #              output_file=f"{config.output_dir}/{str(self)}/trades_by_type_{str(self)}.png",
+        #              title=f"Trades by type in {self.name}")
+        # plot_by_type(self.trades_by_agent_type_ext,
+        #              output_file=f"{config.output_dir}/{str(self)}/trades_by_type_ext_{str(self)}.png",
+        #              title=f"Trades by extended type in {self.name}", mode="extended")
+        # plot_bid_ask(self.bid_ask_history,
+        #              output_file=f"{config.output_dir}/{str(self)}/bid_ask_history_{str(self)}.png",
+        #              title=f"Bid ask spread history {str(self)}")
         # calculate and plot realized volatility:
         window = 50
         volatility = self.calculate_realized_volatility(window=window)
@@ -440,6 +444,7 @@ class Security:
 
     def sod(self):
         if self.status == "active":
+            self.logger.info(f"Starting Start-of-Day procedure for {self.name}, day: {self.current_day}")
             self.eod_status = "open"
 
             self.order_book = FourHeap(plus_one=True, market=self)
@@ -573,14 +578,36 @@ class Security:
                 "phase": "object",
                 "day": "int64",
             })
-            self.logger.info(f"Trade data types: {matched_orders_df.dtypes}")
-            self.logger.info("Suspicious values:")
-            self.logger.info(matched_orders_df.loc[matched_orders_df["executed_price"] > 99.99,["executed_price", "cash"]].head())
             self.repository.save_trades(trades_df=matched_orders_df)
 
+            if self.status != "active" and self.instrument_class == "stock":
+                # other instruments cleaned up in their subclasses.
+                self.cleanup()
             self.logger.info(f"EoD procedure of day: {self.current_day-1} completed.")
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
+    def cleanup(self):
+        self.logger.info(f"Cleaning up the security {self.name} ...")
+        self.order_book = None #FourHeap(plus_one=True, market=self)
+        self.matched_orders = None  # stores a list of all trades from the beginning of trading to the end of simulation
+        self.matched_orders_hashed = None  # {order_id: { "price": price, "quantity":quantity }}
 
+        self.bid_ask_history = None
+        self.realized_volatility = None
+        self.orders_by_agent_type = None
+        self.trades_by_agent_type = None
+        self.trades_by_agent_type_ext = None
+        # by groups - including counterparty groups:
+        self.trade_history_by_groups = None
+
+        self.traded_prices = None
+
+        self.trade_stats = None
+        self.trade_stats_df = None
+
+        self.orders_by_agent_type = None
+        self.trades_by_agent_type = None
+        self.trades_by_agent_type_ext = None
+        self.trade_history_by_groups = None
 

@@ -92,7 +92,7 @@ def plot_agent_history_many_markets(
 
     asset_ids = sorted(position_history["asset_id"].unique())
     n_assets = len(asset_ids)
-    if labels_map is None:
+    if labels_map is not None:
         labels_map = { asset_id: f"Asset {asset_id}" for asset_id in asset_ids }
 
     fig, axes = plt.subplots(
