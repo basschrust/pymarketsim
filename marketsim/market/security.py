@@ -429,55 +429,57 @@ class Security:
         self.plot_trade_stats()
 
 
-    ################## SoD and EoD
+    ##################      SoD  and  EoD      ##########################################
 
 
     def sod(self):
-        self.eod_status = "open"
+        if self.status == "active":
+            self.eod_status = "open"
 
-        self.order_book = FourHeap(plus_one=True, market=self)
-        self.matched_orders = []  # stores a list of all trades from the beginning of trading to the end of simulation
-        self.matched_orders_hashed = {}  # {order_id: { "price": price, "quantity":quantity }}
+            self.order_book = FourHeap(plus_one=True, market=self)
+            self.matched_orders = []  # stores a list of all trades from the beginning of trading to the end of simulation
+            self.matched_orders_hashed = {}  # {order_id: { "price": price, "quantity":quantity }}
 
-        self.bid_ask_history = {}
-        self.realized_volatility = {0: 0}
-        self.orders_by_agent_type = {}
-        self.trades_by_agent_type = {}
-        self.trades_by_agent_type_ext = {}
-        # by groups - including counterparty groups:
-        self.trade_history_by_groups = {}
+            self.bid_ask_history = {}
+            self.realized_volatility = {0: 0}
+            self.orders_by_agent_type = {}
+            self.trades_by_agent_type = {}
+            self.trades_by_agent_type_ext = {}
+            # by groups - including counterparty groups:
+            self.trade_history_by_groups = {}
 
-        self.traded_prices = {0: {"open": self.last_traded_price,
-                                  "low": self.last_traded_price,
-                                  "high": self.last_traded_price,
-                                  "close": self.last_traded_price,
-                                  "volume": 0, }}
+            self.traded_prices = {0: {"open": self.last_traded_price,
+                                      "low": self.last_traded_price,
+                                      "high": self.last_traded_price,
+                                      "close": self.last_traded_price,
+                                      "volume": 0, }}
 
-        # and let's use the power of DataFrames:
-        self.trade_stats = {}
-        self.trade_stats_df = pd.DataFrame()
+            # and let's use the power of DataFrames:
+            self.trade_stats = {}
+            self.trade_stats_df = pd.DataFrame()
 
-        for agent_id, agent in self.agents.items():
-            # TODO: we can relatively easily make those aggregations in the DB now
-            self.orders_by_agent_type.setdefault(agent.group, {"count_buy": 0, "volume_buy": 0, "count_sell": 0,
-                                                               "volume_sell": 0})
-            self.trades_by_agent_type.setdefault(agent.group,
-                                                 {"count_buy": 0, "volume_buy": 0,
-                                                  "count_sell": 0, "volume_sell": 0})
-            self.trades_by_agent_type_ext.setdefault(agent.group,
-                                                     {"count_buy": {"arrived": 0, "waited": 0}, "volume_buy":
-                                                         {"arrived": 0, "waited": 0}
-                                                         , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell":
-                                                          {"arrived": 0, "waited": 0}})
-            # this one is tricky as requires n-square combination
-            # TODO: but also with already existing groups!
-            # and then by time...
+            for agent_id, agent in self.agents.items():
+                # TODO: we can relatively easily make those aggregations in the DB now
+                # or at least in the agent's SoD procedure - not, these are attributes of the Security class
+                self.orders_by_agent_type.setdefault(agent.group, {"count_buy": 0, "volume_buy": 0, "count_sell": 0,
+                                                                   "volume_sell": 0})
+                self.trades_by_agent_type.setdefault(agent.group,
+                                                     {"count_buy": 0, "volume_buy": 0,
+                                                      "count_sell": 0, "volume_sell": 0})
+                self.trades_by_agent_type_ext.setdefault(agent.group,
+                                                         {"count_buy": {"arrived": 0, "waited": 0}, "volume_buy":
+                                                             {"arrived": 0, "waited": 0}
+                                                             , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell":
+                                                              {"arrived": 0, "waited": 0}})
+                # this one is tricky as requires n-square combination
+                # TODO: but also with already existing groups!
+                # and then by time...
 
-        for g1 in self.agent_groups:
-            for g2 in self.agent_groups:
-                self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2, {"count_buy": {"arrived": 0
-                    , "waited": 0}, "volume_buy": {"arrived": 0, "waited": 0}
-                    , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell": {"arrived": 0, "waited": 0}})
+            for g1 in self.agent_groups:
+                for g2 in self.agent_groups:
+                    self.trade_history_by_groups.setdefault(g1, {}).setdefault(g2, {"count_buy": {"arrived": 0
+                        , "waited": 0}, "volume_buy": {"arrived": 0, "waited": 0}
+                        , "count_sell": {"arrived": 0, "waited": 0}, "volume_sell": {"arrived": 0, "waited": 0}})
 
     def eod(self):
         # End of Day process for the Market - create EoD DataFrames

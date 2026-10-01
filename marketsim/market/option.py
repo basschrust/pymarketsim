@@ -129,54 +129,58 @@ class Option(Security):
     def sod(self):
         super().sod()
 
-        theoretical_price = self.get_theoretical_price()
-        self.traded_prices = {0: {"open": Price(theoretical_price),
-                                  "low": Price(theoretical_price),
-                                  "high": Price(theoretical_price),
-                                  "close": Price(theoretical_price),
-                                  "theoretical": Price(theoretical_price),
-                                  "volume": 0, }}
+        if self.eod_status == "open":
+            theoretical_price = self.get_theoretical_price()
+            self.traded_prices = {0: {"open": Price(theoretical_price),
+                                      "low": Price(theoretical_price),
+                                      "high": Price(theoretical_price),
+                                      "close": Price(theoretical_price),
+                                      "theoretical": Price(theoretical_price),
+                                      "volume": 0, }}
 
-        self.logger.info(f"Option SoD completed for day: {self.current_day}")
+            self.logger.info(f"Option SoD completed for day: {self.current_day}")
 
 
     def eod(self):
-        self.exercise()
-        super().eod()
+        if self.eod_status == "closed":
+            return
+        elif self.eod_status == "open":
+            self.exercise()
+            super().eod()
 
-        self.fill_theoretical_price()
-        self.traded_prices_df = (
-            pd.DataFrame.from_dict(self.traded_prices, orient="index")
-            .rename_axis("time_tick")
-            .reset_index()
-            [["time_tick", "open", "high", "low", "close", "volume", "theoretical"]]
-        )
+            self.fill_theoretical_price()
+            self.traded_prices_df = (
+                pd.DataFrame.from_dict(self.traded_prices, orient="index")
+                .rename_axis("time_tick")
+                .reset_index()
+                [["time_tick", "open", "high", "low", "close", "volume", "theoretical"]]
+            )
 
-        self.traded_prices_df["asset_id"] = self.asset_id
-        self.traded_prices_df["day"] = self.current_day - 1
+            self.traded_prices_df["asset_id"] = self.asset_id
+            self.traded_prices_df["day"] = self.current_day - 1
 
-        self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
-        self.repository.save_traded_prices(self.traded_prices_df)
+            self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
+            self.repository.save_traded_prices(self.traded_prices_df)
 
-        # eod_prices
-        eod_prices_df = pd.DataFrame([{
-            "open": self.traded_prices_df.loc[
-                self.traded_prices_df["time_tick"] == 0, "open"
-            ].iloc[0],
-            "high": self.traded_prices_df["high"].max(),
-            "low": self.traded_prices_df["low"].min(),
-            "close": self.traded_prices_df.loc[
-                self.traded_prices_df["time_tick"].idxmax(), "close"
-            ],
-            "volume": self.traded_prices_df["volume"].sum(),
-            "asset_id": self.asset_id,
-            "day": self.current_day - 1,
-            "theoretical": self.get_theoretical_price(),
-        }])
+            # eod_prices
+            eod_prices_df = pd.DataFrame([{
+                "open": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"] == 0, "open"
+                ].iloc[0],
+                "high": self.traded_prices_df["high"].max(),
+                "low": self.traded_prices_df["low"].min(),
+                "close": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"].idxmax(), "close"
+                ],
+                "volume": self.traded_prices_df["volume"].sum(),
+                "asset_id": self.asset_id,
+                "day": self.current_day - 1,
+                "theoretical": self.get_theoretical_price(as_of_day=self.current_day-1),
+            }])
 
-        self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
+            self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
 
-        self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
+            self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 
     def exercise(self):
         # check if this option should be exercised and if so, then
@@ -213,6 +217,7 @@ class Option(Security):
                 self.repository.save_option_expiration(option_expiration_df=option_expiration_df)
                 # move the security to non-tradable as expired
                 # TODO: self.status = ""
+                self.logger.info(f"Setting option {self.asset_id} as expired.")
                 self.status = "expired"
         else:
             raise NotImplementedError(f"{self.option_type} not implemented")
