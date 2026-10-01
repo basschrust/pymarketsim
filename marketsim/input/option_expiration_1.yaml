@@ -1,8 +1,8 @@
 # market structure configuration file
 
 # generic simulation parameters
-sim_time: 10  # steps per day
-days: 7 # default 1 day, starting with id=0
+sim_time: 50  # steps per day
+days: 10 # default 1 day, starting with id=0
 lob_plot_interval: 2
 debug_logging: False
 seed: 67
@@ -55,7 +55,7 @@ markets:
 agents:
   noise:
     agent_class: NoiseAgent
-    number: 15
+    number: 20
   mmzoh_1:
     markets:
       - tnt_stock

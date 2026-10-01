@@ -20,10 +20,10 @@ class NoiseAgent(Agent):
     """
     def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None = None
                  , group: str="Noise") -> None:
-        default_configuration = { "q_max": 1000,
-                                 "lam": 1.0,
-                                 "mean_volume": 5.0,
-                                  "mean_spread": Price(0.2),
+        default_configuration = { "q_max": 10000,
+                                 "lam": 0.2,
+                                 "mean_volume": 50.0,
+                                  "mean_spread": Price(0.8),
                                   "withdraw_old": False, }
         self.configuration = default_configuration | configuration if configuration is not None else {}
         super().__init__(markets=markets, repository=repository,

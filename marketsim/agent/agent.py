@@ -45,6 +45,7 @@ class Agent(ABC):
         self.configuration = configuration
 
         self.markets = { market.asset_id: market for market in markets }  # converting to dict
+        self.abandoned_markets = {}
 
         self.trade_history = {}  # dict of lists/dicts {time: [trades over that day, volume bought, volume sold]}
 
@@ -161,10 +162,12 @@ class Agent(ABC):
         self.cash_history = defaultdict(Price)
 
         # drop expired securities from portfolio
-        expired_securities = [m_id for m_id, market in self.markets.items() if market.status == "expired"]
+        expired_securities = { m_id: market for m_id, market in self.markets.items()
+                               if market.status == "expired" }
         # or not "active" ?
-        for m_id in expired_securities:
+        for m_id, market in expired_securities.items():
             self.markets.pop(m_id)
+            self.abandoned_markets[m_id] = market
 
         self.logger.info(f"After removing expired securities agent will be active on the following markets:")
         self.logger.info(self.markets)
@@ -269,13 +272,17 @@ class Agent(ABC):
         eod_portfolio_values_df = self.repository.get_eod_portfolio_values(agent_id=self.agent_id)
         eod_portfolio_values_df.rename(columns={"day": "time_step"}, inplace=True)
 
+        labels_map = { asset_id: security.short_name for asset_id, security
+                       in self.markets.items() }
+        for m_id, market in self.abandoned_markets.items():
+            labels_map[m_id] = market.short_name
+
         plot_agent_history_many_markets(position_history=positions_df,
                                         cash_history=eod_cash_df,
                                         value_history=eod_portfolio_values_df,
                                         output_file=agent_output_file,
                                         title=f"Agent {self.agent_id} {str(self)} summary",
-                                        labels_map={ asset_id: security.short_name
-                                                     for asset_id, security in self.markets.items() },
+                                        labels_map=labels_map,
                                         time_label="Simulation day")
 
     def __str__(self) -> str:
