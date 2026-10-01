@@ -35,8 +35,8 @@ def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: floa
     callPrice = float(S)*distributions.norm.cdf(d1) - math.exp(-r*Time)*K*distributions.norm.cdf(d2)
     intrinsicValue = max(0, float(S)-float(K)*math.exp(-r*Time))
   timeValue = callPrice - intrinsicValue
-  print({"price": callPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \
-    "intrinsicValue": intrinsicValue, "timeValue": timeValue})
+  # print({"price": callPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \
+  #   "intrinsicValue": intrinsicValue, "timeValue": timeValue})
   #return callPrice  #maybe return a tuple (or dict) with the price and all the Greeks?
   return {"price": callPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \
     "intrinsicValue": intrinsicValue, "timeValue": timeValue}

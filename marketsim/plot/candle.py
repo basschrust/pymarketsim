@@ -16,7 +16,10 @@ def plot_candlestick_old(df, output_file: str):
     fig.savefig(output_file, dpi=150, bbox_inches="tight")
 
 
-def plot_candlestick(df: pd.DataFrame, output_file: str | None =None, title: str ="Candlestick chart"):
+def plot_candlestick(df: pd.DataFrame,
+                     output_file: str | None =None,
+                     title: str ="Candlestick chart",
+                     x_label: str = "Simulation time [days]"):
     """
     Parameters
     ----------
@@ -78,7 +81,7 @@ def plot_candlestick(df: pd.DataFrame, output_file: str | None =None, title: str
     ax_price.grid(True, alpha=0.3)
 
     ax_volume.set_ylabel("Volume")
-    ax_volume.set_xlabel("Simulation time")
+    ax_volume.set_xlabel(x_label)
     ax_volume.grid(True, alpha=0.3)
 
     ax_price.set_xlim(df.index.min() - 1, df.index.max() + 1)
