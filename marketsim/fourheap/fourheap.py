@@ -36,36 +36,82 @@ class FourHeap:
 
         self.midprices = defaultdict(Price) #[] # AK: well, it should be tied to the time slots
 
-
     def handle_new_order(self, order: Order) -> None:
-        self.logger.info(f"handle_new_order {order}")
-        q_order = order.quantity
-        orders_matched = self.sell_matched if order.order_type == constants.SELL else self.buy_matched
-        orders_unmatched = self.sell_unmatched if order.order_type == constants.SELL else self.buy_unmatched
-        counter_matched = self.sell_matched if order.order_type == constants.BUY else self.buy_matched
-        counter_unmatched = self.sell_unmatched if order.order_type == constants.BUY else self.buy_unmatched
+        self.logger.debug("handle_new_order order_id={}", order.order_id)
 
-        to_match = counter_unmatched.pop_best_order() #push_to() # this pops the top order from the queue (TODO: rename this method)
-        executed_price = to_match.price #counter_unmatched.peek() # so this took next order limit, which was wrong
-        if to_match is not None:
-            to_match_quantity = to_match.quantity
-            if to_match_quantity == q_order:
-                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
-            elif to_match_quantity > q_order:
-                excess_order = to_match.copy_and_decrease(q_order)
-                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
+        orders_matched = (
+            self.sell_matched
+            if order.order_type == constants.SELL
+            else self.buy_matched
+        )
+        counter_matched = (
+            self.sell_matched
+            if order.order_type == constants.BUY
+            else self.buy_matched
+        )
+        counter_unmatched = (
+            self.buy_unmatched
+            if order.order_type == constants.SELL
+            else self.sell_unmatched
+        )
+        orders_unmatched = (
+            self.sell_unmatched
+            if order.order_type == constants.SELL
+            else self.buy_unmatched
+        )
+
+        while order.quantity > 0:
+            best_price = counter_unmatched.peek()
+
+            # Stop if the remaining order no longer crosses the book.
+            if (
+                    order.order_type == constants.SELL
+                    and order.price > best_price
+            ) or (
+                    order.order_type == constants.BUY
+                    and order.price < best_price
+            ):
+                orders_unmatched.add_order(order)
+                break
+
+            to_match = counter_unmatched.pop_best_order()
+
+            if to_match is None:
+                orders_unmatched.add_order(order)
+                break
+
+            executed_price = to_match.price
+            executed_quantity = min(order.quantity, to_match.quantity)
+
+            # Preserve your existing copy_and_decrease semantics:
+            # the current object becomes the executed quantity;
+            # the returned object contains the remainder.
+            if order.quantity > executed_quantity:
+                remaining_order = order.copy_and_decrease(executed_quantity)
+            else:
+                remaining_order = None
+
+            if to_match.quantity > executed_quantity:
+                excess_order = to_match.copy_and_decrease(executed_quantity)
                 counter_unmatched.add_order(excess_order)
-            elif q_order > to_match_quantity:
-                # There's a better way to do this, but I think it's not worth it
-                counter_matched.add_order(to_match, executed_price=executed_price, executed_mode='waited', matched_with=order.order_id)
-                new_order = order.copy_and_decrease(to_match_quantity)
-                orders_matched.add_order(order, executed_price=executed_price, executed_mode='arrived', matched_with=to_match.order_id)
-                self.insert(new_order) # AK - this is problematic - should be added to the unmatched heap now, not the 4heap
-                # TODO: so check if this is needed and optimal
-                #orders_unmatched.add_order(new_order) # AK fix? TODO: but we have to check if this new order doesn't match next
-                    # order on the other side
+
+            orders_matched.add_order(
+                order,
+                executed_price=executed_price,
+                executed_mode="arrived",
+                matched_with=to_match.order_id,
+            )
+            counter_matched.add_order(
+                to_match,
+                executed_price=executed_price,
+                executed_mode="waited",
+                matched_with=order.order_id,
+            )
+
+            if remaining_order is None:
+                break
+
+            order = remaining_order
 
     def handle_replace(self, order: Order) -> None:
         raise # is it ever used in coninuous mode? yes, but no after the fix on L55 above on 29.7.2026

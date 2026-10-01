@@ -80,18 +80,24 @@ def plot_agent_history_single_market(
 
 def plot_agent_history_many_markets(
     position_history: pd.DataFrame,
-    cash_history: dict,
-    value_history: dict,
+    cash_history: pd.DataFrame, # dict,
+    value_history: pd.DataFrame, #dict,
     output_file: str,
     title: str = "Agent Portfolio history",
+    labels_map: dict|None=None, # map of short names: {asset_id: "stock TNT", 4: "CALL TNT 90", ...}
+    time_label: str|None=None,
 ) -> None:
+
+    time_label = time_label if time_label is None else "Simulation time"
 
     asset_ids = sorted(position_history["asset_id"].unique())
     n_assets = len(asset_ids)
+    if labels_map is not None:
+        labels_map = { asset_id: f"Asset {asset_id}" for asset_id in asset_ids }
 
     fig, axes = plt.subplots(
         n_assets + 2,
-        1,
+        ncols=1,
         figsize=(10, 3 * (n_assets + 2)),
         sharex=True,
     )
@@ -108,22 +114,24 @@ def plot_agent_history_many_markets(
 
         asset_history = position_history[
             position_history["asset_id"] == asset_id
-        ].sort_values("time_tick")
+        ].sort_values("time_step")
 
         ax.plot(
-            asset_history["time_tick"],
+            asset_history["time_step"],
             asset_history["position"],
         )
 
-        ax.set_ylabel(f"Asset {asset_id}")
+        ax.set_ylabel(labels_map.get(asset_id))
         ax.grid(True)
 
     # Cash subplot
     ax_cash = axes[n_assets]
 
     ax_cash.plot(
-        list(cash_history.keys()),
-        list(cash_history.values()),
+        # list(cash_history.keys()),
+        # list(cash_history.values()),
+        cash_history["time_step"],
+        cash_history["cash"],
         color="#2E8B57",
     )
 
@@ -134,11 +142,13 @@ def plot_agent_history_many_markets(
     ax_value = axes[n_assets + 1]
 
     ax_value.plot(
-        list(value_history.keys()),
-        list(value_history.values()),
+        # list(value_history.keys()),
+        # list(value_history.values()),
+        value_history["time_step"],
+        value_history["portfolio_value"]
     )
 
-    ax_value.set_xlabel("Simulation time")
+    ax_value.set_xlabel(time_label)
     ax_value.set_ylabel("Portfolio value")
     ax_value.grid(True)
 
@@ -163,7 +173,7 @@ def plot_order_book(
     If cumulative=True, the values are first converted to cumulative depth.
     """
 
-    def make_depth(book, reverse):
+    def make_depth(book: dict, reverse: bool):
         items = sorted(book.items(), reverse=reverse)
 
         if cumulative:

@@ -65,7 +65,7 @@ class Agent(ABC):
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
         logger.add(
-            f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
+            sink=f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
             format="{elapsed} | {message}",
             level="DEBUG" if config.debug_logging else "INFO",
             filter=lambda record, agent_id=self.agent_id:
@@ -166,6 +166,9 @@ class Agent(ABC):
         for m_id in expired_securities:
             self.markets.pop(m_id)
 
+        self.logger.info(f"After removing expired securities agent will be active on the following markets:")
+        self.logger.info(self.markets)
+
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id: 0 for m_id in self.markets }
 
@@ -233,22 +236,47 @@ class Agent(ABC):
 
             self.repository.save_cash_history(cash_history_df=cash_history_df)
 
-            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
-            # self.repository.save_position_history(self.position_history_df) # in market as prices are needed
+            # save eod_cash and eod_portfolio_value
+            eod_cash_df = pd.DataFrame([{ "day": self.current_day-1,
+                                                        "agent_id": self.agent_id,
+                                                        "cash": self.cash,
+                                                        }])
+            self.logger.info(f"eod_cash_df: {eod_cash_df.head()}")
+            self.repository.save_eod_cash(eod_cash_df=eod_cash_df)
 
+            eod_portfolio_value_df = pd.DataFrame([{ "day": self.current_day-1,
+                                                          "agent_id": self.agent_id,
+                                                          "portfolio_value": self.portfolio_value,
+                                                                   }])
+            self.logger.info(f"eod_portfolio_value_df: {eod_portfolio_value_df.head()}")
+            self.repository.save_eod_portfolio_value(eod_portfolio_value_df=eod_portfolio_value_df)
+
+            self.logger.info(f"EoD agent {self.agent_id} procedure of day: {self.current_day-1} completed.")
         else:
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
     def show_summary(self):
-        self.eod()
-
         agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
 
-        plot_agent_history_many_markets(position_history=self.position_history_df,
-                                        cash_history=self.cash_history,
-                                        value_history=self.portfolio_value_history,
+        positions_df = self.repository.get_eod_positions(agent_id=self.agent_id)
+        positions_df.rename(columns={"day": "time_step"}, inplace=True)
+
+        self.logger.info(f"Plotting eod positions for {self.agent_id} ...")
+        # self.logger.info(f"{positions_df.head(100)}")
+        eod_cash_df = self.repository.get_eod_cash(agent_id=self.agent_id)
+        eod_cash_df.rename(columns={"day": "time_step"}, inplace=True)
+
+        eod_portfolio_values_df = self.repository.get_eod_portfolio_values(agent_id=self.agent_id)
+        eod_portfolio_values_df.rename(columns={"day": "time_step"}, inplace=True)
+
+        plot_agent_history_many_markets(position_history=positions_df,
+                                        cash_history=eod_cash_df,
+                                        value_history=eod_portfolio_values_df,
                                         output_file=agent_output_file,
-                                        title=f"Agent {self.agent_id} {str(self)} summary")
+                                        title=f"Agent {self.agent_id} {str(self)} summary",
+                                        labels_map={ asset_id: security.short_name
+                                                     for asset_id, security in self.markets.items() },
+                                        time_label="Simulation day")
 
     def __str__(self) -> str:
         return f"{self.agent_id}_{self.group}"

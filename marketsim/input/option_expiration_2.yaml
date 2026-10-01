@@ -2,7 +2,7 @@
 
 # generic simulation parameters
 sim_time: 10  # steps per day
-days: 7 # default 1 day, starting with id=0
+days: 50 # default 1 day, starting with id=0
 lob_plot_interval: 2
 debug_logging: False
 seed: 67
@@ -11,12 +11,14 @@ seed: 67
 markets:
   tnt_stock:
     name: "Stock TNT as underlying"
+    short_name: "TNT stock"
     instrument_class: stock # stock is default :)
     ticker: "TNT"
     market_type: continuous
 
   cnc_stock:
     name: "Stock CNC as underlying"
+    short_name: "CNC stock"
     instrument_class: stock # stock is default :)
     ticker: "CNC"
     market_type: continuous
@@ -28,10 +30,12 @@ markets:
     instrument_class: option
     derivatives_config:
       option_type: European
+      short_name: "TNT CALL "
       underlying: tnt_stock  # reference to one of above defined securities
-      expiration: 3 # 248 trading days per year at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+      expiration: 40 # 248 trading days per year at first set 1Y as default, but should be a date/ hour, end of particular session, etc
 #      strike: 100 # maybe list of strikes?
       strikes:
+        - 90
         - 100
         - 110
       option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
@@ -39,6 +43,7 @@ markets:
 
   options_put:
     name: "Sec derivative - European PUT option on stock TNT with 1Y to maturity"
+    short_name: "TNT PUT "  # enable using vars/jinja2 templates? like "TNT CALL {strike}"
     instrument_class: option
     derivatives_config:
       option_type: European
@@ -47,6 +52,7 @@ markets:
       # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
 #      strike: 100 # maybe list of strikes?
       strikes:
+        - 90
         - 100
         - 110
       option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
@@ -63,4 +69,7 @@ agents:
     number: 1
   option_mmzoh_1:
     agent_class: OptionMMZOHAgent
+    number: 1
+  momentum:
+    agent_class: MomentumAgent
     number: 1

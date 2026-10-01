@@ -13,7 +13,7 @@ fi = distributions.norm.pdf #rozklad prawdopodobienstwa
 
 def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: float =0.0):
   #delta in arguments is small delta - the dividend yield
-  print(f"BSCall, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
+  # TODO: print(f"BSCall, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
   # on expiration date Time=0, so the option value is S-K
   if Time == 0:
     callPrice = max(Price(0), S - K)
@@ -43,7 +43,7 @@ def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: floa
   
 
 def BSPut(S: Price, K: Price, r: float, volatility: float, Time: float, d: float=0.0):
-  print(f"BSPut, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
+  # TODO: print(f"BSPut, S: {S}, K: {K}, r: {r}, volatility: {volatility}, Time: {Time}")
   if Time == 0:
     putPrice = max(Price(0), K-S)
     intrinsicValue = putPrice

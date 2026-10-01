@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class Option(Security):
     def __init__(self, *, derivatives_config: dict, underlying: Security,
                  market_type: str = "continuous", repository: Repository,
-                 name: str| None = None) -> None:
+                 name: str| None = None, short_name: str|None=None) -> None:
 
         self.instrument_class = "option"
         self.underlying = underlying
@@ -30,11 +30,15 @@ class Option(Security):
         self.option_type = derivatives_config.get("option_type", "European")
         self.r = 0 # the risk-free financing rate
         self.volatility = 0.157  # annualized volatility of the underlying security
-        # TODO: reference price should be theoretical - what about calculating this and then calling super()?
+        if short_name is None:
+            self.short_name = f"{self.option_side}_{self.underlying.short_name}_{self.strike}"
+        else:
+            self.short_name = f"{short_name} {self.strike}"
+
         theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
-                         , instrument_class=self.instrument_class, repository=repository)
-
+                         , instrument_class=self.instrument_class, repository=repository,
+                         short_name=self.short_name)
 
 
     def calculate_greeks(self):
@@ -111,58 +115,84 @@ class Option(Security):
                                                  "volume": volume,
                                                  "theoretical": self.get_theoretical_price(),}
 
-    def plot_history(self):
+    def plot_history(self, traded_prices: dict):
         # ensure that theoretical will be plotted, too:
-        self.fill_theoretical_price()
+        # self.fill_theoretical_price() # TODO: check if in historical analysis this takes proper Time
 
         traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
-                               for t, item in self.traded_prices.items()}
+                               for t, item in traded_prices.items()}
         df_candlestick = pd.DataFrame.from_dict(traded_prices_float,
                                                 orient="index"
                                                 )
         df_candlestick.index.name = "time"
-        self.logger.info(df_candlestick.head())
+        self.logger.info(f"Option candlestick to plot: {df_candlestick.head()}")
 
         candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick_derivative(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def sod(self):
-        super().sod()
+        if self.status == "active":
+            super().sod()
 
+            if self.eod_status == "open":
+                theoretical_price = self.get_theoretical_price()
+                self.traded_prices = {0: {"open": Price(theoretical_price),
+                                          "low": Price(theoretical_price),
+                                          "high": Price(theoretical_price),
+                                          "close": Price(theoretical_price),
+                                          "theoretical": Price(theoretical_price),
+                                          "volume": 0, }}
 
-        theoretical_price = self.get_theoretical_price()
-        self.traded_prices = {0: {"open": theoretical_price,
-                                  "low": theoretical_price,
-                                  "high": theoretical_price,
-                                  "close": theoretical_price,
-                                  "theoretical": self.get_theoretical_price(),
-                                  "volume": 0, }}
-
-        self.logger.info(f"Option SoD completed for day: {self.current_day}")
+                self.logger.info(f"Option SoD completed for day: {self.current_day}")
 
 
     def eod(self):
-        self.exercise()
-        super().eod()
+        if self.eod_status == "closed":
+            return
+        elif self.eod_status == "open":
+            self.exercise()
+            super().eod()
 
-        self.fill_theoretical_price()
-        self.traded_prices_df = (
-            pd.DataFrame.from_dict(self.traded_prices, orient="index")
-            .rename_axis("time_tick")
-            .reset_index()
-            [["time_tick", "open", "high", "low", "close", "volume", "theoretical"]]
-        )
+            self.fill_theoretical_price()
+            self.traded_prices_df = (
+                pd.DataFrame.from_dict(self.traded_prices, orient="index")
+                .rename_axis("time_tick")
+                .reset_index()
+                [["time_tick", "open", "high", "low", "close", "volume", "theoretical"]]
+            )
 
-        self.traded_prices_df["asset_id"] = self.asset_id
-        self.traded_prices_df["day"] = self.current_day - 1
+            self.traded_prices_df["asset_id"] = self.asset_id
+            self.traded_prices_df["day"] = self.current_day - 1
 
-        self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
-        self.repository.save_traded_prices(self.traded_prices_df)
+            self.logger.info(f"Traded_prices_df: {self.traded_prices_df.head()}")
+            self.repository.save_traded_prices(self.traded_prices_df)
 
-        self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
+            # eod_prices
+            eod_prices_df = pd.DataFrame([{
+                "open": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"] == 0, "open"
+                ].iloc[0],
+                "high": self.traded_prices_df["high"].max(),
+                "low": self.traded_prices_df["low"].min(),
+                "close": self.traded_prices_df.loc[
+                    self.traded_prices_df["time_tick"].idxmax(), "close"
+                ],
+                "volume": self.traded_prices_df["volume"].sum(),
+                "asset_id": self.asset_id,
+                "day": self.current_day - 1,
+                "theoretical": self.get_theoretical_price(as_of_day=self.current_day-1),
+            }])
+
+            self.repository.save_eod_prices(eod_prices_df=eod_prices_df)
+
+            if self.status != "active":
+                self.cleanup()
+
+            self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 
     def exercise(self):
-        # exercising the option - yet only European are served (as for American
+        # check if this option should be exercised and if so, then
+        # exercise the option - yet only European are served (as for American
         if self.option_type == "European":
             if self.expiration == self.current_day:
                 self.logger.info(f"Day of European option expiry {self.name}")
@@ -183,9 +213,12 @@ class Option(Security):
                 for agent_id, agent in self.agents.items():
                     final_position = agent.position[self.asset_id]
                     if final_position != 0:
-                        agent.update_position(quantity=-final_position,
+                        agent.update_position(quantity= -final_position,
                                               cash=premium*final_position,
                                               asset_id=self.asset_id)
+                        agent.portfolio_value += premium * final_position
+                        # TODO: this should be done by an agent method, but yet record_valuation
+                        # TODO: is working only for intraday trades
 
                 option_expiration = { "day": [self.current_day],
                                       "asset_id": [self.asset_id],
@@ -195,6 +228,7 @@ class Option(Security):
                 self.repository.save_option_expiration(option_expiration_df=option_expiration_df)
                 # move the security to non-tradable as expired
                 # TODO: self.status = ""
+                self.logger.info(f"Setting option {self.asset_id} as expired.")
                 self.status = "expired"
         else:
             raise NotImplementedError(f"{self.option_type} not implemented")

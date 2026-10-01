@@ -90,11 +90,27 @@ class Repository:
             )
         """)
 
+        self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS eod_portfolio_value (
+                day       INTEGER,
+                agent_id  INTEGER,
+                portfolio_value DOUBLE
+            )
+        """)
+
         # cash history
         self.connection.execute("""
             CREATE TABLE IF NOT EXISTS cash_history (
                 day       INTEGER,
                 time_tick INTEGER,
+                agent_id  INTEGER,
+                cash DOUBLE
+            )
+        """)
+
+        self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS eod_cash (
+                day       INTEGER,
                 agent_id  INTEGER,
                 cash DOUBLE
             )
@@ -245,6 +261,16 @@ class Repository:
 
         self.connection.unregister("portfolio_value_history_df")
 
+    def save_eod_portfolio_value(self, eod_portfolio_value_df: pd.DataFrame) -> None:
+        self.connection.register("eod_portfolio_value_df", eod_portfolio_value_df)
+        self.connection.execute("""
+                INSERT INTO eod_portfolio_value (day, agent_id, portfolio_value)
+                SELECT day, agent_id, portfolio_value
+                FROM eod_portfolio_value_df
+        """)
+
+        self.connection.unregister("eod_portfolio_value_df")
+
     def save_cash_history(self, cash_history_df: pd.DataFrame) -> None:
         self.connection.register("cash_history_df", cash_history_df)
         self.connection.execute("""
@@ -254,6 +280,16 @@ class Repository:
         """)
 
         self.connection.unregister("cash_history_df")
+
+    def save_eod_cash(self, eod_cash_df: pd.DataFrame) -> None:
+        self.connection.register("eod_cash_df", eod_cash_df)
+        self.connection.execute("""
+            INSERT INTO eod_cash (day, agent_id, cash)
+            SELECT day, agent_id, cash
+            FROM eod_cash_df
+        """)
+
+        self.connection.unregister("eod_cash_df")
 
     def save_traded_prices(self, traded_prices_df: pd.DataFrame) -> None:
         # TODO: add version for derivatives, including theoretical - needed?
@@ -349,12 +385,15 @@ class Repository:
 
         self.connection.unregister("option_expiration_df")
 
-    # methods for data extraction
+    ######################################################################################
+    #########   methods for data extraction   ############################################
+    ######################################################################################
+
     # for multiday plotting
     def get_eod_positions(self, agent_id: int) -> pd.DataFrame:
         return self.connection.execute(query="""
                 SELECT day, asset_id, position
-                FROM position_history
+                FROM eod_positions
                 WHERE agent_id = ?
             """, parameters=[agent_id]).fetchdf()
 
@@ -364,3 +403,17 @@ class Repository:
                 FROM eod_prices
                 WHERE asset_id = ?
             """, parameters=[asset_id]).fetchdf()
+
+    def get_eod_cash(self, agent_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, cash
+                FROM eod_cash
+                WHERE agent_id = ?
+            """, parameters=[agent_id]).fetchdf()
+
+    def get_eod_portfolio_values(self, agent_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, portfolio_value
+                FROM eod_portfolio_value
+                WHERE agent_id = ?
+            """, parameters=[agent_id]).fetchdf()
