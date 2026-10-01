@@ -80,12 +80,15 @@ def plot_agent_history_single_market(
 
 def plot_agent_history_many_markets(
     position_history: pd.DataFrame,
-    cash_history: dict,
-    value_history: dict,
+    cash_history: pd.DataFrame, # dict,
+    value_history: pd.DataFrame, #dict,
     output_file: str,
     title: str = "Agent Portfolio history",
     labels_map: dict|None=None, # map of short names: {asset_id: "stock TNT", 4: "CALL TNT 90", ...}
+    time_label: str|None=None,
 ) -> None:
+
+    time_label = time_label if time_label is None else "Simulation time"
 
     asset_ids = sorted(position_history["asset_id"].unique())
     n_assets = len(asset_ids)
@@ -125,8 +128,10 @@ def plot_agent_history_many_markets(
     ax_cash = axes[n_assets]
 
     ax_cash.plot(
-        list(cash_history.keys()),
-        list(cash_history.values()),
+        # list(cash_history.keys()),
+        # list(cash_history.values()),
+        cash_history["time_step"],
+        cash_history["cash"],
         color="#2E8B57",
     )
 
@@ -137,11 +142,13 @@ def plot_agent_history_many_markets(
     ax_value = axes[n_assets + 1]
 
     ax_value.plot(
-        list(value_history.keys()),
-        list(value_history.values()),
+        # list(value_history.keys()),
+        # list(value_history.values()),
+        value_history["time_step"],
+        value_history["portfolio_value"]
     )
 
-    ax_value.set_xlabel("Simulation time")
+    ax_value.set_xlabel(time_label)
     ax_value.set_ylabel("Portfolio value")
     ax_value.grid(True)
 

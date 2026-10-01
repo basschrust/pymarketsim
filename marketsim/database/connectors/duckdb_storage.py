@@ -393,7 +393,7 @@ class Repository:
     def get_eod_positions(self, agent_id: int) -> pd.DataFrame:
         return self.connection.execute(query="""
                 SELECT day, asset_id, position
-                FROM position_history
+                FROM eod_positions
                 WHERE agent_id = ?
             """, parameters=[agent_id]).fetchdf()
 
@@ -411,3 +411,9 @@ class Repository:
                 WHERE agent_id = ?
             """, parameters=[agent_id]).fetchdf()
 
+    def get_eod_portfolio_values(self, agent_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, portfolio_value
+                FROM eod_portfolio_value
+                WHERE agent_id = ?
+            """, parameters=[agent_id]).fetchdf()

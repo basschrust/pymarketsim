@@ -253,20 +253,27 @@ class Agent(ABC):
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
     def show_summary(self):
-        # self.eod()
-
         agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
 
         positions_df = self.repository.get_eod_positions(agent_id=self.agent_id)
         positions_df.rename(columns={"day": "time_step"}, inplace=True)
 
+        self.logger.info(f"Plotting eod positions for {self.agent_id} ...")
+        # self.logger.info(f"{positions_df.head(100)}")
+        eod_cash_df = self.repository.get_eod_cash(agent_id=self.agent_id)
+        eod_cash_df.rename(columns={"day": "time_step"}, inplace=True)
 
+        eod_portfolio_values_df = self.repository.get_eod_portfolio_values(agent_id=self.agent_id)
+        eod_portfolio_values_df.rename(columns={"day": "time_step"}, inplace=True)
 
         plot_agent_history_many_markets(position_history=positions_df,
-                                        cash_history=self.cash_history,
-                                        value_history=self.portfolio_value_history,
+                                        cash_history=eod_cash_df,
+                                        value_history=eod_portfolio_values_df,
                                         output_file=agent_output_file,
-                                        title=f"Agent {self.agent_id} {str(self)} summary")
+                                        title=f"Agent {self.agent_id} {str(self)} summary",
+                                        labels_map={ asset_id: security.short_name
+                                                     for asset_id, security in self.markets.items() },
+                                        time_label="Simulation day")
 
     def __str__(self) -> str:
         return f"{self.agent_id}_{self.group}"
