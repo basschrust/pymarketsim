@@ -24,7 +24,8 @@ class NoiseAgent(Agent):
                                  "lam": 0.2,
                                  "mean_volume": 50.0,
                                   "mean_spread": Price(0.8),
-                                  "withdraw_old": False, }
+                                  "withdraw_old": False,
+                                  "validity_period": 3, }
         self.configuration = default_configuration | configuration if configuration is not None else {}
         super().__init__(markets=markets, repository=repository,
                          configuration=self.configuration, group=group)
@@ -35,6 +36,7 @@ class NoiseAgent(Agent):
         self.mean_spread = self.configuration["mean_spread"]
         # withdrawing old oders when placing new one:
         self.withdraw_old = self.configuration["withdraw_old"]
+        self.validity_period = self.configuration["validity_period"] # validity period for orders
 
     def get_id(self) -> int:
         return self.agent_id
@@ -63,6 +65,7 @@ class NoiseAgent(Agent):
                         time=current_time,
                         order_type=side,
                         asset_id=market.asset_id,
+                        valid_until=current_time+self.validity_period,
                     )
                     orders.append(order)
                 else:

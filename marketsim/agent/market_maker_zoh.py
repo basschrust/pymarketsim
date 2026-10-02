@@ -21,8 +21,8 @@ class MMZOHAgent(Agent):
         default_configuration = {"xi": 0.1,
                                 "K":  3,
                                  "omega": 0.1,
-                                 "rebalance_period": 5,
-                                 "volume": 7,
+                                 "rebalance_period": 7,
+                                 "volume": 5,
                                  "q_max": 1000,
                                 "rebalance_by": "time",
                                  "rebalance_volume": 70 }
