@@ -94,6 +94,23 @@ def test_copy_and_decrease_preserves_order_properties():
     assert remaining_order.parent_id == order.order_id
 
 
+# @pytest.mark.parametrize(
+#     ("number_of_buy_orders", "incoming_quantity", "expected_remaining"),
+#     [
+#         (2493, 2493, 0),
+#         (2000, 2493, 493),
+#         (3000, 2493, 0),
+#     ],
+# )
+# def test_large_sell_order_against_small_buy_orders(
+#     number_of_buy_orders,
+#     incoming_quantity,
+#     expected_remaining,
+# ):
+#     ...
+
+
+
 def test_large_sell_order_against_many_small_buy_orders(stock):
     fourheap = FourHeap(market=stock)
 
