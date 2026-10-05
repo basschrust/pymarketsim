@@ -22,7 +22,7 @@ class MomentumAgent(Agent):
                                   "lam": 0.5,
                                   "q_max": 100,
                                   "threshold": 0.01 }
-        final_configuration = default_configuration | configuration if configuration is not None else {}
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration
                          , group=group)
 
