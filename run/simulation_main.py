@@ -6,17 +6,17 @@ from typing import TYPE_CHECKING
 import random
 import numpy as np
 
-from marketsim.input.config import CONFIG
-from marketsim.loggers.basic import StreamToLogger
-from marketsim.plot.simple_plot import simple_plot
+
+import sys
+
+from marketsim.input.config import load_config
+# from marketsim.input.config import CONFIG
+# from marketsim.loggers.basic import StreamToLogger
+# from marketsim.plot.simple_plot import simple_plot
 from marketsim.simulator import Simulator
 
 if TYPE_CHECKING:
     from marketsim.market import Price
-
-random.seed(CONFIG.get("seed", 67))
-np.random.seed(CONFIG.get("seed", 67))
-# TODO: save seed in DB
 
 
 def kwargs_for(func: Callable, config: dict) -> dict:
@@ -24,6 +24,25 @@ def kwargs_for(func: Callable, config: dict) -> dict:
     return {k: v for k, v in config.items() if k in params}
 
 
-sim = Simulator(**kwargs_for(Simulator, CONFIG))
+def main():
+    config_file = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else "market_structure.yaml"
+    )
 
-sim.run()
+    config = load_config(config_file)
+
+    # run simulation...
+    sim = Simulator(**kwargs_for(Simulator, config))
+
+    sim.run()
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+

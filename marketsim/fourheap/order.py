@@ -61,6 +61,7 @@ class Order:
                           valid_until=self.valid_until,
                           )
         self.update_quantity_filled(self.quantity - transact_quantity)
+        # self.update_quantity_filled(transact_quantity)
         return new_order
 
     def __eq__(self, other: Order|None) -> bool:
