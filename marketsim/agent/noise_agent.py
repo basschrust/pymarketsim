@@ -26,7 +26,7 @@ class NoiseAgent(Agent):
                                   "mean_spread": Price(0.8),
                                   "withdraw_old": False,
                                   "validity_period": 3, }
-        self.configuration = default_configuration | configuration if configuration is not None else {}
+        self.configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository,
                          configuration=self.configuration, group=group)
 
