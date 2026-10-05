@@ -70,6 +70,7 @@ class Order:
         return self.order_id == other.order_id
 
     def __gt__(self, other: 'Order') -> bool:
+        # TODO: we should check asset_id not to compare orders for different instruments
         if self.order_type == -1 and other.order_type == -1:
             return (self.price, self.time) < (other.price, other.time)
         elif self.order_type == 1 and other.order_type == 1:

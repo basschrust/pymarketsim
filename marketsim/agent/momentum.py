@@ -35,10 +35,6 @@ class MomentumAgent(Agent):
     def get_id(self) -> int:
         return self.agent_id
 
-
-    def is_market_maker(self) -> bool:
-        return False
-
     def take_action(self, current_time: int):
         for asset_id, market in self.markets.items():
             orders = []
@@ -93,6 +89,7 @@ class MomentumAgent(Agent):
 
 
     def get_pos_value(self) -> float:
+        # TODO: wtf is this function for?
         return 0
 
     def __str__(self):
