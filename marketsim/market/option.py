@@ -8,11 +8,11 @@ from marketsim.input import config
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.plot.candle import plot_candlestick_derivative
 from marketsim.market import Security
+from marketsim.market import Price
 
 if TYPE_CHECKING:
     from database.connectors.duckdb_storage import Repository
     from marketsim.fourheap import MatchedOrder
-    from marketsim.market import Price
 
 
 
