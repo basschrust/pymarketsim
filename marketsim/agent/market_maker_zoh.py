@@ -21,12 +21,12 @@ class MMZOHAgent(Agent):
         default_configuration = {"xi": 0.1,
                                 "K":  3,
                                  "omega": 0.1,
-                                 "rebalance_period": 5,
-                                 "volume": 7,
+                                 "rebalance_period": 7,
+                                 "volume": 5,
                                  "q_max": 1000,
                                 "rebalance_by": "time",
                                  "rebalance_volume": 70 }
-        final_configuration = default_configuration | configuration if configuration is not None else {}
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration,
                          group=group)
 

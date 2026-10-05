@@ -4,15 +4,16 @@ import pandas as pd
 
 from typing_extensions import TYPE_CHECKING
 
-from .price import Price
-from .security import Security
 from marketsim.input import config
-from marketsim.fourheap import MatchedOrder
-from .valuation_libs.BlackScholes import BSCall, BSPut
+from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
 from marketsim.plot.candle import plot_candlestick_derivative
+from marketsim.market import Security
+from marketsim.market import Price
 
 if TYPE_CHECKING:
     from database.connectors.duckdb_storage import Repository
+    from marketsim.fourheap import MatchedOrder
+
 
 
 class Option(Security):
@@ -31,7 +32,7 @@ class Option(Security):
         self.r = 0 # the risk-free financing rate
         self.volatility = 0.157  # annualized volatility of the underlying security
         if short_name is None:
-            self.short_name = f"{self.option_side}_{self.underlying.short_name}_{self.strike}"
+            self.short_name = f"{self.option_side} {self.underlying.short_name} {self.strike}"
         else:
             self.short_name = f"{short_name} {self.strike}"
 

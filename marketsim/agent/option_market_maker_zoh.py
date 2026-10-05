@@ -26,7 +26,7 @@ class OptionMMZOHAgent(Agent):
                                  "omega": 0.1,
                                  "rebalance_period": 5,
                                  "volume": 7,
-                                 "q_max": 1000,
+                                 "q_max": 3000,
                                  "rebalance_by": "time",
                                  "rebalance_volume": 70}
         final_configuration = default_configuration | (configuration if configuration is not None else {})

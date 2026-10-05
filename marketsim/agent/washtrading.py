@@ -21,8 +21,14 @@ class WashTradingAgent(Agent):
         default_configuration = { "q_max": 1000,
                                   "lam": 0.5,
                                   "pool_id": 0,
-                                "mean_volume":  5.0 }
-        final_configuration = default_configuration | configuration if configuration is not None else {}
+                                  "mean_volume":  5.0,
+                                  "manipulation_period_start": 10,
+                                  "manipulation_period_end": 30,
+                                  "manipulation_type": "PUSH_DOWN",
+                                  "manipulation_side": "BUY",
+                                  "spread": Price(0.8),
+                                }
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository,
                          configuration=final_configuration,
                          group=group)

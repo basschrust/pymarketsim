@@ -18,20 +18,27 @@ if TYPE_CHECKING:
 
 class ZIAgentNotInformed(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 group: str = "ZINI",
-                 q_max: int, shade: List, pv_var: float, eta: float = 1.0
-                 , lam=1.0, mean_volume: float = 5.0):
-        super().__init__(markets=markets, repository=repository, group=group)
+                 group: str = "ZINI", configuration: dict = None) -> None:
+                 # q_max: int, shade: List, pv_var: float, eta: float = 1.0
+                 # , lam=1.0, mean_volume: float = 5.0):
+        default_configuration = {"q_max": 1000,
+                                 "shade": [0.1, 0.2],
+                                 "pv_var": 0.1,
+                              "lam": 0.5,
+                              "eta": 1.0,
+                              "mean_volume": 5.0 }
+        final_configuration = default_configuration | (configuration if configuration is not None else {})
+        super().__init__(markets=markets, repository=repository, group=group, configuration=final_configuration)
         # self.group = "ZINI"
-        self.q_max = q_max
-        self.pv_var = pv_var
+        self.q_max = final_configuration.get("q_max")
+        self.pv_var = final_configuration.get("pv_var")
         # print(f"q_max: {self.q_max}, pv_var: {self.pv_var}")
-        self.pv = PrivateValues(q_max, float(pv_var))
-        self.shade = shade
+        self.pv = PrivateValues(self.q_max, float(self.pv_var))
+        self.shade = final_configuration.get("shade")
         # print(f"shade: {self.shade}")
-        self.eta = eta
-        self.lam = lam # activity parameter
-        self.mean_volume = mean_volume
+        self.eta = final_configuration.get("eta")
+        self.lam = final_configuration.get("lam") # activity parameter
+        self.mean_volume = final_configuration["mean_volume"]
 
     def get_id(self) -> int:
         return self.agent_id

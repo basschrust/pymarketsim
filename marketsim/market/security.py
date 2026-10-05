@@ -15,7 +15,8 @@ from marketsim.plot.simple_plot import (plot_order_book, plot_volume_transfers, 
 from marketsim.plot.candle import plot_candlestick
 from marketsim.input import config
 from marketsim.market.price import Price
-from marketsim.fourheap.fourheap import FourHeap
+from marketsim.fourheap import FourHeap
+
 
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
