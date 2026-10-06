@@ -283,7 +283,7 @@ class Security:
             raise ValueError(f"Unknown order type {matched_order.order.order_type}")
 
     def __str__(self) -> str:
-        return f"Security_{self.asset_id}_{self.instrument_class}"
+        return f"Security_{self.asset_id}_{self.instrument_class}_{self.short_name}"
 
     ## plotting and supporting functions     #######################
 

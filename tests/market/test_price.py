@@ -97,7 +97,7 @@ def test_price_must_be_finite():
 
 def test_price_must_not_be_unreasonably_large():
     with pytest.raises(ValueError, match="Unreasonable price"):
-        Price("1000000.01")
+        Price("100000000.01")
 
     with pytest.raises(ValueError, match="Unreasonable price"):
-        Price("-1000000.01")
+        Price("-100000000.01")

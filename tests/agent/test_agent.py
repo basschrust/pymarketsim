@@ -59,12 +59,12 @@ def test_create_agent_zi(stock, repository):
 
 
 # sod for each type:
-def test_sod_noise_agent(noise_agent: Agent):
-    noise_agent.sod()
+def test_sod_noise_agent(agent_noise: Agent):
+    agent_noise.sod()
 
-    assert noise_agent is not None
-    assert type(noise_agent) == NoiseAgent
-    assert noise_agent.cash == 0
+    assert agent_noise is not None
+    assert type(agent_noise) == NoiseAgent
+    assert agent_noise.cash == 0
 
 
 # eod for each type:
