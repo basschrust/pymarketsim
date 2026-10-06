@@ -15,6 +15,8 @@ from marketsim.agent import (Agent, NoiseAgent, HBLAgent, MMZOHAgent, MomentumAg
 #     assert agent is not None
 
 
+# empty agents (simple default arguments):
+
 def test_create_agent_noise(stock, repository):
     agent = NoiseAgent(markets=[stock], repository=repository)
 
@@ -54,3 +56,30 @@ def test_create_agent_zi(stock, repository):
     agent = ZIAgentNotInformed(markets=[stock], repository=repository)
 
     assert agent is not None
+
+
+# sod for each type:
+def test_sod_noise_agent(noise_agent: Agent):
+    noise_agent.sod()
+
+    assert noise_agent is not None
+    assert type(noise_agent) == NoiseAgent
+    assert noise_agent.cash == 0
+
+
+# eod for each type:
+
+
+
+
+# cash flows, trades
+
+
+
+# valuations
+
+
+
+
+
+
