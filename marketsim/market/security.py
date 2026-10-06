@@ -17,7 +17,6 @@ from marketsim.input import config
 from marketsim.market.price import Price
 from marketsim.fourheap import FourHeap
 
-
 if TYPE_CHECKING:
     from marketsim.fourheap import Order, MatchedOrder
     from marketsim.agent import Agent
@@ -550,7 +549,22 @@ class Security:
             for order_id, order in self.order_book.sell_unmatched.order_dict.items():
                 orders.append(order)
 
-            orders_df = pd.DataFrame(orders)
+            orders_df = pd.DataFrame(orders, columns=[ "day",
+                    "price",
+                    "order_type",
+                    "quantity",
+                    "agent_id",
+                    "time",
+                    "order_id",
+                    "asset_id",
+                    "executed_price",
+                    "executed_mode",
+                    "parent_id",
+                    "matched_with",
+                    "valid_until", ])
+            # TODO: if no orders made on given day we should make empty DF here
+            # also, these are only the unmatched orders!
+            # TODO: add missing columns, e.g. valid_until
             orders_df["day"] = self.current_day - 1
             self.repository.save_orders(orders_df=orders_df)
 
@@ -566,7 +580,18 @@ class Security:
                                         "cash": matched_order.cash,
                                         "phase": matched_order.phase,
                                         "day": self.current_day-1, })
-            matched_orders_df = pd.DataFrame(matched_orders)
+            matched_orders_df = pd.DataFrame(matched_orders,
+                                             columns=["order_id",
+                                                    "order_side",
+                                                    "matched_with",
+                                                    "executed_mode",
+                                                    "executed_price",
+                                                    "executed_time",
+                                                    "executed_volume",
+                                                    "cash",
+                                                    "phase",
+                                                    "day",
+                                                ])
             # adding conversion to powerful numbers to avoid exceeding range in DuckDB:
             matched_orders_df = matched_orders_df.astype({
                 "order_id": "int64",
