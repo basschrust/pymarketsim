@@ -74,7 +74,6 @@ class Security:
             self.agent_groups.add(agent.group)
 
 
-
     def get_fundamental_value(self, current_time: int) -> float:
         return self.fundamental.get_value_at(current_time)
 
@@ -111,11 +110,11 @@ class Security:
 
     # TODO: move to sod()
     def roll_traded_prices(self, current_time:int) -> None:
-        yesterday = self.traded_prices[current_time - 1]
-        self.traded_prices[current_time] = {"open": yesterday["close"],
-                                            "low": yesterday["close"],
-                                            "high": yesterday["close"],
-                                            "close": yesterday["close"],
+        previous_tick_prices = self.traded_prices[current_time - 1]
+        self.traded_prices[current_time] = {"open": previous_tick_prices["close"],
+                                            "low": previous_tick_prices["close"],
+                                            "high": previous_tick_prices["close"],
+                                            "close": previous_tick_prices["close"],
                                             "volume": 0, }
 
     def step(self, current_time: int) -> list[MatchedOrder]:

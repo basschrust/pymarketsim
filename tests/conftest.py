@@ -56,3 +56,23 @@ def security(repository: Repository):
     return Security(reference_price=Price(101.00), name="stock1", repository=repository,
                     market_type="continuous", instrument_class="stock")
 
+@pytest.fixture
+def security_with_trades(repository: Repository):
+    sec = Security(reference_price=Price(101.00), name="stock1", repository=repository,
+                    market_type="continuous", instrument_class="stock")
+    # TODO: add trade
+    return sec
+
+
+@pytest.fixture
+def security_after_sod(repository: Repository):
+    sec = Security(reference_price=Price(101.00), name="stock1", repository=repository,
+                    market_type="continuous", instrument_class="stock")
+    sec.sod()
+    return sec
+
+@pytest.fixture
+def security_abandoned(repository: Repository, security: Security):
+    # an expired option or other security that trading is not allowed any more
+    security.status = "abandoned"
+    return security
