@@ -48,6 +48,11 @@ def repository():
 
 @pytest.fixture
 def stock(repository: Repository):
-    return Security(reference_price=Price(100.00), name="stock1", repository=repository,
+    return Security(reference_price=Price(95.00), name="stock1", repository=repository,
+                    market_type="continuous", instrument_class="stock")
+
+@pytest.fixture
+def security(repository: Repository):
+    return Security(reference_price=Price(101.00), name="stock1", repository=repository,
                     market_type="continuous", instrument_class="stock")
 
