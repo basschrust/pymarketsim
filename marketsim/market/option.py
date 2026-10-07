@@ -191,7 +191,10 @@ class Option(Security):
 
             self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 
-    def exercise(self):
+    def exercise(self) -> Price:
+        # exercise the option (first check if it's the expiry day)
+        # return the premium
+        premium = 0
         # check if this option should be exercised and if so, then
         # exercise the option - yet only European are served (as for American
         if self.option_type == "European":
@@ -233,3 +236,5 @@ class Option(Security):
                 self.status = "expired"
         else:
             raise NotImplementedError(f"{self.option_type} not implemented")
+
+        return premium
