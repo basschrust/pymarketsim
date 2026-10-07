@@ -13,7 +13,8 @@ from marketsim.utils.id_generator import id_generator
 from marketsim.plot.simple_plot import (plot_order_book, plot_volume_transfers, plot_cash_transfers
     , plot_realized_volatility, plot_agent_history_single_market, plot_by_type, plot_bid_ask)
 from marketsim.plot.candle import plot_candlestick
-from marketsim.input import config
+# from marketsim.input import config
+from marketsim.loggers.basic import setup_logger, setup_subject_logger, setup_market_logger
 from marketsim.market.price import Price
 from marketsim.fourheap import FourHeap
 
@@ -27,7 +28,7 @@ class Security:
     def __init__(self, *, reference_price: Price |None = None, name: str|None=None,
                  repository: Repository,
                  market_type: str = "discrete", instrument_class: str = "stock",
-                 short_name: str | None = None) -> None:
+                 short_name: str | None = None, output_dir: str = "tmp") -> None:
         self.asset_id = id_generator.next()
         self.instrument_class = instrument_class
         if short_name is None:
@@ -47,19 +48,17 @@ class Security:
         self.market_type = market_type # "discrete" or "continuous" # TODO: what if two phased? or more phased :)
         self.agents = {}
         self.name = name
-        logger.add(
-            f"{config.output_dir}/market_{self.asset_id}.log",
-            format="{elapsed} | {message}",
-            level="DEBUG" if config.debug_logging else "INFO",
-            filter=lambda record, market_id=self.asset_id:
-            record["extra"].get("market_id") == market_id,
-        )
-        self.logger = logger.bind(market_id=self.asset_id)
+        # TODO: add logger
+        # setup_logger(subject="market", subject_id=self.asset_id)
+        # self.logger = logger.bind(market_id=self.asset_id)
+        self.logger = setup_market_logger(asset_id=self.asset_id, output_dir=output_dir)
 
         self.current_day = 0
         self.eod_status = "closed"  # open/closed  to make eod procedure idempotent
         self.status = "active"
         self.repository = repository
+        self.output_dir = output_dir
+
         self.save()
 
         #### end of __init__
@@ -318,7 +317,7 @@ class Security:
         plot_order_book(
             bids=bids,
             asks=asks,
-            output_file=f"{config.output_dir}/{str(self)}/LOB/LOB_{self.asset_id}_{current_time}.png",
+            output_file=f"{self.output_dir}/{str(self)}/LOB/LOB_{self.asset_id}_{current_time}.png",
             title=f"Order book at {current_time}"
         )
 
@@ -383,10 +382,10 @@ class Security:
         )
 
         self.logger.info(f"Volume transfers: {self.trade_stats_df.head(30)}")
-        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_vol_{str(self)}_")
+        plot_volume_transfers(self.trade_stats_df, output_file_tpl=f"{self.output_dir}/{str(self)}/Transfers_vol_{str(self)}_")
 
         # TODO: plot cash transfers
-        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{config.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
+        plot_cash_transfers(self.trade_stats_df, output_file_tpl=f"{self.output_dir}/{str(self)}/Transfers_cash_{str(self)}_")
 
     def plot_history(self, traded_prices: dict) -> None:
         traded_prices_float = {t: {v: float(price_item) for v, price_item in item.items()}
@@ -397,7 +396,7 @@ class Security:
         df_candlestick.index.name = "time"
         self.logger.info(df_candlestick.head())
 
-        candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
+        candlestick_filename = f"{self.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def show_summary(self):

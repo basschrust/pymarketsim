@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.fourheap.order import Order
@@ -7,6 +8,13 @@ from marketsim.market import Price, Security, Option
 
 BUY = 1
 SELL = -1
+
+tmp_path = Path("tmp")
+
+@pytest.fixture
+def repository(tmp_path: Path) -> Repository:
+    return Repository(output_dir=tmp_path)
+
 
 
 @pytest.fixture
@@ -41,10 +49,6 @@ def buy_order(order_factory):
 @pytest.fixture
 def sell_order(order_factory):
     return order_factory(order_type=SELL)
-
-@pytest.fixture
-def repository():
-    return Repository()
 
 @pytest.fixture
 def stock(repository: Repository):

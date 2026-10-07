@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from loguru import logger
-from pip._internal.commands import configuration
+from pathlib import Path
 
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.loggers.basic import terminal
@@ -10,7 +10,10 @@ from marketsim.market import Security, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.agent import ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
 from marketsim.agent.washtrading import WashTradingPool
+from marketsim.input.config import load_config
 
+# config = load_config()
+# output_dir = config["output_dir"]
 
 class Simulator:
     def __init__(self,
@@ -24,6 +27,7 @@ class Simulator:
                  markets: dict = {},
                  lob_plot_interval: int = 10,
                  agents: dict|None=None,
+                 output_dir: Path|str = "tmp",
                  ):
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
@@ -46,7 +50,7 @@ class Simulator:
         self.bar_length = 40
         self.day = 0 # day counter for SoD and EoD procedures
         # to save and load data:
-        self.repository = Repository()
+        self.repository = Repository(output_dir=output_dir)
 
         for m_key, m_conf in markets.items():
             # TODO: do we need this fundamental at all?
@@ -94,7 +98,7 @@ class Simulator:
                         self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
             elif instrument_class == "stock":
                 market = Security(market_type=m_conf.get("market_type"), name=m_conf.get("name")
-                                  , repository=self.repository)
+                                  , repository=self.repository, short_name=m_conf.get("short_name"))
                 self.market_map[m_key] = market.asset_id
                 self.markets[market.asset_id] = market
                 self.asset_names_map[market.asset_id] = {"name": market.name,

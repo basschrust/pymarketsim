@@ -8,6 +8,7 @@ from collections import defaultdict
 from loguru import logger
 import pandas as pd
 
+from marketsim.loggers.basic import setup_logger, setup_agent_logger
 from marketsim.input import config
 from marketsim.utils.id_generator import id_generator
 from marketsim.loggers.basic import terminal
@@ -65,14 +66,9 @@ class Agent(ABC):
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
-        logger.add(
-            sink=f"{config.output_dir}/agent_logs/agent_{self.agent_id}_{self.group}.log",
-            format="{elapsed} | {message}",
-            level="DEBUG" if config.debug_logging else "INFO",
-            filter=lambda record, agent_id=self.agent_id:
-            record["extra"].get("agent_id") == agent_id,
-        )
-        self.logger = logger.bind(agent_id=self.agent_id)
+        # TODO: add logger
+        # setup_logger(subject="agent", subject_id=self.agent_id)
+        self.logger = setup_agent_logger(agent_id=self.agent_id) #logger.bind(agent_id=self.agent_id)
 
         self.repository.save_agent(self)
 

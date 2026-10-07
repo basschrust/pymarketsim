@@ -1,0 +1,18 @@
+0:00:08.443548 | Starting Start-of-Day procedure for stock1, day: 3
+0:00:08.443548 | Starting EoD procedure of day: 3
+0:00:08.493550 | Traded_prices_df:    time_tick    open    high     low   close  volume  asset_id  day
+0          0  101.00  101.00  101.00  101.00       0      9030    3
+0:00:08.493550 | Saving traded prices for stock...
+0:00:08.549547 | EoD procedure of day: 3 completed.
+0:00:07.471340 | Starting Start-of-Day procedure for stock1, day: 3
+0:00:07.472328 | Starting EoD procedure of day: 3
+0:00:07.482374 | Traded_prices_df:    time_tick    open    high     low   close  volume  asset_id  day
+0          0  101.00  101.00  101.00  101.00       0      9030    3
+0:00:07.483402 | Saving traded prices for stock...
+0:00:07.509793 | EoD procedure of day: 3 completed.
+0:00:18.624985 | Starting Start-of-Day procedure for stock1, day: 3
+0:00:18.624985 | Starting EoD procedure of day: 3
+0:00:18.650987 | Traded_prices_df:    time_tick    open    high     low   close  volume  asset_id  day
+0          0  101.00  101.00  101.00  101.00       0      9030    3
+0:00:18.651985 | Saving traded prices for stock...
+0:00:18.720985 | EoD procedure of day: 3 completed.
