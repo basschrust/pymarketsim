@@ -1,7 +1,6 @@
 import sys
 from loguru import logger
 from datetime import datetime
-# from marketsim.input import config
 from pathlib import Path
 
 # Keep reference to the real console
@@ -58,6 +57,8 @@ def setup_subject_logger(output_dir: Path = Path("tmp")) -> None:
     )
 
 def setup_market_logger(asset_id: int, output_dir: Path | str = "tmp"):
+    if output_dir=="tmp":
+        return logger.bind(market_id=asset_id)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -71,11 +72,13 @@ def setup_market_logger(asset_id: int, output_dir: Path | str = "tmp"):
     return logger.bind(market_id=asset_id)
 
 def setup_agent_logger(agent_id: int, output_dir: Path | str = "tmp"):
+    if output_dir=="tmp":
+        return logger.bind(market_id=agent_id)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.add(
-        output_dir / f"agent_{agent_id}.log",
+        output_dir / f"agent_logs/agent_{agent_id}.log",
         format="{elapsed} | {message}",
         level="DEBUG",
         filter=lambda record: record["extra"].get("agent_id") == agent_id,
