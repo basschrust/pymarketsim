@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
@@ -17,14 +18,14 @@ class MomentumAgent(Agent):
     # Momentum Agent trades using moving average to catch the market trend
     ###
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 configuration: dict| None=None, group: str= "MOMENTUM") -> None:
+                 configuration: dict| None=None, group: str= "MOMENTUM", output_dir: Path|str = "tmp") -> None:
         default_configuration = { "period": 7,
                                   "lam": 0.5,
                                   "q_max": 100,
                                   "threshold": 0.01 }
         final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration
-                         , group=group)
+                         , group=group, output_dir=output_dir)
 
         self.period = final_configuration["period"] # the period for trend analyzing
         self.lam = final_configuration["lam"] # lambda, the activity parameter

@@ -4,8 +4,9 @@ import math
 import random
 from typing import TYPE_CHECKING
 import numpy as np
-from marketsim.loggers.basic import terminal
+from pathlib import Path
 
+from marketsim.loggers.basic import terminal
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
 from marketsim.fourheap.order import Order
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 class WashTradingAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict| None=None,
-                 group: str = "WashTraders"):
+                 group: str = "WashTraders", output_dir: Path|str="tmp"):
         default_configuration = { "q_max": 1000,
                                   "lam": 0.5,
                                   "pool_id": 0,
@@ -31,7 +32,7 @@ class WashTradingAgent(Agent):
         final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository,
                          configuration=final_configuration,
-                         group=group)
+                         group=group, output_dir=output_dir)
 
         self.q_max = final_configuration["q_max"]
         self.lam = final_configuration["lam"] # yet not used - probably used in the non-manipulation period

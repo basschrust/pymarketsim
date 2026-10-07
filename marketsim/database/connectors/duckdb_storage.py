@@ -12,15 +12,13 @@ from marketsim.loggers.basic import terminal
 
 # TODO: create some base class with abstract methods, use instances depending on the configuration
 class Repository:
-    def __init__(self, output_dir: Path):
+    def __init__(self, output_dir: Path|str = "tmp"):
         self.localdb = output_dir / "daedalus.duckdb"
         self.connection = duckdb.connect(str(self.localdb))
         self.prepare_tables()
 
 
     def prepare_tables(self) -> None:
-        # conn = duckdb.connect(self.localdb)
-
         ###### static tables - per simulation  ################
 
         # securities

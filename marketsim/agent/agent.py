@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from collections import defaultdict
 from loguru import logger
 import pandas as pd
+from pathlib import Path
 
 from marketsim.loggers.basic import setup_logger, setup_agent_logger
 from marketsim.input import config
@@ -38,7 +39,7 @@ class Agent(ABC):
     # An agent is an investor operating on single market (investing in single security against their cash)
 
     def __init__(self, *, markets: list[Security], repository: Repository, group: str | None = None,
-                 name: str | None = None, configuration: dict|None):
+                 name: str | None = None, configuration: dict|None, output_dir: Path|str="tmp"):
         self.agent_id = id_generator.next()
 
         self.group = group # previously group_name
@@ -66,9 +67,10 @@ class Agent(ABC):
 
         self.eod_status = "open" # open/closed  to make eod procedure idempotent
         self.current_day = 0
-        # TODO: add logger
+
+        self.output_dir = output_dir
         # setup_logger(subject="agent", subject_id=self.agent_id)
-        self.logger = setup_agent_logger(agent_id=self.agent_id) #logger.bind(agent_id=self.agent_id)
+        self.logger = setup_agent_logger(agent_id=self.agent_id, output_dir=self.output_dir) #logger.bind(agent_id=self.agent_id)
 
         self.repository.save_agent(self)
 
@@ -255,7 +257,7 @@ class Agent(ABC):
             raise ValueError(f"Unknown eod status: {self.eod_status}")
 
     def show_summary(self):
-        agent_output_file = f"{config.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
+        agent_output_file = f"{self.output_dir}/agents_multimarket/{self.agent_id}_{str(self)}.png"
 
         positions_df = self.repository.get_eod_positions(agent_id=self.agent_id)
         positions_df.rename(columns={"day": "time_step"}, inplace=True)

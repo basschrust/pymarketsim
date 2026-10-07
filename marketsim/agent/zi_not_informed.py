@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 from decimal import Decimal
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 class ZIAgentNotInformed(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 group: str = "ZINI", configuration: dict = None) -> None:
+                 group: str = "ZINI", configuration: dict = None, output_dir:Path|str="tmp") -> None:
                  # q_max: int, shade: List, pv_var: float, eta: float = 1.0
                  # , lam=1.0, mean_volume: float = 5.0):
         default_configuration = {"q_max": 1000,
@@ -28,7 +29,8 @@ class ZIAgentNotInformed(Agent):
                               "eta": 1.0,
                               "mean_volume": 5.0 }
         final_configuration = default_configuration | (configuration if configuration is not None else {})
-        super().__init__(markets=markets, repository=repository, group=group, configuration=final_configuration)
+        super().__init__(markets=markets, repository=repository, group=group,
+                         configuration=final_configuration, output_dir=output_dir)
         # self.group = "ZINI"
         self.q_max = final_configuration.get("q_max")
         self.pv_var = final_configuration.get("pv_var")

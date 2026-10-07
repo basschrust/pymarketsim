@@ -6,6 +6,7 @@ import scipy as sp
 import numpy as np
 from time import perf_counter
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
@@ -36,7 +37,7 @@ class Custom_cs:
 
 class HBLAgent(Agent):
     def __init__(self, *, markets: list[Security], repository: Repository,
-                 configuration: dict| None = None, group: str = "HBL") -> None:
+                 configuration: dict| None = None, group: str = "HBL", output_dir: Path|str="tmp") -> None:
         default_configuration = { "q_max": 1000,
                                   "shade": [0.1,0.2],
                                   "L": 25,
@@ -45,7 +46,7 @@ class HBLAgent(Agent):
                                   "pv": None }
         final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration,
-                         group=group)
+                         group=group, output_dir=output_dir)
 
         if final_configuration["pv"] is not None:
             self.pv = final_configuration["pv"]
