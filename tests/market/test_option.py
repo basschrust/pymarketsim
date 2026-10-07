@@ -29,6 +29,8 @@ def test_option_call_itm(stock_tnt: Security,
 
 #### expiration / exercise ###
 
+# ITM
+
 def test_exercise_option_call_itm_before(stock_tnt: Security,
                                   repository: Repository,
                                   option_call_before_expiration_itm: Option) -> None:
@@ -74,23 +76,96 @@ def test_exercise_option_put_itm_exp_day(stock_tnt: Security,
     assert option is not None
     assert premium == - stock_tnt.last_traded_price + option.strike, "Premium at expiration is K-S"
 
+# ATM
 
-@pytest.mark.xfail(reason="Take option on exercise day!")
-def test_exercise_option_call_otm(stock_tnt: Security,
+def test_exercise_option_call_atm_before(stock_tnt: Security,
                                   repository: Repository,
-                                  option_tnt_call: Option) -> None:
-    stock_tnt.last_traded_price = Price(86.00) # to be under strike which is 90
-    option_tnt_call.eod()
+                                  option_call_before_expiration_atm: Option) -> None:
+    option = option_call_before_expiration_atm
+    premium = option.exercise()
 
-    assert option_tnt_call.get_theoretical_price() == 4.0, "Premium should be 0"
-
-
-def test_exercise_option_put_itm(stock_tnt: Security, repository: Repository, option_tnt_call: Option) -> None:
-    assert 1 == 1
+    assert option is not None
+    assert option.get_theoretical_price() > 0, "CALL ATM has positive price"
+    assert premium == 0, "Premium before expiration should be 0"
 
 
-def test_exercise_option_put_otm(stock_tnt: Security, repository: Repository, option_tnt_call: Option) -> None:
-    assert 1 == 1
+def test_exercise_option_call_atm_exp_day(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_call_at_expiration_atm: Option) -> None:
+    option = option_call_at_expiration_atm
+    premium = option.exercise()
+
+    assert option is not None
+    assert premium == 0, "Premium of ATM at expiration should be 0"
+
+
+def test_exercise_option_put_atm_before(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_put_before_expiration_atm: Option) -> None:
+    option = option_put_before_expiration_atm
+    premium = option.exercise()
+
+    assert option is not None
+    assert option.get_theoretical_price() > 0, "CALL ITM has positive price"
+    assert premium == 0, "Premium before expiration should be 0"
+    # TODO: agents cashflows check? - another test
+
+
+def test_exercise_option_put_atm_exp_day(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_put_at_expiration_atm: Option) -> None:
+    option = option_put_at_expiration_atm
+    premium = option.exercise()
+
+    assert option is not None
+    assert premium == 0, "Premium of ATM at expiration is 0"
+
+
+# OTM
+
+def test_exercise_option_call_otm_before(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_call_before_expiration_otm: Option) -> None:
+    option = option_call_before_expiration_otm
+    premium = option.exercise()
+
+    assert option is not None
+    assert option.get_theoretical_price() > 0, "CALL has positive price even if OTM"
+    assert premium == 0, "Premium before expiration should be 0"
+    # TODO: agents cashflows check? - another test
+
+
+def test_exercise_option_call_otm_exp_day(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_call_at_expiration_otm: Option) -> None:
+    option = option_call_at_expiration_otm
+    premium = option.exercise()
+
+    assert option is not None
+    assert premium == 0, "Premium of OTM at expiration should be 0"
+
+
+def test_exercise_option_put_otm_before(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_put_before_expiration_otm: Option) -> None:
+    option = option_put_before_expiration_otm
+    premium = option.exercise()
+
+    assert option is not None
+    assert option.get_theoretical_price() > 0, "CALL ITM has positive price"
+    assert premium == 0, "Premium before expiration should be 0"
+    # TODO: agents cashflows check? - another test
+
+
+def test_exercise_option_put_otm_exp_day(stock_tnt: Security,
+                                  repository: Repository,
+                                  option_put_at_expiration_otm: Option) -> None:
+    option = option_put_at_expiration_otm
+    premium = option.exercise()
+
+    assert option is not None
+    assert premium == 0, "Premium of OTM at expiration should be 0"
+
 
 
 ### reporting
