@@ -45,10 +45,26 @@ def order_factory():
 def buy_order(order_factory):
     return order_factory()
 
+@pytest.fixture
+def buy_order_99(order_factory):
+    return order_factory(price=99, order_type=BUY)
+
+@pytest.fixture
+def buy_order_101(order_factory):
+    return order_factory(price=101, order_type=BUY)
 
 @pytest.fixture
 def sell_order(order_factory):
     return order_factory(order_type=SELL)
+
+@pytest.fixture
+def sell_order_99(order_factory):
+    return order_factory(price=99, order_type=SELL)
+
+@pytest.fixture
+def sell_order_101(order_factory):
+    return order_factory(price=101, order_type=SELL)
+
 
 @pytest.fixture
 def stock(repository: Repository):

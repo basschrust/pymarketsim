@@ -1,7 +1,7 @@
 import pytest
 
 from marketsim.fourheap.order import Order
-from marketsim.market import Price
+from marketsim.market import Price, Security
 from marketsim.fourheap import FourHeap
 
 
@@ -13,7 +13,7 @@ SELL = -1
 
 #############   test functions  #############################33
 
-def test_order_creation(buy_order):
+def test_order_creation(buy_order: Order):
     assert buy_order.price == Price(100)
     assert buy_order.order_type == BUY
     assert buy_order.quantity == 10
@@ -196,3 +196,98 @@ def test_large_sell_order_leaves_remaining_quantity(stock):
     assert fourheap.sell_unmatched.size == (
         incoming_quantity - resting_quantity
     )
+
+
+def test_order_price_match_99(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 0
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+
+def test_order_price_match_99_2(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 0
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
+
+
+def test_order_price_no_match_99_101(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_101)
+
+    assert fourheap.buy_unmatched.size == 10
+    assert fourheap.sell_unmatched.size == 10
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+
+
+def test_order_price_no_match_99_101_2(stock_tnt: Security,
+                                  buy_order_99: Order,
+                                  sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+
+    fourheap.insert(sell_order_101)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 10
+    assert fourheap.sell_unmatched.size == 10
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+
+
+def test_order_price_match_101_99(stock_tnt: Security,
+                              buy_order_101: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(buy_order_101)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 0
+    assert buy_order_101.executed_price == Price(101.0)
+    assert sell_order_99.executed_price == Price(101.0)
+    assert buy_order_101.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+
+
+def test_order_price_match_101_99_2(stock_tnt: Security,
+                                  buy_order_101: Order,
+                                  sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_101)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 0
+    assert buy_order_101.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_101.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
+
+
+# TODO: crosses with different sizes
+
+

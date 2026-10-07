@@ -52,6 +52,7 @@ def test_exercise_option_call_itm_exp_day(stock_tnt: Security,
     assert option is not None
     assert option.get_theoretical_price() > 0, "CALL ITM has positive price"
     assert premium == stock_tnt.last_traded_price - option.strike, "Premium at expiration should S-K"
+    # TODO:
 
 
 def test_exercise_option_put_itm_before(stock_tnt: Security,
