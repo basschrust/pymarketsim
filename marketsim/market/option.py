@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from typing_extensions import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.input import config
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
@@ -15,11 +16,10 @@ if TYPE_CHECKING:
     from marketsim.fourheap import MatchedOrder
 
 
-
 class Option(Security):
     def __init__(self, *, derivatives_config: dict, underlying: Security,
                  market_type: str = "continuous", repository: Repository,
-                 name: str| None = None, short_name: str|None=None) -> None:
+                 name: str| None = None, short_name: str|None=None, output_dir: Path|str="tmp") -> None:
 
         self.instrument_class = "option"
         self.underlying = underlying
@@ -39,7 +39,7 @@ class Option(Security):
         theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
                          , instrument_class=self.instrument_class, repository=repository,
-                         short_name=self.short_name)
+                         short_name=self.short_name, output_dir=output_dir)
 
 
     def calculate_greeks(self):
