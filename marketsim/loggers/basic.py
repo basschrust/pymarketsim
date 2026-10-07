@@ -56,6 +56,7 @@ def setup_subject_logger(output_dir: Path = Path("tmp")) -> None:
         filter=lambda record: "agent_id" in record["extra"],
     )
 
+
 def setup_market_logger(asset_id: int, output_dir: Path | str = "tmp"):
     if output_dir=="tmp":
         return logger.bind(market_id=asset_id)
@@ -73,7 +74,7 @@ def setup_market_logger(asset_id: int, output_dir: Path | str = "tmp"):
 
 def setup_agent_logger(agent_id: int, output_dir: Path | str = "tmp"):
     if output_dir=="tmp":
-        return logger.bind(market_id=agent_id)
+        return logger.bind(agent_id=agent_id)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -84,7 +85,7 @@ def setup_agent_logger(agent_id: int, output_dir: Path | str = "tmp"):
         filter=lambda record: record["extra"].get("agent_id") == agent_id,
     )
 
-    return logger.bind(market_id=agent_id)
+    return logger.bind(agent_id=agent_id)
 
 
 class StreamToLogger:
