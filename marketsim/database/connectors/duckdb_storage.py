@@ -13,6 +13,9 @@ from marketsim.loggers.basic import terminal
 # TODO: create some base class with abstract methods, use instances depending on the configuration
 class Repository:
     def __init__(self, output_dir: Path|str = "tmp"):
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
         self.localdb = output_dir / "daedalus.duckdb"
         self.connection = duckdb.connect(str(self.localdb))
         self.prepare_tables()
