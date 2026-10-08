@@ -411,3 +411,252 @@ def test_order_price_match_101_99_2_q(stock_tnt: Security,
     assert buy_order_101.executed_mode == "arrived"
     assert sell_order_99.executed_mode == "waited"
 
+## three orders matched or not:
+
+def test_order_price_match_99_3(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_101: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(sell_order_101)
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 10
+    assert fourheap.buy_unmatched.peek() == - math.inf
+    assert fourheap.sell_unmatched.peek() == Price(101.00)
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+    assert sell_order_99.matched_with == buy_order_99.order_id
+    assert buy_order_99.matched_with == sell_order_99.order_id
+
+def test_order_price_match_99_3_2(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_99: Order,
+                              sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(sell_order_101)
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 10
+    assert fourheap.buy_unmatched.peek() == - math.inf
+    assert fourheap.sell_unmatched.peek() == Price(101.00)
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
+    assert sell_order_99.matched_with == buy_order_99.order_id
+    assert buy_order_99.matched_with == sell_order_99.order_id
+
+
+def test_order_price_no_match_99_101_3(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_101: Order,
+                              buy_order: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    fourheap.insert(buy_order) # has default limit 100.00
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_101)
+
+    assert fourheap.buy_unmatched.size == 20
+    assert fourheap.sell_unmatched.size == 10
+    assert fourheap.buy_unmatched.peek() == Price(100.0)
+    assert fourheap.sell_unmatched.peek() == Price(101.0)
+    assert buy_order.executed_price is None
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert buy_order.executed_mode is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+    assert buy_order.matched_with is None
+    assert buy_order_99.matched_with is None
+    assert sell_order_101.matched_with is None
+
+
+def test_order_price_no_match_99_101_3_2(stock_tnt: Security,
+                                  buy_order_99: Order,
+                                  sell_order: Order,
+                                  sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+
+    fourheap.insert(sell_order) #100
+    fourheap.insert(sell_order_101)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 10
+    assert fourheap.sell_unmatched.size == 20
+    assert fourheap.buy_unmatched.peek() == Price(99.0)
+    assert fourheap.sell_unmatched.peek() == Price(100.0)
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert sell_order.executed_price is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+    assert sell_order.executed_mode is None
+    assert buy_order_99.matched_with is None
+    assert sell_order_101.matched_with is None
+    assert sell_order.matched_with is None
+
+
+def test_order_price_match_101_99_partial(stock_tnt: Security,
+                              buy_order: Order,
+                              buy_order_101: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    buy_order_101.quantity = 6
+    fourheap.insert(buy_order)
+    fourheap.insert(buy_order_101)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 6
+    assert fourheap.sell_unmatched.size == 0
+    assert fourheap.buy_unmatched.peek() == Price(100.00)
+    assert fourheap.sell_unmatched.peek() == math.inf
+    # partial execution
+    assert buy_order_101.executed_price == Price(101.00)
+    assert buy_order.executed_price == Price(100.0)
+    assert sell_order_99.executed_price == Price(101.0)
+    assert buy_order_101.executed_mode == "waited"
+    assert buy_order.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+    assert buy_order.matched_with == sell_order_99.order_id
+    assert buy_order_101.matched_with == sell_order_99.order_id
+    assert sell_order_99.matched_with == buy_order_101.order_id
+
+
+def test_order_price_match_101_99_partial_2(stock_tnt: Security,
+                                  buy_order_101: Order,
+                                  sell_order_99: Order,
+                                  sell_order: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    sell_order.quantity = 4
+    fourheap.insert(sell_order)
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_101)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 4
+    assert fourheap.buy_unmatched.peek() == - math.inf
+    assert fourheap.sell_unmatched.peek() == Price(99.00)
+    # partial execution
+    assert sell_order.executed_price == Price(99.00)
+    assert buy_order_101.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert sell_order.executed_mode == "waited"
+    assert buy_order_101.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
+
+
+###### crosses with different sizes
+
+def test_order_price_match_99_3_q(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    buy_order_99.quantity = 12
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 2
+    assert fourheap.sell_unmatched.size == 0
+    assert fourheap.buy_unmatched.peek() == Price(99.0)
+    assert fourheap.sell_unmatched.peek() == math.inf
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+
+def test_order_price_match_99_3_2_q(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    sell_order_99.quantity = 14
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 4
+    assert fourheap.buy_unmatched.peek() == - math.inf
+    assert fourheap.sell_unmatched.peek() == Price(99.0)
+    assert buy_order_99.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_99.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
+
+
+def test_order_price_no_match_99_101_3_q(stock_tnt: Security,
+                              buy_order_99: Order,
+                              sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    buy_order_99.quantity = 17
+    fourheap.insert(buy_order_99)
+    fourheap.insert(sell_order_101)
+
+    assert fourheap.buy_unmatched.size == 17
+    assert fourheap.sell_unmatched.size == 10
+    assert fourheap.buy_unmatched.peek() == Price(99.0)
+    assert fourheap.sell_unmatched.peek() == Price(101.0)
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+
+
+def test_order_price_no_match_99_101_3_2_q(stock_tnt: Security,
+                                  buy_order_99: Order,
+                                  sell_order_101: Order):
+    fourheap = FourHeap(market=stock_tnt)
+
+    sell_order_101.quantity = 45
+    fourheap.insert(sell_order_101)
+    fourheap.insert(buy_order_99)
+
+    assert fourheap.buy_unmatched.size == 10
+    assert fourheap.sell_unmatched.size == 45
+    assert fourheap.buy_unmatched.peek() == Price(99.00)
+    assert fourheap.sell_unmatched.peek() == Price(101.0)
+    assert buy_order_99.executed_price is None
+    assert sell_order_101.executed_price is None
+    assert buy_order_99.executed_mode is None
+    assert sell_order_101.executed_mode is None
+
+
+def test_order_price_match_101_99_3_q(stock_tnt: Security,
+                              buy_order_101: Order,
+                              sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    sell_order_99.quantity = 88
+    fourheap.insert(buy_order_101)
+    fourheap.insert(sell_order_99)
+
+    assert fourheap.buy_unmatched.size == 0
+    assert fourheap.sell_unmatched.size == 78
+    assert fourheap.buy_unmatched.peek() == - math.inf
+    assert fourheap.sell_unmatched.peek() == Price(99.0)
+    assert buy_order_101.executed_price == Price(101.0)
+    assert sell_order_99.executed_price == Price(101.0)
+    assert buy_order_101.executed_mode == "waited"
+    assert sell_order_99.executed_mode == "arrived"
+
+
+def test_order_price_match_101_99_3_2_q(stock_tnt: Security,
+                                  buy_order_101: Order,
+                                  sell_order_99: Order):
+    fourheap = FourHeap(market=stock_tnt)
+    buy_order_101.quantity = 81
+    fourheap.insert(sell_order_99)
+    fourheap.insert(buy_order_101)
+
+    assert fourheap.buy_unmatched.size == 71
+    assert fourheap.sell_unmatched.size == 0
+    assert fourheap.buy_unmatched.peek() == Price(101.00)
+    assert fourheap.sell_unmatched.peek() == math.inf
+    assert buy_order_101.executed_price == Price(99.0)
+    assert sell_order_99.executed_price == Price(99.0)
+    assert buy_order_101.executed_mode == "arrived"
+    assert sell_order_99.executed_mode == "waited"
