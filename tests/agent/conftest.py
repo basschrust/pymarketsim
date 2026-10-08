@@ -9,16 +9,16 @@ BUY = 1
 SELL = -1
 
 @pytest.fixture
-def agent_noise(stock_tnt: Security, repository: Repository):
-    return NoiseAgent(markets=[stock_tnt], repository=repository)
+def agent_noise(stock_tnt: Security, stock_mit: Security, repository: Repository):
+    return NoiseAgent(markets=[stock_tnt, stock_mit], repository=repository)
 
 @pytest.fixture
 def agent_hbl(security: Security, repository: Repository):
     return HBLAgent(markets=[security], repository=repository)
 
 @pytest.fixture
-def agent_mm(stock_tnt: Security, repository: Repository):
-    return MMZOHAgent(markets=[stock_tnt], repository=repository)
+def agent_mm(stock_tnt: Security, stock_mit:Security, repository: Repository):
+    return MMZOHAgent(markets=[stock_tnt, stock_mit], repository=repository)
 
 @pytest.fixture
 def agent_momentum(security: Security, repository: Repository):

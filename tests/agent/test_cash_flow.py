@@ -40,7 +40,20 @@ def test_cf_1(stock_tnt: Security,
 
 
 
-def test_cf_2(agent_noise: NoiseAgent,
-              agent_mm: Agent,
-              stock_tnt: Security):
-    assert 1 == 1
+def test_cf_after_sod(stock_tnt: Security,
+              agent_noise: NoiseAgent,
+              buy_order_101_tnt: Order,
+              agent_mm: MMZOHAgent,
+              sell_order_99_tnt: Order,
+              stock_mit: Security,
+              ):
+
+    stock_mit.sod()
+    stock_tnt.sod()
+
+    assert agent_noise.cash == Price(0.00)
+    assert agent_mm.cash == Price(0.00)
+    assert agent_mm.position.get(stock_tnt.asset_id) == 0
+    assert agent_mm.position.get(stock_mit.asset_id) == 0
+    assert agent_noise.position.get(stock_mit.asset_id) == 0
+    assert agent_noise.position.get(stock_tnt.asset_id) == 0
