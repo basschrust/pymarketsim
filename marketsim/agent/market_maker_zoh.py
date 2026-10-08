@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.agent.agent import Agent
 from marketsim.market.security import Security, Price
@@ -17,7 +18,7 @@ class MMZOHAgent(Agent):
     # symmetrically on both sides of this last traded price in each rebalance period
     ###
     def __init__(self, *, markets: list[Security], repository: Repository, configuration: dict | None = None,
-                 group: str = "MMZOH") -> None:
+                 group: str = "MMZOH", output_dir: Path|str="tmp") -> None:
         default_configuration = {"xi": 0.1,
                                 "K":  3,
                                  "omega": 0.1,
@@ -28,7 +29,7 @@ class MMZOHAgent(Agent):
                                  "rebalance_volume": 70 }
         final_configuration = default_configuration | (configuration if configuration is not None else {})
         super().__init__(markets=markets, repository=repository, configuration=final_configuration,
-                         group=group)
+                         group=group, output_dir=output_dir)
 
         ## TODO: MM parameters - should be defined per market
         self.xi = Decimal(final_configuration["xi"]) # step of the order ladder

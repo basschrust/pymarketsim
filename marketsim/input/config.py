@@ -1,19 +1,18 @@
 # config.py
-import os
-import sys
-import yaml
 import random
-import numpy as np
-from datetime import datetime
 from pathlib import Path
+
+import numpy as np
+import yaml
+from datetime import datetime
 
 
 DEFAULT_CONFIG = "market_structure.yaml"
 
 
-# make use of templates in market structure:
 class IncludeLoader(yaml.SafeLoader):
     pass
+
 
 def include_constructor(loader, node):
     relative_path = loader.construct_scalar(node)
@@ -30,15 +29,6 @@ def include_constructor(loader, node):
 IncludeLoader.add_constructor("!include", include_constructor)
 
 
-# One directory per run
-log_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S")
-output_dir = f"marketsim/output/{log_dir}"
-os.makedirs(output_dir, exist_ok=True)
-debug_logging = False
-
-
-# Load and resolve all templates
-
 def load_config(filename: str = DEFAULT_CONFIG) -> dict:
     src_file = Path("marketsim/input") / filename
 
@@ -47,18 +37,14 @@ def load_config(filename: str = DEFAULT_CONFIG) -> dict:
         loader.name = src_file
         config = loader.get_single_data()
 
-    random.seed(config.get("seed", 67))
-    np.random.seed(config.get("seed", 67))
-    # TODO: save seed in DB
+    seed = config.get("seed", 67)
 
-    # Save the fully resolved configuration used for this run
-    with open(f"{output_dir}/market_structure.yaml", "w") as f:
-        yaml.safe_dump(
-            config,
-            f,
-            sort_keys=False,
-            default_flow_style=False,
-        )
+    random.seed(seed)
+    np.random.seed(seed)
 
     return config
 
+def create_run_directory() -> Path:
+    output_dir = Path("marketsim/output") / datetime.now().strftime("run_%Y%m%d_%H%M%S")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir

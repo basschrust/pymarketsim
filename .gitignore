@@ -4,6 +4,7 @@
 *.jpg
 *.png
 *.zip
+*.log
 
 # Python package related
 __pycache__/
@@ -40,3 +41,6 @@ ENV/
 
 # Weights & Biases
 wandb/
+
+# temporary files
+tmp/

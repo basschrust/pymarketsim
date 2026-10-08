@@ -32,7 +32,7 @@ def BSCall(S: Price, K: Price, r: float, volatility: float, Time: float, d: floa
     theta = - (float(S) * fi(d1) * volatility)/ (2*math.sqrt(Time)) - r * float(K) * math.exp(-r*Time)*N(d2) #lack of dividend-related factor
     vega = float(S) * fi(d1) * math.sqrt(Time)
     rho = float(K) * Time * math.exp(-r*Time)*N(d2)
-    callPrice = float(S)*distributions.norm.cdf(d1) - math.exp(-r*Time)*K*distributions.norm.cdf(d2)
+    callPrice = float(S)*distributions.norm.cdf(d1) - math.exp(-r*Time)*float(K)*distributions.norm.cdf(d2)
     intrinsicValue = max(0, float(S)-float(K)*math.exp(-r*Time))
   timeValue = callPrice - intrinsicValue
   # print({"price": callPrice, "delta":delta, "gamma":gamma, "theta": theta, "vega": vega, "rho": rho, \

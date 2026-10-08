@@ -32,7 +32,6 @@ markets:
       settlement_type: cash # cash/ physical/ etc
     market_type: continuous
 
-
   put_on_tnt:
     name: "First derivative - European CALL option on stock TNT with strike 100"
     instrument_class: option

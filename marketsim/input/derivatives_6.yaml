@@ -1,0 +1,65 @@
+# market structure configuration file
+
+# generic simulation parameters
+sim_time: 100
+days: 30
+lob_plot_interval: 25
+debug_logging: False
+seed: 67
+
+# definitions of the securities
+markets:
+  stock_TNT:
+    name: "Simple stock market as underlying"
+    instrument_class: stock # stock is default :)
+    ticker: "TNT"
+    market_type: continuous
+
+  ########################## second security ###################################################
+
+  call_1:
+    name: "First derivative - European CALL option on TNT"
+    instrument_class: option
+    short_name: "PUT TNT "
+    derivatives_config:
+      option_type: European
+      underlying: stock_TNT  # reference to one of above defined securities
+      expiration: 20   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+#      strike: 100 # maybe list of strikes?
+      strikes:
+        - 80
+        - 90
+        - 100
+        - 110
+        - 120
+      option_side: CALL # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+      quotation_type: price # price/ implied_volatility/ etc.
+      settlement_type: cash # cash/ physical/ etc
+    ticker: "CO100Y092027ABB"
+    market_type: continuous
+
+  put_1:
+    name: "Second derivative - European PUT option on TNT"
+    instrument_class: option
+    derivatives_config:
+      option_type: European
+      underlying: stock_TNT  # reference to one of above defined securities
+      expiration: 20   # at first set 1Y as default, but should be a date/ hour, end of particular session, etc
+#      strike: 100 # maybe list of strikes?
+      strikes:
+        - 80
+        - 90
+        - 100
+        - 110
+        - 120
+      option_side: PUT # CALL/ PUT, TODO: well, we could make it prepare the whole surface here?
+    market_type: continuous
+
+
+agents:
+  mmzoh_1:
+    agent_class: OptionMMZOHAgent
+    number: 1
+  noise:
+    agent_class: NoiseAgent
+    number: 15

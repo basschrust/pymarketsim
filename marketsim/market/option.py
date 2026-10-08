@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from typing_extensions import TYPE_CHECKING
+from pathlib import Path
 
 from marketsim.input import config
 from marketsim.market.valuation_libs.BlackScholes import BSCall, BSPut
@@ -15,11 +16,10 @@ if TYPE_CHECKING:
     from marketsim.fourheap import MatchedOrder
 
 
-
 class Option(Security):
     def __init__(self, *, derivatives_config: dict, underlying: Security,
                  market_type: str = "continuous", repository: Repository,
-                 name: str| None = None, short_name: str|None=None) -> None:
+                 name: str| None = None, short_name: str|None=None, output_dir: Path|str="tmp") -> None:
 
         self.instrument_class = "option"
         self.underlying = underlying
@@ -39,7 +39,7 @@ class Option(Security):
         theoretical_price = self.get_theoretical_price(as_of_day=0)
         super().__init__(name=name, market_type=market_type, reference_price=Price(theoretical_price)
                          , instrument_class=self.instrument_class, repository=repository,
-                         short_name=self.short_name)
+                         short_name=self.short_name, output_dir=output_dir)
 
 
     def calculate_greeks(self):
@@ -128,7 +128,7 @@ class Option(Security):
         df_candlestick.index.name = "time"
         self.logger.info(f"Option candlestick to plot: {df_candlestick.head()}")
 
-        candlestick_filename = f"{config.output_dir}/candlestick_{str(self)}.png"
+        candlestick_filename = f"{self.output_dir}/candlestick_{str(self)}.png"
         plot_candlestick_derivative(df=df_candlestick, output_file=candlestick_filename, title=self.name)
 
     def sod(self):
@@ -191,7 +191,10 @@ class Option(Security):
 
             self.logger.info(f"Option EoD completed for day: {self.current_day-1}")
 
-    def exercise(self):
+    def exercise(self) -> Price:
+        # exercise the option (first check if it's the expiry day)
+        # return the premium
+        premium = 0
         # check if this option should be exercised and if so, then
         # exercise the option - yet only European are served (as for American
         if self.option_type == "European":
@@ -233,3 +236,5 @@ class Option(Security):
                 self.status = "expired"
         else:
             raise NotImplementedError(f"{self.option_type} not implemented")
+
+        return premium

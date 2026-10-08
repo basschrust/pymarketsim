@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from loguru import logger
-from pip._internal.commands import configuration
+from pathlib import Path
 
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.loggers.basic import terminal
@@ -10,7 +10,10 @@ from marketsim.market import Security, Option
 from marketsim.agent import Agent, WashTradingAgent, MomentumAgent, SpoofingAgent, NoiseAgent
 from marketsim.agent import ZIAgentNotInformed, MMZOHAgent, HBLAgent, OptionMMZOHAgent
 from marketsim.agent.washtrading import WashTradingPool
+from marketsim.input.config import load_config
 
+# config = load_config()
+# output_dir = config["output_dir"]
 
 class Simulator:
     def __init__(self,
@@ -24,9 +27,12 @@ class Simulator:
                  markets: dict = {},
                  lob_plot_interval: int = 10,
                  agents: dict|None=None,
+                 output_dir: Path|str = "tmp",
                  ):
         self.logger = logger.bind()
         self.logger.info("Initializing simulation with parameters in market_structure.yaml ...")
+        self.output_dir = output_dir
+        self.repository = Repository(output_dir=self.output_dir)
 
         self.sim_time = sim_time # steps per day
         self.days = days
@@ -46,7 +52,7 @@ class Simulator:
         self.bar_length = 40
         self.day = 0 # day counter for SoD and EoD procedures
         # to save and load data:
-        self.repository = Repository()
+
 
         for m_key, m_conf in markets.items():
             # TODO: do we need this fundamental at all?
@@ -69,7 +75,7 @@ class Simulator:
                         market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                                    derivatives_config=derivatives_config
                                     , underlying=underlying, repository=self.repository,
-                                        short_name=m_conf.get("short_name"))
+                                        short_name=m_conf.get("short_name"), output_dir=self.output_dir)
                         self.market_map[m_key] = market.asset_id
                         self.markets[market.asset_id] = market
                         self.asset_names_map[market.asset_id] = {"name": market.name,
@@ -83,7 +89,7 @@ class Simulator:
                     market = Option(market_type=m_conf.get("market_type"), name=m_conf.get("name"),
                                    derivatives_config=derivatives_config
                                     , underlying=underlying, repository=self.repository,
-                                    short_name=m_conf.get("short_name"))
+                                    short_name=m_conf.get("short_name"), output_dir=self.output_dir)
                     self.market_map[m_key] = market.asset_id
                     self.markets[market.asset_id] = market
                     self.asset_names_map[market.asset_id] = {"name": market.name,
@@ -94,7 +100,8 @@ class Simulator:
                         self.add_agent_group(agent_group=agent_group, markets=[market], group_name=group_name)
             elif instrument_class == "stock":
                 market = Security(market_type=m_conf.get("market_type"), name=m_conf.get("name")
-                                  , repository=self.repository)
+                                  , repository=self.repository, short_name=m_conf.get("short_name"),
+                                  output_dir=self.output_dir)
                 self.market_map[m_key] = market.asset_id
                 self.markets[market.asset_id] = market
                 self.asset_names_map[market.asset_id] = {"name": market.name,
@@ -161,34 +168,40 @@ class Simulator:
             # Noise agents:
             if agent_group["agent_class"] == "NoiseAgent":
                 agent = NoiseAgent(markets=markets, configuration=configuration,
-                                   repository=self.repository, group=group_name)
+                                   repository=self.repository, group=group_name,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
 
             # MMs:
             if agent_group["agent_class"] == "MMZOHAgent":
-                agent = MMZOHAgent(markets=markets, configuration=configuration, repository=self.repository)
+                agent = MMZOHAgent(markets=markets, configuration=configuration, repository=self.repository,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
 
             # HBL (Heuristic Belief)
             if agent_group["agent_class"] == "HBLAgent":
-                agent = HBLAgent(markets=markets, configuration=configuration, repository=self.repository)
+                agent = HBLAgent(markets=markets, configuration=configuration, repository=self.repository,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
 
             # spoofers: (to trick HBL Agents)
             if agent_group["agent_class"] == "SpoofingAgent":
-                agent = SpoofingAgent(markets=markets, configuration=configuration, repository=self.repository)
+                agent = SpoofingAgent(markets=markets, configuration=configuration, repository=self.repository,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
 
             # washtrading agents (tricking MMs)
             if agent_group["agent_class"] == "WashTradingAgent":
                 agent = WashTradingAgent(markets=markets, group=group_name, configuration=configuration,
-                                         repository=self.repository)
+                                         repository=self.repository,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
                 # those will need the relationship...
 
             # momentum
             if agent_group["agent_class"] == "MomentumAgent":
-                agent = MomentumAgent(markets=markets, configuration=configuration, repository=self.repository)
+                agent = MomentumAgent(markets=markets, configuration=configuration, repository=self.repository,
+                                   output_dir=self.output_dir)
                 self.add_agents([agent])
 
             ########## Derivatives agents, complicated ones :)  ###############
@@ -197,7 +210,9 @@ class Simulator:
             if agent_group["agent_class"] == "OptionMMZOHAgent":
                 # TODO - what with underlying?
                 agent = OptionMMZOHAgent(markets=markets, #market_map=self.market_map, #underlying_market=market.underlying,
-                                         configuration=agent_group.get("config", None), repository=self.repository)
+                                         configuration=agent_group.get("config", None),
+                                         repository=self.repository,
+                                        output_dir=self.output_dir)
                 self.add_agents([agent])
 
     def create_agents(self, *, agent_group: dict, group_name: str) -> None:
@@ -236,6 +251,8 @@ class Simulator:
             sell_matched_queue_length = 0 if market.order_book is None else len(market.order_book.sell_matched.heap)
             market.logger.info(f"Starting orders execution, matched queues should be empty here: {buy_matched_queue_length}"
                   f" {sell_matched_queue_length}")
+
+            # TODO: we should be asynchronous, redesign this part! No returns!!! :)
             new_orders_matched = market.step(current_time=self.current_time)
 
             market.logger.info(f"Starting to clear out orders.")

@@ -16,7 +16,7 @@ class Price(Decimal):
             raise ValueError("Price must be finite")
 
         # Optional sanity check
-        if abs(d) > Decimal("1_000_000"):
+        if abs(d) > Decimal("100_000_000"):
             raise ValueError(f"Unreasonable price: {value}")
 
         # TODO: this slows doowwwwwwnnnnn....   print(f"d: {d}")
