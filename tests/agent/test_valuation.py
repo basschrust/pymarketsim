@@ -56,3 +56,13 @@ def test_valuation_after_two_trades(stock_tnt: Security,
     assert agent_noise.position.get(stock_tnt.asset_id) == 10
     assert agent_noise.portfolio_value == -5
     assert agent_mm.portfolio_value == 5
+
+
+def test_valuation_price_change(agent_3k_mit_2k_tnt: Agent,
+                                stock_mit: Security,
+                                stock_tnt: Security):
+    stock_tnt.last_traded_price = Price(165.00)
+    stock_mit.last_traded_price = Price(18.67)
+    agent_3k_mit_2k_tnt.record_valuation(current_time=1)
+
+    assert agent_3k_mit_2k_tnt.portfolio_value == Price(386010.00)
