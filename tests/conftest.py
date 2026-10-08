@@ -20,13 +20,13 @@ def repository(tmp_path: Path) -> Repository:
 @pytest.fixture
 def order_factory():
     def _create_order(
-        price=100,
-        order_type=BUY,
-        quantity=10,
-        agent_id=1,
-        time=1,
-        asset_id=1,
-        valid_until=None,
+        price:int=100,
+        order_type:int=BUY,
+        quantity:int=10,
+        agent_id:int=1,
+        time:int=1,
+        asset_id:int=1,
+        valid_until:int|None=None,
     ):
         return Order(
             price=Price(price),
@@ -74,7 +74,12 @@ def stock(repository: Repository):
 @pytest.fixture
 def stock_tnt(repository: Repository):
     return Security(reference_price=Price(167.00), name="stock TNT", repository=repository,
-                    market_type="continuous", instrument_class="stock")
+                    market_type="continuous", instrument_class="stock", short_name="TNT")
+
+@pytest.fixture
+def stock_mit(repository: Repository):
+    return Security(reference_price=Price(18.61), name="stock MIT", repository=repository,
+                    market_type="continuous", instrument_class="stock", short_name="MIT")
 
 
 @pytest.fixture

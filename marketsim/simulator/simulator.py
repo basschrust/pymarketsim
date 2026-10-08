@@ -251,6 +251,8 @@ class Simulator:
             sell_matched_queue_length = 0 if market.order_book is None else len(market.order_book.sell_matched.heap)
             market.logger.info(f"Starting orders execution, matched queues should be empty here: {buy_matched_queue_length}"
                   f" {sell_matched_queue_length}")
+
+            # TODO: we should be asynchronous, redesign this part! No returns!!! :)
             new_orders_matched = market.step(current_time=self.current_time)
 
             market.logger.info(f"Starting to clear out orders.")

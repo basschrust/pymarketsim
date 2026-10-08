@@ -69,6 +69,12 @@ def test_sod_noise_agent(agent_noise: Agent):
 
 # eod for each type:
 
+def test_eod_noise_agent(agent_noise: Agent):
+    agent_noise.eod()
+
+    assert agent_noise is not None
+    assert type(agent_noise) == NoiseAgent
+    assert agent_noise.cash == 0
 
 
 
