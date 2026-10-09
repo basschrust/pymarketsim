@@ -163,7 +163,7 @@ def test_save_eod_position(repository: Repository,
     agent.eod()
 
     ret = repository.connection.execute("""SELECT *
-                FROM eod_position """).fetchall()
+                FROM eod_positions """).fetchall()
 
     assert ret.shape == (2, 6)
 
@@ -174,9 +174,9 @@ def test_save_portfolio_value_history(repository: Repository,
     agent.eod()
 
     ret = repository.connection.execute("""SELECT *
-                FROM portfolio_value_history""").fetchall()
+                FROM portfolio_value_history""").fetchdf()
 
-    assert ret.shape == (1,6)
+    assert ret.shape == (1,4)
 
 
 def test_save_eod_portfolio_value(repository: Repository,
@@ -185,7 +185,7 @@ def test_save_eod_portfolio_value(repository: Repository,
     agent.eod()
 
     ret = repository.connection.execute("""SELECT *
-                FROM eod_portfolio_values  """)
+                FROM eod_portfolio_value  """).fetchdf()
 
     assert ret.shape == (2, 6)
 
@@ -195,7 +195,7 @@ def test_save_cash_history(repository: Repository,
     agent = agent_sophisticated_1
     agent.eod()
     ret = repository.connection.execute("""SELECT *
-            FROM cash_history""").fetchall()
+            FROM cash_history""").fetch_df()
 
 
     assert ret.shape == (1, 6)
@@ -203,7 +203,26 @@ def test_save_cash_history(repository: Repository,
 
 def test_save_eod_cash(repository: Repository,
                        agent_sophisticated_1: Agent):
-    assert 1 == 1
+    agent = agent_sophisticated_1
+    agent.eod()
+
+    ret = repository.connection.execute("""SELECT *
+            FROM eod_cash""").fetch_df()
+
+    assert ret.shape == (1, 3)
+
+def test_save_eod_cash_2(repository: Repository,
+                       agent_sophisticated_1: Agent):
+    agent = agent_sophisticated_1
+    agent.eod()
+    # two days so two records are saved
+    agent.sod()
+    agent.eod()
+
+    ret = repository.connection.execute("""SELECT *
+            FROM eod_cash""").fetch_df()
+
+    assert ret.shape == (2, 3)
 
 
 def test_save_traded_prices(repository: Repository):
