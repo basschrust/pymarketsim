@@ -46,6 +46,7 @@ def option_call_before_expiration_itm(stock_tnt: Security,
                  short_name="CALL before expiration ITM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -69,6 +70,7 @@ def option_put_before_expiration_itm(stock_tnt: Security,
                  short_name="PUT before expiration ITM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -76,10 +78,12 @@ def option_put_at_expiration_itm(stock_tnt: Security,
                                       config_tnt_put: dict,
                                       repository: Repository) -> Option:
     config_tnt_put["expiration"] = 0
+    config_tnt_put["strike"] = Price(170.00)
     opt = Option(derivatives_config=config_tnt_put,
-                 short_name="PUT at expiration ITM",
+                 short_name="PUT at expiration ITM K: 170",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -92,6 +96,7 @@ def option_call_before_expiration_atm(stock_tnt: Security,
                  short_name="CALL before expiration ITM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -104,6 +109,7 @@ def option_call_at_expiration_atm(stock_tnt: Security,
                  short_name="CALL at expiration ITM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -116,6 +122,7 @@ def option_put_before_expiration_atm(stock_tnt: Security,
                  short_name="PUT before expiration ATM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -128,6 +135,7 @@ def option_put_at_expiration_atm(stock_tnt: Security,
                  short_name="PUT at expiration ATM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -140,6 +148,7 @@ def option_call_before_expiration_otm(stock_tnt: Security,
                  short_name="CALL before expiration OTM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -152,6 +161,7 @@ def option_call_at_expiration_otm(stock_tnt: Security,
                  short_name="CALL at expiration OTM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -164,6 +174,7 @@ def option_put_before_expiration_otm(stock_tnt: Security,
                  short_name="PUT before expiration OTM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 @pytest.fixture
@@ -176,6 +187,7 @@ def option_put_at_expiration_otm(stock_tnt: Security,
                  short_name="PUT at expiration OTM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -192,3 +204,37 @@ def agent_long_call_option_expiration_day(stock_tnt: Security,
 
     return agent
 
+
+@pytest.fixture
+def agent_long_put_option_expiration_day(stock_tnt: Security,
+                                          stock_mit: Security,
+                                          option_put_at_expiration_itm: Option,
+                                          repository: Repository):
+    agent =  NoiseAgent(markets=[stock_tnt, stock_mit, option_put_at_expiration_itm], repository=repository)
+    option_put_at_expiration_itm.add_agents([agent])
+    agent.position[option_put_at_expiration_itm.asset_id] = 10
+
+    return agent
+
+@pytest.fixture
+def agent_long_call_option_expiration_day_otm(stock_tnt: Security,
+                                          stock_mit: Security,
+                                          option_call_at_expiration_otm: Option,
+                                          repository: Repository):
+    agent =  NoiseAgent(markets=[stock_tnt, stock_mit, option_call_at_expiration_otm], repository=repository)
+    option_call_at_expiration_otm.add_agents([agent])
+    agent.position[option_call_at_expiration_otm.asset_id] = 10
+
+    return agent
+
+
+@pytest.fixture
+def agent_long_put_option_expiration_day_otm(stock_tnt: Security,
+                                          stock_mit: Security,
+                                          option_put_at_expiration_otm: Option,
+                                          repository: Repository):
+    agent =  NoiseAgent(markets=[stock_tnt, stock_mit, option_put_at_expiration_otm], repository=repository)
+    option_put_at_expiration_otm.add_agents([agent])
+    agent.position[option_put_at_expiration_otm.asset_id] = 10
+
+    return agent
