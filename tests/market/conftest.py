@@ -238,3 +238,38 @@ def agent_long_put_option_expiration_day_otm(stock_tnt: Security,
     agent.position[option_put_at_expiration_otm.asset_id] = 10
 
     return agent
+
+
+# for sod testing after option expire:
+
+@pytest.fixture
+def agent_after_expiry_call(agent_long_call_option_expiration_day: Agent,
+                              option_call_at_expiration_itm: Option):
+    option_call_at_expiration_itm.eod()
+    agent_long_call_option_expiration_day.eod()
+
+    return agent_long_call_option_expiration_day
+
+@pytest.fixture
+def agent_after_expiry_put(agent_long_put_option_expiration_day: Agent,
+                              option_put_at_expiration_itm: Option):
+    option_put_at_expiration_itm.eod()
+    agent_long_put_option_expiration_day.eod()
+
+    return agent_long_put_option_expiration_day
+
+@pytest.fixture
+def agent_after_expiry_call_otm(agent_long_call_option_expiration_day_otm: Agent,
+                              option_call_at_expiration_otm: Option):
+    option_call_at_expiration_otm.eod()
+    agent_long_call_option_expiration_day_otm.eod()
+
+    return agent_long_call_option_expiration_day_otm
+
+@pytest.fixture
+def agent_after_expiry_put_otm(agent_long_put_option_expiration_day_otm: Agent,
+                              option_put_at_expiration_otm: Option):
+    option_put_at_expiration_otm.eod()
+    agent_long_put_option_expiration_day_otm.eod()
+
+    return agent_long_put_option_expiration_day_otm

@@ -57,5 +57,82 @@ def test_cf_after_expiry_put_otm(agent_long_put_option_expiration_day_otm: Agent
 
 ###### check next day sod() !!!!
 
+def test_sod_1(agent_after_expiry_call: Agent,
+               option_call_at_expiration_itm: Option):
+    agent = agent_after_expiry_call
+    option = option_call_at_expiration_itm
 
+    option.sod()
+    agent.sod()
 
+    assert option.current_day == 1, "Date should be rolled"
+    assert option.status == "expired", "We're after expiration"
+    assert option.eod_status == "closed", "We're after expiration so it doesn't open"
+
+    assert agent.current_day == 1, "Date should be rolled"
+    assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
+    assert agent.portfolio_value == Price(770.00), "Should be 0"
+    assert agent.cash == Price(770.00), "Should be 10*77 position * premium from yesterday"
+    assert agent.eod_status == "open", "After SoD opened for trading"
+    assert option.asset_id in agent.abandoned_markets
+    assert option.asset_id not in agent.markets
+
+def test_sod_2(agent_after_expiry_put: Agent,
+               option_put_at_expiration_itm: Option):
+    agent = agent_after_expiry_put
+    option = option_put_at_expiration_itm
+
+    option.sod()
+    agent.sod()
+
+    assert option.current_day == 1, "Date should be rolled"
+    assert option.status == "expired", "We're after expiration"
+    assert option.eod_status == "closed", "We're after expiration so it doesn't open"
+
+    assert agent.current_day == 1, "Date should be rolled"
+    assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
+    assert agent.portfolio_value == Price(30.00), "Should be 0"
+    assert agent.cash == Price(30.00), "Should be 10*77 position * premium from yesterday"
+    assert agent.eod_status == "open", "After SoD opened for trading"
+    assert option.asset_id in agent.abandoned_markets
+    assert option.asset_id not in agent.markets
+
+def test_sod_3(agent_after_expiry_call_otm: Agent,
+               option_call_at_expiration_otm: Option):
+    agent = agent_after_expiry_call_otm
+    option = option_call_at_expiration_otm
+
+    option.sod()
+    agent.sod()
+
+    assert option.current_day == 1, "Date should be rolled"
+    assert option.status == "expired", "We're after expiration"
+    assert option.eod_status == "closed", "We're after expiration so it doesn't open"
+
+    assert agent.current_day == 1, "Date should be rolled"
+    assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
+    assert agent.portfolio_value == Price(0.00), "Should be 0"
+    assert agent.cash == Price(0.00), "Should be 10*77 position * premium from yesterday"
+    assert agent.eod_status == "open", "After SoD opened for trading"
+    assert option.asset_id in agent.abandoned_markets
+    assert option.asset_id not in agent.markets
+
+def test_sod_4(agent_after_expiry_put_otm: Agent,
+               option_put_at_expiration_otm: Option):
+    agent = agent_after_expiry_put_otm
+    option = option_put_at_expiration_otm
+
+    option.sod()
+    agent.sod()
+
+    assert option.current_day == 1, "Date should be rolled"
+    assert option.status == "expired", "We're after expiration"
+    assert option.eod_status == "closed", "We're after expiration so it doesn't open"
+
+    assert agent.current_day == 1, "Date should be rolled"
+    assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
+    assert agent.portfolio_value == Price(0.00), "Should be 0"
+    assert agent.cash == Price(0.00), "Should be 10*77 position * premium from yesterday"
+    assert agent.eod_status == "open", "After SoD opened for trading"
+    assert option.asset_id in agent.abandoned_markets
+    assert option.asset_id not in agent.markets
