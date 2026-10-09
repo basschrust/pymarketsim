@@ -2,7 +2,8 @@ import pytest
 
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.market import Security, Option, Price
-from tests.conftest import repository
+from tests.conftest import repository, option_tnt_call
+from marketsim.agent import Agent, NoiseAgent
 
 
 @pytest.fixture
@@ -56,6 +57,7 @@ def option_call_at_expiration_itm(stock_tnt: Security,
                  short_name="CALL at expiration ITM",
                  repository=repository,
                  underlying=stock_tnt)
+    opt.sod()
     return opt
 
 
@@ -175,3 +177,18 @@ def option_put_at_expiration_otm(stock_tnt: Security,
                  repository=repository,
                  underlying=stock_tnt)
     return opt
+
+
+### agents with option in portfolio:
+
+@pytest.fixture
+def agent_long_call_option_expiration_day(stock_tnt: Security,
+                                          stock_mit: Security,
+                                          option_call_at_expiration_itm: Option,
+                                          repository: Repository):
+    agent =  NoiseAgent(markets=[stock_tnt, stock_mit, option_call_at_expiration_itm], repository=repository)
+    option_call_at_expiration_itm.add_agents([agent])
+    agent.position[option_call_at_expiration_itm.asset_id] = 10
+
+    return agent
+

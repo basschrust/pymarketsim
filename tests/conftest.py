@@ -4,6 +4,7 @@ from pathlib import Path
 from marketsim.database.connectors.duckdb_storage import Repository
 from marketsim.fourheap.order import Order
 from marketsim.market import Price, Security, Option
+from marketsim.agent import Agent, MMZOHAgent, NoiseAgent, HBLAgent
 
 
 BUY = 1
@@ -14,7 +15,6 @@ tmp_path = Path("tmp")
 @pytest.fixture
 def repository() -> Repository:
     return Repository() # output_dir=tmp_path)
-
 
 
 @pytest.fixture
@@ -139,3 +139,20 @@ def option_tnt_call(repository: Repository, stock_tnt: Security, option_config_c
 def option_tnt_put(repository: Repository, stock_tnt: Security, option_config_put: dict):
     option = Option(repository=repository, underlying=stock_tnt, derivatives_config=option_config_put)
     return option
+
+### agents:
+
+@pytest.fixture
+def agent_noise(stock_tnt: Security, stock_mit: Security, repository: Repository):
+    return NoiseAgent(markets=[stock_tnt, stock_mit], repository=repository)
+
+@pytest.fixture
+def agent_hbl(security: Security, repository: Repository):
+    return HBLAgent(markets=[security], repository=repository)
+
+@pytest.fixture
+def agent_mm(stock_tnt: Security, stock_mit:Security, repository: Repository):
+    return MMZOHAgent(markets=[stock_tnt, stock_mit], repository=repository)
+
+
+
