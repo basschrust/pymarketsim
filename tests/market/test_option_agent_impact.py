@@ -72,7 +72,9 @@ def test_sod_1(agent_after_expiry_call: Agent,
     assert agent.current_day == 1, "Date should be rolled"
     assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
     assert agent.portfolio_value == Price(770.00), "Should be 0"
+    assert len(agent.portfolio_value_history) == 0, "Daily portfolio value history should be empty"
     assert agent.cash == Price(770.00), "Should be 10*77 position * premium from yesterday"
+    assert len(agent.cash_history) == 0, "Cash history should be empty"
     assert agent.eod_status == "open", "After SoD opened for trading"
     assert option.asset_id in agent.abandoned_markets
     assert option.asset_id not in agent.markets
@@ -92,7 +94,9 @@ def test_sod_2(agent_after_expiry_put: Agent,
     assert agent.current_day == 1, "Date should be rolled"
     assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
     assert agent.portfolio_value == Price(30.00), "Should be 0"
+    assert len(agent.portfolio_value_history) == 0, "Daily portfolio value history should be empty"
     assert agent.cash == Price(30.00), "Should be 10*77 position * premium from yesterday"
+    assert len(agent.cash_history) == 0, "Cash history should be empty"
     assert agent.eod_status == "open", "After SoD opened for trading"
     assert option.asset_id in agent.abandoned_markets
     assert option.asset_id not in agent.markets
@@ -112,7 +116,9 @@ def test_sod_3(agent_after_expiry_call_otm: Agent,
     assert agent.current_day == 1, "Date should be rolled"
     assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
     assert agent.portfolio_value == Price(0.00), "Should be 0"
+    assert len(agent.portfolio_value_history) == 0, "Daily portfolio value history should be empty"
     assert agent.cash == Price(0.00), "Should be 10*77 position * premium from yesterday"
+    assert len(agent.cash_history) == 0, "Cash history should be empty"
     assert agent.eod_status == "open", "After SoD opened for trading"
     assert option.asset_id in agent.abandoned_markets
     assert option.asset_id not in agent.markets
@@ -132,7 +138,9 @@ def test_sod_4(agent_after_expiry_put_otm: Agent,
     assert agent.current_day == 1, "Date should be rolled"
     assert agent.position[option.asset_id] == 0, "Should be 0 or not exist?"
     assert agent.portfolio_value == Price(0.00), "Should be 0"
+    assert len(agent.portfolio_value_history) == 0, "Daily portfolio value history should be empty"
     assert agent.cash == Price(0.00), "Should be 10*77 position * premium from yesterday"
+    assert len(agent.cash_history) == 0, "Cash history should be empty"
     assert agent.eod_status == "open", "After SoD opened for trading"
     assert option.asset_id in agent.abandoned_markets
     assert option.asset_id not in agent.markets

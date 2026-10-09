@@ -13,8 +13,11 @@ SELL = -1
 tmp_path = Path("tmp")
 
 @pytest.fixture
-def repository() -> Repository:
-    return Repository() # output_dir=tmp_path)
+def repository(tmp_path: Path):
+    repo = Repository(output_dir=tmp_path)
+    yield repo
+    repo.connection.close()
+
 
 
 @pytest.fixture
