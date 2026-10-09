@@ -348,8 +348,12 @@ def agent_3k_mit_2k_tnt(agent_noise: Agent,
                         stock_tnt: Security):
     stock_tnt.add_agents([agent_noise])
     stock_mit.add_agents([agent_noise])
+    agent_noise.sod()
     agent_noise.position[stock_tnt.asset_id] = 2000
+    agent_noise.eod()
+    agent_noise.sod()
     agent_noise.position[stock_mit.asset_id] = 3000
+    agent_noise.eod()
 
     agent_noise.record_valuation(current_time=0)
 
