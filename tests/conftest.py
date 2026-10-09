@@ -19,7 +19,6 @@ def repository(tmp_path: Path):
     repo.connection.close()
 
 
-
 @pytest.fixture
 def order_factory():
     def _create_order(
