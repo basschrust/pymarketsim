@@ -8,17 +8,6 @@ from marketsim.agent import (Agent, NoiseAgent, HBLAgent, MMZOHAgent, MomentumAg
 BUY = 1
 SELL = -1
 
-@pytest.fixture
-def agent_noise(stock_tnt: Security, stock_mit: Security, repository: Repository):
-    return NoiseAgent(markets=[stock_tnt, stock_mit], repository=repository)
-
-@pytest.fixture
-def agent_hbl(security: Security, repository: Repository):
-    return HBLAgent(markets=[security], repository=repository)
-
-@pytest.fixture
-def agent_mm(stock_tnt: Security, stock_mit:Security, repository: Repository):
-    return MMZOHAgent(markets=[stock_tnt, stock_mit], repository=repository)
 
 @pytest.fixture
 def agent_momentum(security: Security, repository: Repository):
@@ -101,4 +90,9 @@ def buy_order_101_mit(order_factory,
                      stock_mit: Security,
                      agent_noise: Agent):
     return order_factory(price=101, order_type=BUY, agent_id=agent_noise.agent_id, asset_id=stock_mit.asset_id)
+
+
+##### agents with open positions
+
+
 
