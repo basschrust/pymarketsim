@@ -202,7 +202,7 @@ def test_save_portfolio_value_history(repository: Repository,
 
     assert ret.shape == (0,4)
 
-@pytest.mark.skip(reason="error in implementation!")
+
 def test_save_eod_portfolio_value(repository: Repository,
                                   agent_sophisticated_1: Agent):
     agent = agent_sophisticated_1

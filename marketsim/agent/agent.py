@@ -245,6 +245,11 @@ class Agent(ABC):
             self.logger.info(f"eod_cash_df: {eod_cash_df.head()}")
             self.repository.save_eod_cash(eod_cash_df=eod_cash_df)
 
+            # calculate and save portfolio value
+            self.portfolio_value = self.cash  # cash already includes today's option premiums
+            for asset_id, market in self.markets.items():
+                self.portfolio_value += self.position[asset_id] * market.last_traded_price
+
             eod_portfolio_value_df = pd.DataFrame([{ "day": self.current_day-1,
                                                           "agent_id": self.agent_id,
                                                           "portfolio_value": self.portfolio_value,
