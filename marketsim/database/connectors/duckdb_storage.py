@@ -11,7 +11,7 @@ from marketsim.loggers.basic import terminal
 
 if TYPE_CHECKING:
     from marketsim.agent import Agent
-    from marketsim.market import Security, Index
+    from marketsim.market import Security, Index, Future
 
 # TODO: create some base class with abstract methods, use instances depending on the configuration
 class Repository:
@@ -59,6 +59,19 @@ class Repository:
                 )
             """)
 
+        # future contracts on indices / underlying_type stock/index
+        self.connection.execute("""
+            CREATE TABLE IF NOT EXISTS future (
+                    contract_id INTEGER,
+                    underlying_type STRING,
+                    underlying_id INTEGER,
+                    expiration_day INTEGER,
+                    multiplier DOUBLE,
+                    margin_rate DOUBLE,
+                    name STRING,
+                    short_name STRING
+                )
+            """)
 
         # derivatives
         self.connection.execute("""
@@ -185,7 +198,7 @@ class Repository:
                             )
                         """)
 
-        #
+        # eod index
         self.connection.execute("""
                             CREATE TABLE IF NOT EXISTS eod_index_values (
                                 day       INTEGER,
@@ -196,6 +209,37 @@ class Repository:
                                 close     DOUBLE,
                             )
                         """)
+
+        # futures intraday
+        self.connection.execute("""
+                    CREATE TABLE IF NOT EXISTS future_rates (
+                            contract_id INTEGER,
+                            day INTEGER,
+                            time_tick INTEGER,
+                            open DOUBLE,
+                            high DOUBLE,
+                            low DOUBLE,
+                            close DOUBLE,
+                            volume DOUBLE,
+                            lop INTEGER,
+                            theoretical DOUBLE
+                        )
+                    """)
+
+        # eod future rates
+        self.connection.execute("""
+                            CREATE TABLE IF NOT EXISTS eod_future_rates (
+                                    contract_id INTEGER,
+                                    day INTEGER,
+                                    open DOUBLE,
+                                    high DOUBLE,
+                                    low DOUBLE,
+                                    close DOUBLE,
+                                    volume DOUBLE,
+                                    lop INTEGER,
+                                    theoretical DOUBLE
+                            )
+                    """)
 
         ##### granular tables - may contain significant volumes of data ######################
 
@@ -223,6 +267,7 @@ class Repository:
         self.connection.execute("""
                     CREATE TABLE IF NOT EXISTS trades (
                         day INTEGER,
+                        asset_id INTEGER,
                         matched_with INTEGER,
                         executed_mode STRING,
                         executed_time INTEGER,
@@ -285,6 +330,21 @@ class Repository:
         """)
         self.connection.unregister("components_df")
 
+    def save_future(self, future: Future) -> None:
+        self.connection.execute(query="""
+            INSERT INTO future (contract_id, underlying_type, underlying_id,
+                                expiration_day, multiplier, name, short_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, parameters=[future.asset_id,
+                                     "index",
+                                     future.underlying.asset_id,
+                                     future.expiration,
+                                     future.multiplier,
+                                     future.name,
+                                     future.short_name
+                                     ])
+
+    # the players :)
     def save_agent(self, agent: Agent) -> None:
         self.connection.execute("""
             INSERT INTO agents (
@@ -399,6 +459,7 @@ class Repository:
         self.connection.unregister("eod_prices_df")
 
     def save_eod_index_values(self, index_values_df: pd.DataFrame) -> None:
+        raise # TODO: moved to calculate
         self.connection.register("eod_index_values_df", index_values_df)
         # TODO: volume as cumulated weighted volume of stocks?
         self.connection.execute("""
@@ -438,9 +499,10 @@ class Repository:
         self.connection.register("trades_df", trades_df)
         # terminal.write(f"Columns: {str(trades_df.columns())}")
         self.connection.execute("""
-            INSERT INTO trades (day, executed_time, matched_with, executed_mode, executed_price,
+            INSERT INTO trades (day, asset_id, executed_time, matched_with, executed_mode, executed_price,
                     order_id, order_side, executed_volume, cash, phase)
             SELECT day,
+                    asset_id,
                     executed_time,
                     matched_with,
                     executed_mode,
@@ -491,6 +553,13 @@ class Repository:
                 WHERE index_id = ?
             """, parameters=[index_id]).fetchdf()
 
+    def get_eod_future_rates(self, contract_id: int) -> pd.DataFrame:
+        return self.connection.execute(query="""
+                SELECT day, open, high, low, close, volume, theoretical, lop
+                FROM eod_future_rates
+                WHERE contract_id = ?
+            """, parameters=[contract_id]).fetchdf()
+
     def get_eod_cash(self, agent_id: int) -> pd.DataFrame:
         return self.connection.execute(query="""
                 SELECT day, cash
@@ -513,8 +582,12 @@ class Repository:
         # calculate intraday index values for all indices
         self.connection.execute(query="""
                 INSERT INTO
-                    index_values (day, time_tick, index_id, close)
-                SELECT tp.day, tp.time_tick, ic.index_id, sum(ic.weight * tp."close" )
+                    index_values (day, time_tick, index_id, open, high, low, close)
+                SELECT tp.day, tp.time_tick, ic.index_id,
+                        sum(ic.weight * tp."open" ),
+                        sum(ic.weight * tp."close" ),
+                        sum(ic.weight * tp."close" ),
+                        sum(ic.weight * tp."close" ),
                 FROM index_components ic
                 LEFT JOIN traded_prices tp
                     ON ic.asset_id = tp.asset_id
@@ -525,14 +598,14 @@ class Repository:
 
     # combine eod_prices into eod_index_values:
     def calculate_eod_index_values(self, day: int) -> pd.DataFrame:
-        self.connection.execute(query="""
+        return self.connection.execute(query="""
                 INSERT INTO eod_index_values (day, index_id, open, high, low, close)
                 SELECT iv.day, iv.index_id, 
-                    FIRST(iv."close" ORDER BY iv.time_tick) AS open,
+                    FIRST(iv."open" ORDER BY iv.time_tick) AS open,
                     MAX(iv."close" ) as high,
                     MIN(iv."close" ) as low,
                     LAST(iv."close" ORDER BY iv.time_tick) AS close,
                 FROM main.index_values iv 
                 WHERE iv."day" = ?
-                GROUP BY iv.day, iv.index_id""", parameters=[day])
+                GROUP BY iv.day, iv.index_id""", parameters=[day]).fetchdf()
 

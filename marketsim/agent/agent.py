@@ -18,7 +18,7 @@ from marketsim.market.price import Price
 
 if TYPE_CHECKING:
     from marketsim.fourheap import MatchedOrder
-    from marketsim.market import Security
+    from marketsim.market import Security, Future
     from database.connectors.duckdb_storage import Repository
 
 
@@ -56,6 +56,20 @@ class Agent(ABC):
         self.portfolio_value_history = defaultdict(Price)
 
         self.position = { m_id: 0 for m_id  in self.markets }
+        # for the MtM daily contracts:
+        self.futures_position = { m_id: 0 for m_id, m
+                                  in self.markets.items() if m.instrument_class == "future" }
+        self.futures_value = {
+            m_id: {
+                "avg_initial_price": Price(0),
+                "settlement_price": Price(0),
+                "collateral": Price(0),
+                "unsettled_pnl": Price(0),
+            }
+            for m_id in self.futures_position
+        }
+        # self.futures_value = {}  # asset_id -> current unsettled P&L
+
 
         self.position_history = defaultdict(dict)
         self.position_history[0] = { m_id:0  for m_id  in self.markets }  # valid one day! {time: {asset_id: number_of_shares}}
@@ -107,6 +121,53 @@ class Agent(ABC):
         self.position[asset_id] += quantity
         self.cash += cash
 
+    def update_futures_position(self, *,
+                                quantity: int,
+                                contract: Future,
+                                ) -> None:
+        # update the derivatives position of the agent
+        if contract.asset_id not in self.futures_position:
+            raise ValueError(f"Position:  {self.futures_position}. {contract.asset_id} not in position")
+        current_position = self.futures_position[contract.asset_id]
+        if current_position == 0:
+            # initiating position on this contract
+            collateral = contract.last_traded_price * contract.margin_rate * contract.multiplier
+            self.futures_value[contract.asset_id] = {
+                "avg_initial_price": contract.last_traded_price, # the current price
+                "settlement_price": contract.last_traded_price,
+                "collateral": collateral,
+                "unsettled_pnl": Price(0),
+            }
+        elif current_position == - quantity:
+            # squaring /closing the position
+            freed_collateral = self.futures_value[contract.asset_id]["collateral"]
+            self.cash += freed_collateral
+            # TODO: depending on the price, there might be some unsettled_pnl to add to cash?
+            self.futures_position[contract.asset_id] = 0
+            self.futures_value[contract.asset_id] = {
+                "avg_initial_price": contract.last_traded_price,  # the current price
+                "settlement_price": contract.last_traded_price,
+                "collateral": Price(0),
+                "unsettled_pnl": Price(0),
+            }
+        else:
+            existing_collateral = self.futures_value[contract.asset_id]["collateral"]
+            target_collateral = contract.last_traded_price * contract.margin_rate * contract.multiplier
+            # changing contract position - keeping it open with different size
+            self.futures_position[contract.asset_id] += quantity
+            self.cash -= target_collateral - existing_collateral
+
+            total_pos = current_position + quantity
+            old_price = self.futures_value[contract.asset_id]["avg_initial_price"]
+            avg_initial_price = (old_price * current_position + contract.last_traded_price * quantity) / total_pos
+            # TODO: calculate this
+            self.futures_value[contract.asset_id] = {
+                "avg_initial_price": avg_initial_price,  # the current price
+                "settlement_price": contract.last_traded_price,
+                "collateral": target_collateral,
+                "unsettled_pnl": Price(0),
+            }
+
     def reset(self) -> None:
         self.position = { m_id: 0 for m_id  in self.markets}
         self.cash = Price(0)
@@ -122,6 +183,11 @@ class Agent(ABC):
         self.portfolio_value = self.cash
         for asset_id, market in self.markets.items():
             self.portfolio_value += int(self.position[asset_id]) * market.last_traded_price
+
+        # TODO: add futures - collateral + unsettled_pnl
+        for contract_id, ft_val in self.futures_value.items():
+            self.portfolio_value += ft_val["collateral"]
+            self.portfolio_value += ft_val["unsettled_pnl"]
 
         # save valuation:
         self.portfolio_value_history[current_time] = self.portfolio_value
@@ -152,6 +218,53 @@ class Agent(ABC):
             self.trade_history[matched_order.time] = { matched_order.order.asset_id:
                                                 {"trades": 1, "volume": abs(matched_order.order.quantity),
                                                  } }
+
+
+    def record_futures_trade(self, matched_order: MatchedOrder) -> None:
+        # TODO: fill this properly for trading futures
+        quantity = matched_order.order.order_type * matched_order.order.quantity
+        #cash = - Price(matched_order.price * matched_order.order.quantity * matched_order.order.order_type)
+        # cash to collateral, both sides - so no matter if bought or sold
+        contract_id = matched_order.order.asset_id
+        contract = self.markets[contract_id]
+        # make sure the key will exist now:
+
+        self.update_futures_position(quantity=quantity, contract=contract)
+        self.position_history[matched_order.time][contract_id] = (
+                self.position_history.get(matched_order.time, {}).get(matched_order.order.asset_id, 0) + quantity)
+
+        if matched_order.time in self.trade_history:
+            # just add info
+            old = self.trade_history.get(matched_order.time, {}).get(matched_order.order.asset_id, {})
+            if old:
+                self.trade_history[matched_order.time][matched_order.order.asset_id] = {"trades": old["trades"]+1,
+                                                               "volume": old["volume"] + abs(matched_order.order.quantity),}
+            else:
+                # first trade on this security on this date:
+                self.trade_history[matched_order.time][matched_order.order.asset_id] =\
+                            {"trades": 1, "volume": abs(matched_order.order.quantity),
+                                                }
+        else:
+            # first trade this day
+            self.trade_history[matched_order.time] = { matched_order.order.asset_id:
+                                                {"trades": 1, "volume": abs(matched_order.order.quantity),
+                                                 } }
+
+    def settle(self, contract):
+        # final day settlement
+        # "avg_initial_price": avg_initial_price,  # the current price
+        # "settlement_price": contract.last_traded_price,
+        # "collateral": target_collateral,
+        # "unsettled_pnl": Price(0),
+        ft_val = self.futures_value[contract.asset_id]
+        self.cash += ft_val["collateral"] + ft_val["unsettled_pnl"]
+        # what about settlement_price?
+        self.futures_position[contract.asset_id] = 0
+        self.futures_value.pop(contract.asset_id) # delete the contract from analysis
+        self.abandoned_markets[contract.asset_id] = contract
+        self.markets.pop(contract.asset_id)
+        # TODO: porftolio value
+
 
 
     def sod(self):
@@ -189,7 +302,6 @@ class Agent(ABC):
             self.eod_status = "closed"
             self.current_day += 1
 
-            # run the EoD procedure
             # make position history a DF to enable quick filtering
             # self.position_history
             self.position_history_df = (
@@ -267,6 +379,8 @@ class Agent(ABC):
 
         positions_df = self.repository.get_eod_positions(agent_id=self.agent_id)
         positions_df.rename(columns={"day": "time_step"}, inplace=True)
+
+        # TODO: for futures take from futures_position
 
         self.logger.info(f"Plotting eod positions for {self.agent_id} ...")
         # self.logger.info(f"{positions_df.head(100)}")
